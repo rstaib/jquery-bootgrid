@@ -1,0 +1,54 @@
+{
+  "name": "jquery-bootgrid",
+  "title": "jQuery Bootgrid",
+  "version": "0.9.0",
+  "description": "Nice, sleek and intuitive. A grid control especially designed for bootstrap.",
+  "homepage": "http://www.jquery-bootgrid.com",
+  "author": {
+    "name": "Rafael Staib",
+    "email": "me@rafaelstaib.com",
+    "url": "http://www.rafaelstaib.com"
+  },
+  "bugs": "https://github.com/rstaib/jquery-bootgrid/issues",
+  "scripts": {
+    "test": "grunt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rstaib/jquery-bootgrid.git"
+  },
+  "keywords": [
+    "jQuery",
+    "Grid",
+    "Table",
+    "Data",
+    "Bootstrap",
+    "Plugin"
+  ],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://www.opensource.org/licenses/MIT"
+    }
+  ],
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-cli": "~0.1.9",
+    "grunt-contrib-qunit": "~0.2.1",
+    "grunt-contrib-jshint": "~0.4.3",
+    "grunt-contrib-uglify": "~0.2.0",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-yuidoc": "~0.4.0",
+    "grunt-contrib-clean": "~0.4.1",
+    "grunt-contrib-compress": "~0.5.2",
+    "grunt-regex-replace": "~0.2.5",
+    "grunt-exec": "~0.4.2"
+  },
+  "readmeFilename": "README.md",
+  "folders": {
+    "dist": "build",
+    "src": "src",
+    "docs": "docs",
+    "nuget": "nuget"
+  }
+}
