@@ -13,20 +13,27 @@ module.exports = function (grunt)
                 banner: '/*! <%= "\\r\\n * " + pkg.title %> v<%= pkg.version %> - <%= grunt.template.today("mm/dd/yyyy") + "\\r\\n" %>' +
                     ' * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %> <%= (pkg.homepage ? "(" + pkg.homepage + ")" : "") + "\\r\\n" %>' +
                     ' * Licensed under <%= pkg.licenses[0].type + " " + pkg.licenses[0].url + "\\r\\n */\\r\\n" %>' + 
-                    ';(function ($, undefined)\r\n{\r\n"use strict";\r\n\r\n',
-                footer: '\r\n})(jQuery);'
+                    ';(function ($, undefined)\r\n{\r\n    "use strict";\r\n\r\n',
+                footer: '\r\n})(jQuery);',
+				process: function(src, filepath)
+				{
+					return src.replace(/([^|\n].*)/gm, '    $1');
+				}
             },
             dist: {
                 files: {
-                    '<%= pkg.folders.dist %>/jquery.bootgrid.js': [
-                        '<%= pkg.folders.src %>/base.js'
+                    '<%= pkg.folders.dist %>/<%= pkg.namespace %>.js': [
+                        '<%= pkg.folders.src %>/internal.js',
+						'<%= pkg.folders.src %>/public.js',
+						'<%= pkg.folders.src %>/plugin.js',
+						'<%= pkg.folders.src %>/extensions.js'
                     ]
                 }
             }
         },
         //"regex-replace": {
         //    all: {
-        //        src: ['<%= pkg.folders.nuget %>/jQuery.Bootgrid.nuspec'],
+        //        src: ['<%= pkg.folders.nuget %>/<%= pkg.namespace %>.nuspec'],
         //        actions: [
         //            {
         //                name: 'versionNumber',
@@ -38,16 +45,16 @@ module.exports = function (grunt)
         //},
         exec: {
             createPkg: {
-                cmd: "<%= pkg.folders.nuget %>\\Nuget pack <%= pkg.folders.nuget %>\\jQuery.Bootgrid.nuspec -OutputDirectory <%= pkg.folders.dist %> -Version <%= pkg.version %>"
+                cmd: "<%= pkg.folders.nuget %>\\Nuget pack <%= pkg.folders.nuget %>\\<%= pkg.namespace %>.nuspec -OutputDirectory <%= pkg.folders.dist %> -Version <%= pkg.version %>"
             }
         },
         compress: {
             main: {
                 options: {
-                    archive: '<%= pkg.folders.dist %>/jquery.bootgrid-<%= pkg.version %>.zip'
+                    archive: '<%= pkg.folders.dist %>/<%= pkg.namespace %>-<%= pkg.version %>.zip'
                 },
                 files: [
-                  { flatten: true, expand: true, src: ['<%= pkg.folders.dist %>/*.js'], dest: '/' }
+                  { flatten: true, expand: true, src: ['<%= pkg.folders.dist %>/*.js', '<%= pkg.folders.dist %>/*.css'], dest: '/' }
                 ]
             }
         },
@@ -58,10 +65,17 @@ module.exports = function (grunt)
             },
             all: {
                 files: {
-                    '<%= pkg.folders.dist %>/jquery.bootgrid.min.js': ['<%= pkg.folders.dist %>/jquery.bootgrid.js']
+                    '<%= pkg.folders.dist %>/<%= pkg.namespace %>.min.js': ['<%= pkg.folders.dist %>/<%= pkg.namespace %>.js']
                 }
             }
         },
+		less: {
+			development: {
+				files: {
+					"<%= pkg.folders.dist %>/<%= pkg.namespace %>.css": "<%= pkg.folders.src %>/<%= pkg.namespace %>.less"
+				}
+			}
+		},
         qunit: {
             files: ['test/index.html']
         },
@@ -83,7 +97,7 @@ module.exports = function (grunt)
                     console: true
                 }
             },
-            files: ['<%= pkg.folders.dist %>/jquery.bootgrid.js'],
+            files: ['<%= pkg.folders.dist %>/<%= pkg.namespace %>.js'],
             test: {
                 options: {
                     globals: {
@@ -135,6 +149,7 @@ module.exports = function (grunt)
     });
 
     grunt.loadNpmTasks('grunt-contrib-jshint');
+	grunt.loadNpmTasks('grunt-contrib-less');
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-concat');
@@ -146,6 +161,6 @@ module.exports = function (grunt)
 
     grunt.registerTask('default', ['build']);
     grunt.registerTask('api', ['clean:api', 'yuidoc']);
-    grunt.registerTask('build', ['clean:build', 'concat', 'jshint'/*, 'qunit'*/]);
+    grunt.registerTask('build', ['clean:build', 'concat', 'jshint'/*, 'qunit'*/, 'less']);
     grunt.registerTask('release', ['build', 'api', 'uglify', 'compress', 'exec:createPkg']);
 };

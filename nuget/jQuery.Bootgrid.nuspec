@@ -19,6 +19,6 @@
     </metadata>
     <files>
         <file src="..\build\*.js" target="Content\Scripts" />
-        <file src="..\demo\css\jquery.bootgrid.css" target="Content\Content" />
+        <file src="..\build\*.css" target="Content\Content" />
     </files>
 </package>
