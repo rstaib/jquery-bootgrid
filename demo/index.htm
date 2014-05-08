@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>jQuery Bootgrid Demo</title>
+        <link href="css/bootstrap.css" rel="stylesheet" />
+        <link href="../build/jquery.bootgrid.css" rel="stylesheet" />
+        <script src="js/modernizr-2.8.1.js"></script>
+        <style>
+            @-webkit-viewport { width: device-width; }
+            @-moz-viewport { width: device-width; }
+            @-ms-viewport { width: device-width; }
+            @-o-viewport { width: device-width; }
+            @viewport { width: device-width; }
+        </style>
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <table id="grid" class="table table-condensed table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th data-column-id="id">ID</th>
+                                <th data-column-id="sender" data-order="asc">Sender</th>
+                                <th data-column-id="received">Received</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <script src="../lib/jquery-1.11.1.min.js"></script>
+        <script src="js/bootstrap.js"></script>
+        <script src="../build/jquery.bootgrid.js"></script>
+        <script>
+            $(function()
+            {
+                $("#grid").bootgrid({
+                    post: function ()
+                    {
+                        return {
+                            mailboxItemId: "b0df282a-0d67-40e5-8558-c9e93b7befed"
+                        };
+                    },
+                    url: "data.json"
+                });
+            });
+        </script>
+    </body>
+</html>

@@ -15,18 +15,18 @@ module.exports = function (grunt)
                     ' * Licensed under <%= pkg.licenses[0].type + " " + pkg.licenses[0].url + "\\r\\n */\\r\\n" %>' + 
                     ';(function ($, undefined)\r\n{\r\n    "use strict";\r\n\r\n',
                 footer: '\r\n})(jQuery);',
-				process: function(src, filepath)
-				{
-					return src.replace(/([^|\n].*)/gm, '    $1');
-				}
+                process: function(src, filepath)
+                {
+                    return src.replace(/([^|\n].*)/gm, '    $1');
+                }
             },
             dist: {
                 files: {
                     '<%= pkg.folders.dist %>/<%= pkg.namespace %>.js': [
                         '<%= pkg.folders.src %>/internal.js',
-						'<%= pkg.folders.src %>/public.js',
-						'<%= pkg.folders.src %>/plugin.js',
-						'<%= pkg.folders.src %>/extensions.js'
+                        '<%= pkg.folders.src %>/public.js',
+                        '<%= pkg.folders.src %>/plugin.js',
+                        '<%= pkg.folders.src %>/extensions.js'
                     ]
                 }
             }
@@ -69,13 +69,13 @@ module.exports = function (grunt)
                 }
             }
         },
-		less: {
-			development: {
-				files: {
-					"<%= pkg.folders.dist %>/<%= pkg.namespace %>.css": "<%= pkg.folders.src %>/<%= pkg.namespace %>.less"
-				}
-			}
-		},
+        less: {
+            development: {
+                files: {
+                    "<%= pkg.folders.dist %>/<%= pkg.namespace %>.css": "<%= pkg.folders.src %>/<%= pkg.namespace %>.less"
+                }
+            }
+        },
         qunit: {
             files: ['test/index.html']
         },
@@ -149,7 +149,7 @@ module.exports = function (grunt)
     });
 
     grunt.loadNpmTasks('grunt-contrib-jshint');
-	grunt.loadNpmTasks('grunt-contrib-less');
+    grunt.loadNpmTasks('grunt-contrib-less');
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-concat');
