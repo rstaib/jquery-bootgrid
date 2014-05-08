@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v0.9.0-alpha - 05/08/2014
+ * jQuery Bootgrid v0.9.1-alpha - 05/08/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -98,6 +98,7 @@
         {    
             throw new Error("Url setting must be a none empty string or a function that returns one.");    
         }    
+        options.events.loading();    
         // todo: show loading modal    
         $.post(url, request, function (response)    
         {    
@@ -107,6 +108,7 @@
     
             renderBody(element, options, state, response.rows);    
             renderPagination(element, options, state);    
+            options.events.loaded();    
             // todo: hide loading modal    
         });    
     }    
@@ -301,6 +303,10 @@
             header: "bootgrid-header",    
             sortable: "sortable",    
             table: "bootgrid-table table"    
+        },    
+        events: {    
+            loaded: function () { },    
+            loading: function () { }    
         },    
         labels: {    
             loading: "Loading...",    

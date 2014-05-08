@@ -37,6 +37,10 @@ Grid.defaults = {
         sortable: "sortable",
         table: "bootgrid-table table"
     },
+    events: {
+        loaded: function () { },
+        loading: function () { }
+    },
     labels: {
         loading: "Loading...",
         noResults: "No results found!"

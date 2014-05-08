@@ -89,6 +89,7 @@ function loadData(element, options, state)
     {
         throw new Error("Url setting must be a none empty string or a function that returns one.");
     }
+    options.events.loading();
     // todo: show loading modal
     $.post(url, request, function (response)
     {
@@ -98,6 +99,7 @@ function loadData(element, options, state)
 
         renderBody(element, options, state, response.rows);
         renderPagination(element, options, state);
+        options.events.loaded();
         // todo: hide loading modal
     });
 }
