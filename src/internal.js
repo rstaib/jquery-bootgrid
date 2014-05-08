@@ -128,7 +128,7 @@ function renderBody(element, options, state, rows)
             var tr = $(tpl.row);
             $.each(state.columns, function(j, column)
             {
-                tr.append(tpl.cell.format(row[column.id]));
+                tr.append(tpl.cell.format(row[column.id] || "&nbsp;"));
             });
             tbody.append(tr);
         });
