@@ -50,12 +50,14 @@ function loadColumns(element, options, state)
     firstHeadRow.children().each(function()
     {
         var $this = $(this),
+            custom = $this.data("custom"),
             order = $this.data("order"),
             sortable = $this.data("sortable"),
             column = {
                 id: $this.data("column-id"),
+                custom: (custom === true || custom === 1), // default: false
                 order: (!sorted && (order === "asc" || order === "desc")) ? order : null,
-                sortable: !(sortable === false ||  sortable === 0)
+                sortable: !(sortable === false || sortable === 0) // default: true
             };
         state.columns.push(column);
         if (column.order != null)
@@ -129,7 +131,18 @@ function renderBody(element, options, state, rows)
             var tr = $(tpl.row);
             $.each(state.columns, function(j, column)
             {
-                tr.append(tpl.cell.format(row[column.id] || "&nbsp;"));
+                if (column.custom)
+                {
+                    element.trigger("custom." + namespace, {
+                        cell: $(tpl.cell.format("&nbsp;")).appendTo(tr),
+                        column: column,
+                        row: row
+                    });
+                }
+                else
+                {
+                    tr.append(tpl.cell.format(row[column.id] || "&nbsp;"));
+                }
             });
             tbody.append(tr);
         });

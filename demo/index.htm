@@ -25,6 +25,7 @@
                                 <th data-column-id="id">ID</th>
                                 <th data-column-id="sender" data-order="asc">Sender</th>
                                 <th data-column-id="received">Received</th>
+                                <th data-column-id="link" data-custom="true">Link</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -46,6 +47,9 @@
                         };
                     },
                     url: "data.json"
+                }).on("custom.rs.jquery.bootgrid", function(e, args)
+                {
+                    args.cell.empty().append("<a href=\"#\">" + args.column.id + ": " + args.row.id + "</a>");
                 });
             });
         </script>

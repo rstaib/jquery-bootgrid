@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v0.9.1-alpha - 05/08/2014
+ * jQuery Bootgrid v0.9.2-alpha - 05/12/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -59,12 +59,14 @@
         firstHeadRow.children().each(function()    
         {    
             var $this = $(this),    
+                custom = $this.data("custom"),    
                 order = $this.data("order"),    
                 sortable = $this.data("sortable"),    
                 column = {    
                     id: $this.data("column-id"),    
+                    custom: (custom === true || custom === 1), // default: false    
                     order: (!sorted && (order === "asc" || order === "desc")) ? order : null,    
-                    sortable: !(sortable === false ||  sortable === 0)    
+                    sortable: !(sortable === false || sortable === 0) // default: true    
                 };    
             state.columns.push(column);    
             if (column.order != null)    
@@ -98,7 +100,8 @@
         {    
             throw new Error("Url setting must be a none empty string or a function that returns one.");    
         }    
-        options.events.loading();    
+    
+        element.trigger("load." + namespace);    
         // todo: show loading modal    
         $.post(url, request, function (response)    
         {    
@@ -108,8 +111,8 @@
     
             renderBody(element, options, state, response.rows);    
             renderPagination(element, options, state);    
-            options.events.loaded();    
             // todo: hide loading modal    
+            element.trigger("loaded." + namespace);    
         });    
     }    
     
@@ -137,7 +140,18 @@
                 var tr = $(tpl.row);    
                 $.each(state.columns, function(j, column)    
                 {    
-                    tr.append(tpl.cell.format(row[column.id]));    
+                    if (column.custom)    
+                    {    
+                        element.trigger("custom." + namespace, {    
+                            cell: $(tpl.cell.format("&nbsp;")).appendTo(tr),    
+                            column: column,    
+                            row: row    
+                        });    
+                    }    
+                    else    
+                    {    
+                        tr.append(tpl.cell.format(row[column.id] || "&nbsp;"));    
+                    }    
                 });    
                 tbody.append(tr);    
             });    
@@ -303,10 +317,6 @@
             header: "bootgrid-header",    
             sortable: "sortable",    
             table: "bootgrid-table table"    
-        },    
-        events: {    
-            loaded: function () { },    
-            loading: function () { }    
         },    
         labels: {    
             loading: "Loading...",    
