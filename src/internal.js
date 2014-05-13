@@ -38,7 +38,7 @@ function getUrl(options)
 function hideLoading(instance)
 {
     instance.loading.fadeOut(300);
-    $(window).off("resize." + namespace);
+    $(window).off(namespace);
 }
 
 function init(instance)

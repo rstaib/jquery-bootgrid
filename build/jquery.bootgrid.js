@@ -1,9 +1,9 @@
 /*! 
- * jQuery Bootgrid v0.9.4-alpha - 05/13/2014
+ * jQuery Bootgrid v0.9.5-alpha - 05/13/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
-;(function ($, undefined)
+;(function ($, window, undefined)
 {
     "use strict";
 
@@ -47,7 +47,7 @@
     function hideLoading(instance)    
     {    
         instance.loading.fadeOut(300);    
-        $(window).off("resize." + namespace);    
+        $(window).off(namespace);    
     }    
     
     function init(instance)    
@@ -384,6 +384,7 @@
     
     Grid.prototype.destroy = function()    
     {    
+        $(window).off(namespace);    
         this.element.off(namespace).removeData(namespace);    
     };    
     
@@ -391,7 +392,7 @@
     {    
         this.state.current = 1; // reset    
         // todo: support static data (no ajax)    
-        loadData(this.element, this.options, this.state);    
+        loadData(this);    
     };    
     
     Grid.prototype.sort = function(dictionary)    
@@ -519,4 +520,4 @@
             return result;    
         };    
     }
-})(jQuery);
+})(jQuery, window);

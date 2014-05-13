@@ -57,6 +57,7 @@ Grid.defaults = {
 
 Grid.prototype.destroy = function()
 {
+    $(window).off(namespace);
     this.element.off(namespace).removeData(namespace);
 };
 
@@ -64,7 +65,7 @@ Grid.prototype.reload = function()
 {
     this.state.current = 1; // reset
     // todo: support static data (no ajax)
-    loadData(this.element, this.options, this.state);
+    loadData(this);
 };
 
 Grid.prototype.sort = function(dictionary)

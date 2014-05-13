@@ -13,8 +13,8 @@ module.exports = function (grunt)
                 banner: '/*! <%= "\\r\\n * " + pkg.title %> v<%= pkg.version %> - <%= grunt.template.today("mm/dd/yyyy") + "\\r\\n" %>' +
                     ' * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %> <%= (pkg.homepage ? "(" + pkg.homepage + ")" : "") + "\\r\\n" %>' +
                     ' * Licensed under <%= pkg.licenses[0].type + " " + pkg.licenses[0].url + "\\r\\n */\\r\\n" %>' + 
-                    ';(function ($, undefined)\r\n{\r\n    "use strict";\r\n\r\n',
-                footer: '\r\n})(jQuery);',
+                    ';(function ($, window, undefined)\r\n{\r\n    "use strict";\r\n\r\n',
+                footer: '\r\n})(jQuery, window);',
                 process: function(src, filepath)
                 {
                     return src.replace(/([^|\n].*)/gm, '    $1');

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.5-alpha
+- Fixed a regression bug which occurred when calling reload
+
 ## 0.9.4-alpha
 - Improved loading mask
 
