@@ -14,7 +14,7 @@ var Grid = function(element, options)
         totalPages: 0
     };
 
-    init(this.element, this.options, this.state);
+    init(this);
 };
 
 Grid.defaults = {
@@ -32,6 +32,7 @@ Grid.defaults = {
         icon: "glyphicon",
         iconDown: "glyphicon-chevron-down",
         iconUp: "glyphicon-chevron-up",
+        loading: "bootgrid-loading",
         pagination: "pagination",
         header: "bootgrid-header",
         sortable: "sortable",
@@ -42,14 +43,15 @@ Grid.defaults = {
         noResults: "No results found!"
     },
     templates: {
-        anchor: "<a href=\"{0}\">{1}</a>",
-        cell: "<td>{0}</td>",
-        div: "<div id=\"{0}\" class=\"{1}\"></div>",
-        icon: "<span class=\"{0}\"></span>",
-        list: "<ul class=\"{0}\"></ul>",
+        anchor: "<a href=\"{{href}}\">{{text}}</a>",
+        cell: "<td>{{content}}</td>",
+        div: "<div id=\"{{id}}\" class=\"{{css}}\"></div>",
+        icon: "<span class=\"{{css}}\"></span>",
+        list: "<ul class=\"{{css}}\"></ul>",
         listItem: "<li></li>",
-        noResults: "<tr><td colspan=\"{0}\" class=\"no-results\">{1}</td></tr>",
-        row: "<tr>{0}</tr>"
+        loading: "<div class=\"{{css}}\"><div>{{text}}</div></div>",
+        noResults: "<tr><td colspan=\"{{columns}}\" class=\"no-results\">{{text}}</td></tr>",
+        row: "<tr></tr>"
     }
 };
 

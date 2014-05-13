@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v0.9.2-alpha - 05/12/2014
+ * jQuery Bootgrid v0.9.3-alpha - 05/13/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -44,18 +44,33 @@
         return ($.isFunction(url)) ? url() : url;    
     }    
     
-    function init(element, options, state)    
+    function hideLoading(instance)    
     {    
-        loadColumns(element, options, state);    
-        render(element, options, state);    
-        // todo: support static data (no ajax)    
-        loadData(element, options, state);    
+        instance.loading.fadeOut(300);    
+        $(window).off("resize." + namespace);    
     }    
     
-    function loadColumns(element, options, state)    
+    function init(instance)    
     {    
-        var firstHeadRow = element.find("thead > tr").first(),    
+        var options = instance.options;    
+        instance.loading = $(options.templates.loading.resolve({    
+            css: options.css.loading,     
+            text: options.labels.loading    
+        })).appendTo("body");    
+    
+        loadColumns(instance);    
+        render(instance);    
+        loadData(instance);    
+    }    
+    
+    function loadColumns(instance)    
+    {    
+        var element = instance.element,    
+            options = instance.options,    
+            state = instance.state,    
+            firstHeadRow = element.find("thead > tr").first(),    
             sorted = false;    
+    
         firstHeadRow.children().each(function()    
         {    
             var $this = $(this),    
@@ -92,39 +107,51 @@
     }    
     */    
     
-    function loadData(element, options, state)    
+    function loadData(instance)    
     {    
-        var request = getRequest(options, state),    
+        var element = instance.element,    
+            options = instance.options,    
+            state = instance.state,    
+            request = getRequest(options, state),    
             url = getUrl(options);    
+    
         if (url == null || typeof url !== "string" || url.length === 0)    
         {    
             throw new Error("Url setting must be a none empty string or a function that returns one.");    
         }    
     
         element.trigger("load." + namespace);    
-        // todo: show loading modal    
+        showLoading(instance);    
+        // todo: support static data (no ajax)    
         $.post(url, request, function (response)    
         {    
+            if (typeof (response) === "string")    
+            {    
+                response = $.parseJSON(response);    
+            }    
+    
             state.current = response.current;    
             state.total = response.total;    
             state.totalPages = Math.round(state.total / state.rowCount);    
     
             renderBody(element, options, state, response.rows);    
-            renderPagination(element, options, state);    
-            // todo: hide loading modal    
+            renderPagination(instance);    
+            hideLoading(instance);    
             element.trigger("loaded." + namespace);    
-        });    
+        }).fail(function() { hideLoading(instance); });    
     }    
     
-    function render(element, options, state)    
+    function render(instance)    
     {    
-        var css = options.css,    
+        var element = instance.element,    
+            options = instance.options,    
+            css = options.css,    
             tpl = options.templates,    
-            header = $(tpl.div.format(getHeaderId(element), css.header)),    
-            footer = $(tpl.div.format(getFooterId(element), css.footer));    
+            header = $(tpl.div.resolve({ id: getHeaderId(element), css: css.header })),    
+            footer = $(tpl.div.resolve({ id: getFooterId(element), css: css.footer }));    
     
         element.addClass(css.table).before(header).after(footer);    
-        renderTableHeader(element, options, state);    
+        renderTableHeader(instance);    
     }    
     
     function renderBody(element, options, state, rows)    
@@ -143,14 +170,14 @@
                     if (column.custom)    
                     {    
                         element.trigger("custom." + namespace, {    
-                            cell: $(tpl.cell.format("&nbsp;")).appendTo(tr),    
+                            cell: $(tpl.cell.resolve({ content: "&nbsp;" })).appendTo(tr),    
                             column: column,    
                             row: row    
                         });    
                     }    
                     else    
                     {    
-                        tr.append(tpl.cell.format(row[column.id] || "&nbsp;"));    
+                        tr.append(tpl.cell.resolve({ content: row[column.id] || "&nbsp;" }));    
                     }    
                 });    
                 tbody.append(tr);    
@@ -158,17 +185,20 @@
         }    
         else    
         {    
-            tbody.append(tpl.noResults.format(state.columns.length, labels.noResults));    
+            tbody.append(tpl.noResults.resolve({ columns: state.columns.length, text: labels.noResults }));    
         }    
     }    
     
-    function renderPagination(element, options, state)    
+    function renderPagination(instance)    
     {    
-        var css = options.css,    
+        var element = instance.element,    
+            options = instance.options,    
+            state = instance.state,    
+            css = options.css,    
             tpl = options.templates,    
             current = state.current,    
             totalPages = state.totalPages,    
-            list = $(tpl.list.format(css.pagination)),    
+            list = $(tpl.list.resolve({ css: css.pagination })),    
             offsetRight = totalPages - current,    
             offsetLeft = (options.padding - current) * -1,    
             startWith = ((offsetRight >= options.padding) ?     
@@ -177,21 +207,21 @@
             maxCount = options.padding * 2 + 1,    
             count = (totalPages >= maxCount) ? maxCount : totalPages;    
     
-        renderPaginationItem(element, options, state, list, "first", "&laquo;", "first")    
+        renderPaginationItem(instance, list, "first", "&laquo;", "first")    
             ._bgEnableAria(current > 1);    
-        renderPaginationItem(element, options, state, list, "prev", "&lt;", "prev")    
+        renderPaginationItem(instance, list, "prev", "&lt;", "prev")    
             ._bgEnableAria(current > 1);    
     
         for (var i = 0; i < count; i++)    
         {    
             var pos = i + startWith;    
-            renderPaginationItem(element, options, state, list, pos, pos, "page-" + pos)    
+            renderPaginationItem(instance, list, pos, pos, "page-" + pos)    
                 ._bgEnableAria()._bgSelectAria(pos === current);    
         }    
     
-        renderPaginationItem(element, options, state, list, "next", "&gt;", "next")    
+        renderPaginationItem(instance, list, "next", "&gt;", "next")    
             ._bgEnableAria(totalPages > current);    
-        renderPaginationItem(element, options, state, list, "last", "&raquo;", "last")    
+        renderPaginationItem(instance, list, "last", "&raquo;", "last")    
             ._bgEnableAria(totalPages > current);    
     
         $("#" + getFooterId(element)).empty().append(list);    
@@ -201,10 +231,12 @@
         }    
     }    
     
-    function renderPaginationItem(element, options, state, list, uri, text, css)    
+    function renderPaginationItem(instance, list, uri, text, css)    
     {    
-        var tpl = options.templates,    
-            anchor = $(tpl.anchor.format("#" + uri, text))    
+        var options = instance.options,    
+            state = instance.state,    
+            tpl = options.templates,    
+            anchor = $(tpl.anchor.resolve({ href: "#" + uri, text: text }))    
                 .on("click." + namespace, function (e)    
                 {    
                     e.preventDefault();    
@@ -219,8 +251,7 @@
                         };    
                         var command = $this.attr("href").substr(1);    
                         state.current = commandList[command] || +command; // + converts string to int    
-                        // todo: support static data (no ajax)    
-                        loadData(element, options, state);    
+                        loadData(instance);    
                     }    
                 }),    
             listItem = $(tpl.listItem).addClass(css).append(anchor);    
@@ -229,11 +260,15 @@
         return listItem;    
     }    
     
-    function renderTableHeader(element, options, state)    
+    function renderTableHeader(instance)    
     {    
-        var columns = element.find("thead > tr > th"),    
+        var element = instance.element,    
+            options = instance.options,    
+            state = instance.state,    
+            columns = element.find("thead > tr > th"),    
             css = options.css,    
             tpl = options.templates;    
+    
         $.each(state.columns, function(index, column)    
         {    
             if (column.sortable)    
@@ -242,7 +277,7 @@
                     iconCss = css.icon +     
                         ((sort && sort === "asc") ? " " + css.iconDown :     
                             (sort && sort === "desc") ? " " + css.iconUp : "");    
-                columns.eq(index).addClass(css.sortable).append(" " + tpl.icon.format(iconCss))    
+                columns.eq(index).addClass(css.sortable).append(" " + tpl.icon.resolve({ css: iconCss }))    
                     .on("click." + namespace, function(e)    
                     {    
                         e.preventDefault();    
@@ -272,11 +307,22 @@
                             $icon.addClass(css.iconDown);    
                         }    
     
-                        // todo: support static data (no ajax)    
-                        loadData(element, options, state);    
+                        loadData(instance);    
                     });    
             }    
         });    
+    }    
+    
+    function showLoading(instance)    
+    {    
+        $(window).on("resize." + namespace, function ()    
+        {    
+            var element = instance.element,    
+                offset = element.offset();    
+            instance.loading.css("left", offset.left).css("top", offset.top)    
+                .height(element.height()).width(element.width());    
+        }).resize();    
+        instance.loading.fadeIn(300);    
     }
 
     // GRID PUBLIC CLASS DEFINITION    
@@ -295,7 +341,7 @@
             totalPages: 0    
         };    
     
-        init(this.element, this.options, this.state);    
+        init(this);    
     };    
     
     Grid.defaults = {    
@@ -313,6 +359,7 @@
             icon: "glyphicon",    
             iconDown: "glyphicon-chevron-down",    
             iconUp: "glyphicon-chevron-up",    
+            loading: "bootgrid-loading",    
             pagination: "pagination",    
             header: "bootgrid-header",    
             sortable: "sortable",    
@@ -323,14 +370,15 @@
             noResults: "No results found!"    
         },    
         templates: {    
-            anchor: "<a href=\"{0}\">{1}</a>",    
-            cell: "<td>{0}</td>",    
-            div: "<div id=\"{0}\" class=\"{1}\"></div>",    
-            icon: "<span class=\"{0}\"></span>",    
-            list: "<ul class=\"{0}\"></ul>",    
+            anchor: "<a href=\"{{href}}\">{{text}}</a>",    
+            cell: "<td>{{content}}</td>",    
+            div: "<div id=\"{{id}}\" class=\"{{css}}\"></div>",    
+            icon: "<span class=\"{{css}}\"></span>",    
+            list: "<ul class=\"{{css}}\"></ul>",    
             listItem: "<li></li>",    
-            noResults: "<tr><td colspan=\"{0}\" class=\"no-results\">{1}</td></tr>",    
-            row: "<tr>{0}</tr>"    
+            loading: "<div class=\"{{css}}\"><div>{{text}}</div></div>",    
+            noResults: "<tr><td colspan=\"{{columns}}\" class=\"no-results\">{{text}}</td></tr>",    
+            row: "<tr></tr>"    
         }    
     };    
     
@@ -458,16 +506,16 @@
         }    
     });    
     
-    if (!String.prototype.format)    
+    if (!String.prototype.resolve)    
     {    
-        String.prototype.format = function (stringValues)    
+        String.prototype.resolve = function (substitutes)    
         {    
             var formattedString = this;    
-            for (var i = 0; i < arguments.length; i++)    
+            $.each(substitutes, function (key, value)    
             {    
-                var pattern = new RegExp("\\{" + i + "\\}", "gm");    
-                formattedString = formattedString.replace(pattern, arguments[i]);    
-            }    
+                var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");    
+                formattedString = formattedString.replace(pattern, value);    
+            });    
             return formattedString;    
         };    
     }

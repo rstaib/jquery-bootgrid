@@ -39,16 +39,16 @@ $.fn.extend({
     }
 });
 
-if (!String.prototype.format)
+if (!String.prototype.resolve)
 {
-    String.prototype.format = function (stringValues)
+    String.prototype.resolve = function (substitutes)
     {
         var formattedString = this;
-        for (var i = 0; i < arguments.length; i++)
+        $.each(substitutes, function (key, value)
         {
-            var pattern = new RegExp("\\{" + i + "\\}", "gm");
-            formattedString = formattedString.replace(pattern, arguments[i]);
-        }
+            var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");
+            formattedString = formattedString.replace(pattern, value);
+        });
         return formattedString;
     };
 }
