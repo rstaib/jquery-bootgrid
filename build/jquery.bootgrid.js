@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v0.9.3-alpha - 05/13/2014
+ * jQuery Bootgrid v0.9.4-alpha - 05/13/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -56,7 +56,7 @@
         instance.loading = $(options.templates.loading.resolve({    
             css: options.css.loading,     
             text: options.labels.loading    
-        })).appendTo("body");    
+        })).insertAfter(instance.element);    
     
         loadColumns(instance);    
         render(instance);    
@@ -318,8 +318,8 @@
         $(window).on("resize." + namespace, function ()    
         {    
             var element = instance.element,    
-                offset = element.offset();    
-            instance.loading.css("left", offset.left).css("top", offset.top)    
+                position = element.position();    
+            instance.loading.css("left", position.left).css("top", position.top)    
                 .height(element.height()).width(element.width());    
         }).resize();    
         instance.loading.fadeIn(300);    
@@ -510,13 +510,13 @@
     {    
         String.prototype.resolve = function (substitutes)    
         {    
-            var formattedString = this;    
+            var result = this;    
             $.each(substitutes, function (key, value)    
             {    
                 var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");    
-                formattedString = formattedString.replace(pattern, value);    
+                result = result.replace(pattern, value);    
             });    
-            return formattedString;    
+            return result;    
         };    
     }
 })(jQuery);

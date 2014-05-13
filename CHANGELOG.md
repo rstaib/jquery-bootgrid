@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.4-alpha
+- Improved loading mask
+
 ## 0.9.3-alpha
 - Added loading mask
 - Added new template syntax

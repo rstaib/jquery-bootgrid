@@ -47,7 +47,7 @@ function init(instance)
     instance.loading = $(options.templates.loading.resolve({
         css: options.css.loading, 
         text: options.labels.loading
-    })).appendTo("body");
+    })).insertAfter(instance.element);
 
     loadColumns(instance);
     render(instance);
@@ -309,8 +309,8 @@ function showLoading(instance)
     $(window).on("resize." + namespace, function ()
     {
         var element = instance.element,
-            offset = element.offset();
-        instance.loading.css("left", offset.left).css("top", offset.top)
+            position = element.position();
+        instance.loading.css("left", position.left).css("top", position.top)
             .height(element.height()).width(element.width());
     }).resize();
     instance.loading.fadeIn(300);

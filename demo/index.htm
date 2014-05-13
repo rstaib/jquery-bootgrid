@@ -13,12 +13,37 @@
             @-ms-viewport { width: device-width; }
             @-o-viewport { width: device-width; }
             @viewport { width: device-width; }
+
+            body { padding-top: 70px; }
         </style>
     </head>
     <body>
+        <header id="header" class="navbar navbar-default navbar-fixed-top">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <span class="navbar-brand" data-i18n="title">jQuery Bootgrid</span>
+                </div>
+                <nav id="menu" class="navbar-collapse collapse" role="navigation">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="#">Basic Demo</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
         <div class="container-fluid">
             <div class="row">
-                <div class="col-md-12">
+                <div class="col-md-3 visible-md visible-lg">
+                    <div class="affix">
+                        Sub Nav
+                    </div>
+                </div>
+                <div class="col-md-9">
                     <table id="grid" class="table table-condensed table-hover table-striped">
                         <thead>
                             <tr>
@@ -33,6 +58,11 @@
                 </div>
             </div>
         </div>
+
+        <footer id="footer">
+            © Copyright 2014, Rafael Staib
+        </footer>
+
         <script src="../lib/jquery-1.11.1.min.js"></script>
         <script src="js/bootstrap.js"></script>
         <script src="../build/jquery.bootgrid.js"></script>

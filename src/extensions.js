@@ -43,12 +43,12 @@ if (!String.prototype.resolve)
 {
     String.prototype.resolve = function (substitutes)
     {
-        var formattedString = this;
+        var result = this;
         $.each(substitutes, function (key, value)
         {
             var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");
-            formattedString = formattedString.replace(pattern, value);
+            result = result.replace(pattern, value);
         });
-        return formattedString;
+        return result;
     };
 }
