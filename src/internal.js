@@ -1,7 +1,7 @@
 // GRID INTERNAL FIELDS
 // ====================
 
-var namespace = "rs.jquery.bootgrid";
+var namespace = ".rs.jquery.bootgrid";
 
 // GRID INTERNAL FUNCTIONS
 // =====================
@@ -111,7 +111,7 @@ function loadData(instance)
         throw new Error("Url setting must be a none empty string or a function that returns one.");
     }
 
-    element.trigger("load." + namespace);
+    element.trigger("load" + namespace);
     showLoading(instance);
     // todo: support static data (no ajax)
     $.post(url, request, function (response)
@@ -128,7 +128,7 @@ function loadData(instance)
         renderBody(element, options, state, response.rows);
         renderPagination(instance);
         hideLoading(instance);
-        element.trigger("loaded." + namespace);
+        element.trigger("loaded" + namespace);
     }).fail(function() { hideLoading(instance); });
 }
 
@@ -160,7 +160,7 @@ function renderBody(element, options, state, rows)
             {
                 if (column.custom)
                 {
-                    element.trigger("custom." + namespace, {
+                    element.trigger("custom" + namespace, {
                         cell: $(tpl.cell.resolve({ content: "&nbsp;" })).appendTo(tr),
                         column: column,
                         row: row
@@ -228,7 +228,7 @@ function renderPaginationItem(instance, list, uri, text, css)
         state = instance.state,
         tpl = options.templates,
         anchor = $(tpl.anchor.resolve({ href: "#" + uri, text: text }))
-            .on("click." + namespace, function (e)
+            .on("click" + namespace, function (e)
             {
                 e.preventDefault();
                 var $this = $(this);
@@ -269,7 +269,7 @@ function renderTableHeader(instance)
                     ((sort && sort === "asc") ? " " + css.iconDown : 
                         (sort && sort === "desc") ? " " + css.iconUp : "");
             columns.eq(index).addClass(css.sortable).append(" " + tpl.icon.resolve({ css: iconCss }))
-                .on("click." + namespace, function(e)
+                .on("click" + namespace, function(e)
                 {
                     e.preventDefault();
                     var $this = $(this), 
@@ -306,7 +306,7 @@ function renderTableHeader(instance)
 
 function showLoading(instance)
 {
-    $(window).on("resize." + namespace, function ()
+    $(window).on("resize" + namespace, function ()
     {
         var element = instance.element,
             position = element.position();

@@ -41,7 +41,7 @@ $.fn.bootgrid.noConflict = function ()
 // ============
 
 /*
-$(document).on("click." + namespace + ".data-api", "[data-toggle=\"bootgrid\"]", function(e)
+$(document).on("click" + namespace + ".data-api", "[data-toggle=\"bootgrid\"]", function(e)
 {
     e.preventDefault();
     $(this).bootgrid("show");

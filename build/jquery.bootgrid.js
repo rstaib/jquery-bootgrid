@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v0.9.5-alpha - 05/13/2014
+ * jQuery Bootgrid v0.9.5-alpha - 05/14/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -10,7 +10,7 @@
     // GRID INTERNAL FIELDS    
     // ====================    
     
-    var namespace = "rs.jquery.bootgrid";    
+    var namespace = ".rs.jquery.bootgrid";    
     
     // GRID INTERNAL FUNCTIONS    
     // =====================    
@@ -120,7 +120,7 @@
             throw new Error("Url setting must be a none empty string or a function that returns one.");    
         }    
     
-        element.trigger("load." + namespace);    
+        element.trigger("load" + namespace);    
         showLoading(instance);    
         // todo: support static data (no ajax)    
         $.post(url, request, function (response)    
@@ -137,7 +137,7 @@
             renderBody(element, options, state, response.rows);    
             renderPagination(instance);    
             hideLoading(instance);    
-            element.trigger("loaded." + namespace);    
+            element.trigger("loaded" + namespace);    
         }).fail(function() { hideLoading(instance); });    
     }    
     
@@ -169,7 +169,7 @@
                 {    
                     if (column.custom)    
                     {    
-                        element.trigger("custom." + namespace, {    
+                        element.trigger("custom" + namespace, {    
                             cell: $(tpl.cell.resolve({ content: "&nbsp;" })).appendTo(tr),    
                             column: column,    
                             row: row    
@@ -237,7 +237,7 @@
             state = instance.state,    
             tpl = options.templates,    
             anchor = $(tpl.anchor.resolve({ href: "#" + uri, text: text }))    
-                .on("click." + namespace, function (e)    
+                .on("click" + namespace, function (e)    
                 {    
                     e.preventDefault();    
                     var $this = $(this);    
@@ -278,7 +278,7 @@
                         ((sort && sort === "asc") ? " " + css.iconDown :     
                             (sort && sort === "desc") ? " " + css.iconUp : "");    
                 columns.eq(index).addClass(css.sortable).append(" " + tpl.icon.resolve({ css: iconCss }))    
-                    .on("click." + namespace, function(e)    
+                    .on("click" + namespace, function(e)    
                     {    
                         e.preventDefault();    
                         var $this = $(this),     
@@ -315,7 +315,7 @@
     
     function showLoading(instance)    
     {    
-        $(window).on("resize." + namespace, function ()    
+        $(window).on("resize" + namespace, function ()    
         {    
             var element = instance.element,    
                 position = element.position();    
@@ -459,7 +459,7 @@
     // ============    
     
     /*    
-    $(document).on("click." + namespace + ".data-api", "[data-toggle=\"bootgrid\"]", function(e)    
+    $(document).on("click" + namespace + ".data-api", "[data-toggle=\"bootgrid\"]", function(e)    
     {    
         e.preventDefault();    
         $(this).bootgrid("show");    
