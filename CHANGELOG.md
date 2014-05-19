@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.6-beta1
+- Fixed a bug where "0" caused a rendering error
+- Added bower.json file for bower support
+
 ## 0.9.5-alpha
 - Fixed a regression bug which occurred when calling reload
 

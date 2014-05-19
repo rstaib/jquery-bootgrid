@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v0.9.5-alpha - 05/14/2014
+ * jQuery Bootgrid v0.9.6-beta1 - 05/19/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -177,7 +177,8 @@
                     }    
                     else    
                     {    
-                        tr.append(tpl.cell.resolve({ content: row[column.id] || "&nbsp;" }));    
+                        var value = row[column.id];    
+                        tr.append(tpl.cell.resolve({ content: (value.isNullOrEmpty()) ? "&nbsp;" : value }));    
                     }    
                 });    
                 tbody.append(tr);    
@@ -506,6 +507,14 @@
             return (id) ? this.attr("id", id) : this.attr("id");    
         }    
     });    
+    
+    if (!String.prototype.isNullOrEmpty)    
+    {    
+        String.prototype.isNullOrEmpty = function ()    
+        {    
+            return (this == null || this === "");    
+        };    
+    }    
     
     if (!String.prototype.resolve)    
     {    

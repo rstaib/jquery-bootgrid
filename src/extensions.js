@@ -39,6 +39,14 @@ $.fn.extend({
     }
 });
 
+if (!String.prototype.isNullOrEmpty)
+{
+    String.prototype.isNullOrEmpty = function ()
+    {
+        return (this == null || this === "");
+    };
+}
+
 if (!String.prototype.resolve)
 {
     String.prototype.resolve = function (substitutes)
