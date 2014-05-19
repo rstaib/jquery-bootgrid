@@ -169,7 +169,7 @@ function renderBody(element, options, state, rows)
                 else
                 {
                     var value = row[column.id];
-                    tr.append(tpl.cell.resolve({ content: (value == null) ? "&nbsp;" : value }));
+                    tr.append(tpl.cell.resolve({ content: (value == null || value === "") ? "&nbsp;" : value }));
                 }
             });
             tbody.append(tr);
