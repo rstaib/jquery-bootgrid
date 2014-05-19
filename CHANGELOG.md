@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.6-beta3
+- Added a new default property (pagination) to disable the pagination
+
 ## 0.9.6-beta1
 - Fixed a bug where "0" caused a rendering error
 - Added bower.json file for bower support

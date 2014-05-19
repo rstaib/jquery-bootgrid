@@ -22,6 +22,7 @@ Grid.defaults = {
     padding: 2,   // page padding (pagination)
     rowCount: 10, // rows per page
     url: "",      // or use function () { return ""; }
+    pagination: true,
     topPagination: false,
     multiSort: false,
     // todo: implement cache

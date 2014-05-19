@@ -183,43 +183,46 @@ function renderBody(element, options, state, rows)
 
 function renderPagination(instance)
 {
-    var element = instance.element,
-        options = instance.options,
-        state = instance.state,
-        css = options.css,
-        tpl = options.templates,
-        current = state.current,
-        totalPages = state.totalPages,
-        list = $(tpl.list.resolve({ css: css.pagination })),
-        offsetRight = totalPages - current,
-        offsetLeft = (options.padding - current) * -1,
-        startWith = ((offsetRight >= options.padding) ? 
-            Math.max(offsetLeft, 1) : 
-            Math.max((offsetLeft - options.padding + offsetRight), 1)),
-        maxCount = options.padding * 2 + 1,
-        count = (totalPages >= maxCount) ? maxCount : totalPages;
-
-    renderPaginationItem(instance, list, "first", "&laquo;", "first")
-        ._bgEnableAria(current > 1);
-    renderPaginationItem(instance, list, "prev", "&lt;", "prev")
-        ._bgEnableAria(current > 1);
-
-    for (var i = 0; i < count; i++)
+    var options = instance.options;
+    if (options.pagination)
     {
-        var pos = i + startWith;
-        renderPaginationItem(instance, list, pos, pos, "page-" + pos)
-            ._bgEnableAria()._bgSelectAria(pos === current);
-    }
+        var element = instance.element,
+            state = instance.state,
+            css = options.css,
+            tpl = options.templates,
+            current = state.current,
+            totalPages = state.totalPages,
+            list = $(tpl.list.resolve({ css: css.pagination })),
+            offsetRight = totalPages - current,
+            offsetLeft = (options.padding - current) * -1,
+            startWith = ((offsetRight >= options.padding) ?
+                Math.max(offsetLeft, 1) :
+                Math.max((offsetLeft - options.padding + offsetRight), 1)),
+            maxCount = options.padding * 2 + 1,
+            count = (totalPages >= maxCount) ? maxCount : totalPages;
 
-    renderPaginationItem(instance, list, "next", "&gt;", "next")
-        ._bgEnableAria(totalPages > current);
-    renderPaginationItem(instance, list, "last", "&raquo;", "last")
-        ._bgEnableAria(totalPages > current);
+        renderPaginationItem(instance, list, "first", "&laquo;", "first")
+            ._bgEnableAria(current > 1);
+        renderPaginationItem(instance, list, "prev", "&lt;", "prev")
+            ._bgEnableAria(current > 1);
 
-    $("#" + getFooterId(element)).empty().append(list);
-    if (options.topPagination)
-    {
-        $("#" + getHeaderId(element)).empty().append(list.clone(true));
+        for (var i = 0; i < count; i++)
+        {
+            var pos = i + startWith;
+            renderPaginationItem(instance, list, pos, pos, "page-" + pos)
+                ._bgEnableAria()._bgSelectAria(pos === current);
+        }
+
+        renderPaginationItem(instance, list, "next", "&gt;", "next")
+            ._bgEnableAria(totalPages > current);
+        renderPaginationItem(instance, list, "last", "&raquo;", "last")
+            ._bgEnableAria(totalPages > current);
+
+        $("#" + getFooterId(element)).empty().append(list);
+        if (options.topPagination)
+        {
+            $("#" + getHeaderId(element)).empty().append(list.clone(true));
+        }
     }
 }
 
