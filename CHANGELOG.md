@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.6-rc2
+- Fixed a bug regarding rowCount
+- Improved visualization generally
+
 ## 0.9.6-rc1
 - Prevent click event on active pagination item
 - Added refresh button

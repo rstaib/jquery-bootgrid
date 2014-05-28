@@ -80,7 +80,6 @@ test("getRequest post function test", 1, function ()
 {
     // given
     var options = {
-            rowCount: 5,
             post: function()
             {
                 return {
@@ -90,6 +89,7 @@ test("getRequest post function test", 1, function ()
         },
         context = {
             current: 1,
+            rowCount: 5,
             sort: []
         },
         expected = {
@@ -110,13 +110,13 @@ test("getRequest post object test", 1, function ()
 {
     // given
     var options = {
-            rowCount: 5,
             post: {
                 id: "test"
             }
         },
         context = {
             current: 1,
+            rowCount: 5,
             sort: []
         },
         expected = {

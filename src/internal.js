@@ -43,7 +43,7 @@ function getRequest(options, context)
 {
     var request = {
             current: context.current,
-            rowCount: options.rowCount,
+            rowCount: context.rowCount,
             sort: context.sort
         },
         post = options.post;
@@ -158,9 +158,17 @@ function render(element, options, context)
         tpl = options.templates;
 
     instance.loading = $(options.templates.loading.resolve(getParams(context)));
-    instance.header = $(tpl.header.resolve(getParams(context, { id: element._bgId() + "-header" })));
-    instance.footer = $(tpl.footer.resolve(getParams(context, { id: element._bgId() + "-footer" })));
-    element.addClass(css.table).before(instance.header).after(instance.footer).after(instance.loading);
+    element.addClass(css.table).after(instance.loading);
+    if (options.navigation & 1)
+    {
+        instance.header = $(tpl.header.resolve(getParams(context, { id: element._bgId() + "-header" })));
+        element.before(instance.header);
+    }
+    if (options.navigation & 2)
+    {
+        instance.footer = $(tpl.footer.resolve(getParams(context, { id: element._bgId() + "-footer" })));
+        element.after(instance.footer);
+    }
 
     renderTableHeader(element, options, context);
 }
@@ -201,8 +209,8 @@ function renderActions(element, options, context)
                     var $this = $(this);
                     if ($this.text() !== currentKey)
                     {
-                        // todo: sophisticated solution needed for figuring out which page is selected and if applicable to reset the current page
-                        context.current = 1;
+                        // todo: sophisticated solution needed for calculating which page is selected
+                        context.current = 1; // context.rowCount === -1 ---> All
                         context.rowCount = +$this.attr("href").substr(1);
                         loadData(element, options, context);
                     }
@@ -258,13 +266,22 @@ function renderInfos(element, options, context)
     if (options.navigation !== 0)
     {
         var instance = getInstance(element),
-            end = (context.current * context.rowCount),
-            infos = $(options.templates.infos.resolve(getParams(context, 
-                { end: end, start: (end - context.rowCount + 1), total: context.total }))),
-            selector = getSelector(options.css.infos);
+            selector = getSelector(options.css.infos),
+            header = instance.header.find(selector)._bgShowAria(context.rowCount !== -1),
+            footer = instance.footer.find(selector)._bgShowAria(context.rowCount !== -1);
 
-        replacePlaceHolder(options, instance.header.find(selector), infos, 1);
-        replacePlaceHolder(options, instance.footer.find(selector), infos, 2);
+        if (context.rowCount === -1)
+        {
+            return;
+        }
+
+        var end = (context.current * context.rowCount),
+            infos = $(options.templates.infos.resolve(getParams(context, 
+                { end: (end > context.total) ? context.total : end, 
+                    start: (end - context.rowCount + 1), total: context.total })));
+
+        replacePlaceHolder(options, header, infos, 1);
+        replacePlaceHolder(options, footer, infos, 2);
     }
 }
 
@@ -273,7 +290,16 @@ function renderPagination(element, options, context)
     if (options.navigation !== 0)
     {
         var instance = getInstance(element),
-            tpl = options.templates,
+            selector = getSelector(options.css.pagination),
+            header = instance.header.find(selector)._bgShowAria(context.rowCount !== -1),
+            footer = instance.footer.find(selector)._bgShowAria(context.rowCount !== -1);
+
+        if (context.rowCount === -1)
+        {
+            return;
+        }
+
+        var tpl = options.templates,
             current = context.current,
             totalPages = context.totalPages,
             pagination = $(tpl.pagination.resolve(getParams(context))),
@@ -283,8 +309,7 @@ function renderPagination(element, options, context)
                 Math.max(offsetLeft, 1) :
                 Math.max((offsetLeft - options.padding + offsetRight), 1)),
             maxCount = options.padding * 2 + 1,
-            count = (totalPages >= maxCount) ? maxCount : totalPages,
-            selector = getSelector(options.css.pagination);
+            count = (totalPages >= maxCount) ? maxCount : totalPages;
 
         renderPaginationItem(element, options, context, pagination, "first", "&laquo;", "first")
             ._bgEnableAria(current > 1);
@@ -298,13 +323,19 @@ function renderPagination(element, options, context)
                 ._bgEnableAria()._bgSelectAria(pos === current);
         }
 
+        if (count === 0)
+        {
+            renderPaginationItem(element, options, context, pagination, 1, 1, "page-" + 1)
+                ._bgEnableAria(false)._bgSelectAria();
+        }
+
         renderPaginationItem(element, options, context, pagination, "next", "&gt;", "next")
             ._bgEnableAria(totalPages > current);
         renderPaginationItem(element, options, context, pagination, "last", "&raquo;", "last")
             ._bgEnableAria(totalPages > current);
 
-        replacePlaceHolder(options, instance.header.find(selector), pagination, 1);
-        replacePlaceHolder(options, instance.footer.find(selector), pagination, 2);
+        replacePlaceHolder(options, header, pagination, 1);
+        replacePlaceHolder(options, footer, pagination, 2);
     }
 }
 
