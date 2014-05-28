@@ -1,23 +1,28 @@
 // GRID INTERNAL FIELDS
 // ====================
 
-var namespace = ".rs.jquery.bootgrid",
-    paginationType = {
-        "none": 0,
-        "bottom": 1,
-        "top": 2
-    };
+var namespace = ".rs.jquery.bootgrid";
 
 // GRID INTERNAL FUNCTIONS
 // =====================
 
-function getFirstDictionaryValue(dictionary)
+function getFirstDictionaryItem(dictionary, value)
 {
     if (typeof dictionary === "object")
     {
         for (var key in dictionary)
         {
-            return dictionary[key];
+            if (value != null)
+            {
+                if (value === dictionary[key])
+                {
+                    return { key: key, value: dictionary[key] };
+                }
+            }
+            else
+            {
+                return { key: key, value: dictionary[key] };
+            }
         }
     }
 
@@ -138,6 +143,7 @@ function loadData(element, options, context)
         context.totalPages = Math.ceil(context.total / context.rowCount);
 
         renderBody(element, options, context, response.rows);
+        renderActions(element, options, context);
         renderInfos(element, options, context);
         renderPagination(element, options, context);
         hideLoading(element);
@@ -156,7 +162,6 @@ function render(element, options, context)
     instance.footer = $(tpl.footer.resolve(getParams(context, { id: element._bgId() + "-footer" })));
     element.addClass(css.table).before(instance.header).after(instance.footer).after(instance.loading);
 
-    renderActions(element, options, context);
     renderTableHeader(element, options, context);
 }
 
@@ -169,7 +174,7 @@ function renderActions(element, options, context)
             tpl = options.templates,
             refresh = $(tpl.actionButton.resolve(getParams(context, 
                 { iconCss: css.iconRefresh, text: options.labels.refresh })))
-                    .one("click" + namespace, function (e)
+                    .on("click" + namespace, function (e)
                     {
                         // todo: prevent multiple fast clicks (fast click detection)
                         e.preventDefault();
@@ -180,6 +185,33 @@ function renderActions(element, options, context)
                     }),
             actions = $(tpl.actions.resolve(getParams(context))).append(refresh),
             selector = getSelector(css.actions);
+
+        if (typeof options.rowCount === "object")
+        {
+            var currentKey = getFirstDictionaryItem(options.rowCount, context.rowCount).key,
+                rowCount = $(tpl.actionDropDown.resolve(getParams(context, { text: currentKey })));
+            $.each(options.rowCount, function(key, value)
+            {
+                var item = $(tpl.actionDropDownItem.resolve(getParams(context, 
+                    { buttonCss: css.dropDownItemButton, key: key, uri: "#" + value })))
+                    ._bgSelectAria(key === currentKey);
+                item.find(getSelector(css.dropDownItemButton)).on("click" + namespace, function (e)
+                {
+                    e.preventDefault();
+                    var $this = $(this);
+                    if ($this.text() !== currentKey)
+                    {
+                        // todo: sophisticated solution needed for figuring out which page is selected and if applicable to reset the current page
+                        context.current = 1;
+                        context.rowCount = +$this.attr("href").substr(1);
+                        loadData(element, options, context);
+                    }
+                    $this.trigger("blur");
+                });
+                rowCount.find(getSelector(css.dropDownMenu)).append(item);
+            });
+            actions.append(rowCount);
+        }
 
         replacePlaceHolder(options, instance.header.find(selector), actions, 1);
         replacePlaceHolder(options, instance.footer.find(selector), actions, 2);

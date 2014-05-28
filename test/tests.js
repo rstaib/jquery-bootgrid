@@ -12,7 +12,7 @@ module("internal functions", {
     }
 });
 
-test("getFirstDictionaryValue test", 1, function ()
+test("getFirstDictionaryItem test", 1, function ()
 {
     // given
     var dictionary = {
@@ -22,13 +22,13 @@ test("getFirstDictionaryValue test", 1, function ()
     };
 
     // when
-    var result = getFirstDictionaryValue(dictionary);
+    var result = getFirstDictionaryItem(dictionary);
 
     // then
-    equal(result, 1, "Valid dictionary value");
+    propEqual(result, { key: "first", value: 1 }, "Valid dictionary item");
 });
 
-test("getFirstDictionaryValue passing wrong type test", 1, function ()
+test("getFirstDictionaryItem passing wrong type test", 1, function ()
 {
     // given
     var number = 1;
@@ -37,7 +37,7 @@ test("getFirstDictionaryValue passing wrong type test", 1, function ()
     var errorMessage;
     try
     {
-        getFirstDictionaryValue(number);
+        getFirstDictionaryItem(number);
     }
     catch (e)
     {
@@ -46,6 +46,22 @@ test("getFirstDictionaryValue passing wrong type test", 1, function ()
 
     // then
     equal(errorMessage, "Is not a dictionary!", "Invalid call");
+});
+
+test("getFirstDictionaryItem by value test", 1, function ()
+{
+    // given
+    var dictionary = {
+        "first": 1,
+        "second": 2,
+        "third": 3
+    };
+
+    // when
+    var result = getFirstDictionaryItem(dictionary, 2);
+
+    // then
+    propEqual(result, { key: "second", value: 2 }, "Valid dictionary item");
 });
 
 test("getInstance test", 1, function ()

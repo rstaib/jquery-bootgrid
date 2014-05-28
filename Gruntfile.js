@@ -17,7 +17,19 @@ module.exports = function (grunt)
                 footer: '\r\n})(jQuery, window);',
                 process: function(src, filepath)
                 {
-                    return src.replace(/([^|\n].*)/gm, '    $1');
+                    var result = src.trim().replace(/(.+?\r\n)/gm, '    $1'),
+                        end = [0, ""];
+                    switch (result[result.length - 1])
+                    {
+                        case ";":
+                            end = [2, "    };"];
+                            break;
+
+                        case "}":
+                            end = [1, "    }"];
+                            break;
+                    }
+                    return result.substr(0, result.length - end[0]) + end[1];
                 }
             },
             dist: {

@@ -9,7 +9,7 @@ var Grid = function(element, options)
     this.context = {
         columns: [],
         current: 1,
-        rowCount: (typeof rowCount === "object") ? getFirstDictionaryValue(rowCount) : rowCount,
+        rowCount: (typeof rowCount === "object") ? getFirstDictionaryItem(rowCount).value : rowCount,
         sort: {},
         total: 0,
         totalPages: 0,
@@ -39,18 +39,19 @@ Grid.defaults = {
 
     // note: The following properties are not available via data-api attributes
     css: {
-        actions: "actions btn-group",        // must be a unique class name or constellation of class names within the header and footer
-        dropDown: "btn dropdown-toggle",
+        actions: "actions btn-group",              // must be a unique class name or constellation of class names within the header and footer
+        dropDownItemButton: "dropdown-button",     // must be a unique class name or constellation of class names within the actionDropDown
+        dropDownMenu: "dropdown-menu pull-right",  // must be a unique class name or constellation of class names within the actionDropDown
         footer: "bootgrid-footer container-fluid",
+        header: "bootgrid-header container-fluid",
         icon: "glyphicon",
         iconDown: "glyphicon-chevron-down",
         iconRefresh: "glyphicon-refresh",
         iconUp: "glyphicon-chevron-up",
-        infos: "infos",                      // must be a unique class name or constellation of class names within the header and footer
+        infos: "infos",                            // must be a unique class name or constellation of class names within the header and footer
         loading: "bootgrid-loading",
-        pagination: "pagination",            // must be a unique class name or constellation of class names within the header and footer
-        paginationButton: "button",          // must be a unique class name or constellation of class names within the pagination
-        header: "bootgrid-header container-fluid",
+        pagination: "pagination",                  // must be a unique class name or constellation of class names within the header and footer
+        paginationButton: "button",                // must be a unique class name or constellation of class names within the pagination
         sortable: "sortable",
         table: "bootgrid-table table"
     },
@@ -63,12 +64,13 @@ Grid.defaults = {
     templates: {
         // note: Grenzen der template sprache sind: Templates duerfen nur einmal ineinander verschachtelt werden und 
         //       es darf mittels des Kontexts kein weiteres HTML, dass wiederum Variablen enthalten kann, die auch ersetzt werden muessen, eingefuegt werden.
-        actionButton: "<button class=\"btn\" type=\"button\" title=\"{{ctx.text}}\">{{tpl.icon}}</button>",
-        actionDropDown: "<button class=\"btn dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\">{{ctx.text}} <span class=\"caret\"></span></button><ul class=\"dropdown-menu\" role=\"menu\"></ul>",
+        actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{tpl.icon}}</button>",
+        actionDropDown: "<div class=\"btn-group\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\">{{ctx.text}} <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenu}}\" role=\"menu\"></ul></div>",
+        actionDropDownItem: "<li><a href=\"{{ctx.uri}}\" class=\"{{ctx.buttonCss}}\">{{ctx.key}}</a></li>",
         actions: "<div class=\"{{css.actions}}\"></div>",
         cell: "<td>{{ctx.content}}</td>",
-        header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.actions}}\"></p></div></div></div>",
         footer: "<div id=\"{{ctx.id}}\" class=\"{{css.footer}}\"><div class=\"row\"><div class=\"col-sm-6\"><p class=\"{{css.pagination}}\"></p></div><div class=\"col-sm-6 infoBar\"><p class=\"{{css.infos}}\"></p></div></div></div>",
+        header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.actions}}\"></p></div></div></div>",
         icon: "<span class=\"{{css.icon}} {{ctx.iconCss}}\"></span>",
         infos: "<div class=\"{{css.infos}}\">{{lbl.infos}}</div>",
         loading: "<div class=\"{{css.loading}}\"><div>{{lbl.loading}}</div></div>",

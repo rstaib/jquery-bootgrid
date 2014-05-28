@@ -10,6 +10,14 @@
 .bootgrid-footer .infoBar {
   text-align: right;
 }
+.bootgrid-header .actionBar .btn-group > .btn-group,
+.bootgrid-footer .infoBar .btn-group > .btn-group {
+  float: right;
+}
+.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu,
+.bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu {
+  text-align: left;
+}
 .bootgrid-table th.sortable {
   cursor: pointer;
 }
@@ -19,7 +27,7 @@
   opacity: 0.9;
   filter: alpha(opacity=90);
   position: absolute;
-  z-index: 10000;
+  z-index: 1000;
 }
 .bootgrid-loading > div {
   background: #fff;
