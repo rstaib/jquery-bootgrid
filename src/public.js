@@ -5,53 +5,76 @@ var Grid = function(element, options)
 {
     this.element = $(element);
     this.options = $.extend(true, {}, Grid.defaults, this.element.data(), options);
-    this.state = {
+    var rowCount = this.options.rowCount;
+    this.context = {
         columns: [],
         current: 1,
-        rowCount: this.options.rowCount,
+        rowCount: (typeof rowCount === "object") ? getFirstDictionaryValue(rowCount) : rowCount,
         sort: {},
         total: 0,
-        totalPages: 0
+        totalPages: 0,
+        cachedParams: {
+            tpl: this.options.templates,
+            lbl: this.options.labels,
+            css: this.options.css,
+            ctx:  {}
+        }
     };
-
-    init(this);
 };
 
 Grid.defaults = {
-    post: {},     // or use function () { return {}; }
-    padding: 2,   // page padding (pagination)
-    rowCount: 10, // rows per page
-    url: "",      // or use function () { return ""; }
-    pagination: true,
-    topPagination: false,
+    navigation: 3,          // it's a flag: 0 = none, 1 = top, 2 = bottom, 3 = both (top and bottom)
     multiSort: false,
+    padding: 2,             // page padding (pagination)
+    post: {},               // or use function () { return {}; }
+    rowCount: {             // rows per page
+        "10": 10,
+        "25": 25,
+        "50": 50,
+        "All": -1
+    },
+    url: "",                // or use function () { return ""; }
+
     // todo: implement cache
 
     // note: The following properties are not available via data-api attributes
     css: {
-        footer: "bootgrid-footer",
+        actions: "actions btn-group",        // must be a unique class name or constellation of class names within the header and footer
+        dropDown: "btn dropdown-toggle",
+        footer: "bootgrid-footer container-fluid",
         icon: "glyphicon",
         iconDown: "glyphicon-chevron-down",
+        iconRefresh: "glyphicon-refresh",
         iconUp: "glyphicon-chevron-up",
+        infos: "infos",                      // must be a unique class name or constellation of class names within the header and footer
         loading: "bootgrid-loading",
-        pagination: "pagination",
-        header: "bootgrid-header",
+        pagination: "pagination",            // must be a unique class name or constellation of class names within the header and footer
+        paginationButton: "button",          // must be a unique class name or constellation of class names within the pagination
+        header: "bootgrid-header container-fluid",
         sortable: "sortable",
         table: "bootgrid-table table"
     },
     labels: {
+        infos: "Showing {{ctx.start}} to {{ctx.end}} of {{ctx.total}} entries",
         loading: "Loading...",
-        noResults: "No results found!"
+        noResults: "No results found!",
+        refresh: "Refresh"
     },
     templates: {
-        anchor: "<a href=\"{{href}}\">{{text}}</a>",
-        cell: "<td>{{content}}</td>",
-        div: "<div id=\"{{id}}\" class=\"{{css}}\"></div>",
-        icon: "<span class=\"{{css}}\"></span>",
-        list: "<ul class=\"{{css}}\"></ul>",
-        listItem: "<li></li>",
-        loading: "<div class=\"{{css}}\"><div>{{text}}</div></div>",
-        noResults: "<tr><td colspan=\"{{columns}}\" class=\"no-results\">{{text}}</td></tr>",
+        // note: Grenzen der template sprache sind: Templates duerfen nur einmal ineinander verschachtelt werden und 
+        //       es darf mittels des Kontexts kein weiteres HTML, dass wiederum Variablen enthalten kann, die auch ersetzt werden muessen, eingefuegt werden.
+        actionButton: "<button class=\"btn\" type=\"button\" title=\"{{ctx.text}}\">{{tpl.icon}}</button>",
+        actionDropDown: "<button class=\"btn dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\">{{ctx.text}} <span class=\"caret\"></span></button><ul class=\"dropdown-menu\" role=\"menu\"></ul>",
+        actions: "<div class=\"{{css.actions}}\"></div>",
+        cell: "<td>{{ctx.content}}</td>",
+        header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.actions}}\"></p></div></div></div>",
+        footer: "<div id=\"{{ctx.id}}\" class=\"{{css.footer}}\"><div class=\"row\"><div class=\"col-sm-6\"><p class=\"{{css.pagination}}\"></p></div><div class=\"col-sm-6 infoBar\"><p class=\"{{css.infos}}\"></p></div></div></div>",
+        icon: "<span class=\"{{css.icon}} {{ctx.iconCss}}\"></span>",
+        infos: "<div class=\"{{css.infos}}\">{{lbl.infos}}</div>",
+        loading: "<div class=\"{{css.loading}}\"><div>{{lbl.loading}}</div></div>",
+        noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{ctx.text}}</td></tr>",
+        pagination: "<ul class=\"{{css.pagination}}\"></ul>",
+        paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
         row: "<tr></tr>"
     }
 };
@@ -64,20 +87,20 @@ Grid.prototype.destroy = function()
 
 Grid.prototype.reload = function()
 {
-    this.state.current = 1; // reset
+    this.context.current = 1; // reset
     // todo: support static data (no ajax)
-    loadData(this);
+    loadData(this.element, this.options, this.context);
 };
 
 Grid.prototype.sort = function(dictionary)
 {
     var values = (dictionary) ? $.extend({}, dictionary) : {};
-    if (values === this.state.sort)
+    if (values === this.context.sort)
     {
         return this;
     }
 
-    this.state.sort = values;
+    this.context.sort = values;
 
     $.each(values, function(field, direction)
     {

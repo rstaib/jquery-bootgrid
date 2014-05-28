@@ -41,13 +41,23 @@ $.fn.extend({
 
 if (!String.prototype.resolve)
 {
-    String.prototype.resolve = function (substitutes)
+    String.prototype.resolve = function (substitutes, prefixes)
     {
         var result = this;
         $.each(substitutes, function (key, value)
         {
-            var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");
-            result = result.replace(pattern, value);
+            if (typeof value === "object")
+            {
+                var keys = (prefixes) ? $.extend([], prefixes) : [];
+                keys.push(key);
+                result = result.resolve(value, keys);
+            }
+            else
+            {
+                key = (prefixes) ? prefixes.join(".") + "." + key : key;
+                var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");
+                result = result.replace(pattern, value);
+            }
         });
         return result;
     };

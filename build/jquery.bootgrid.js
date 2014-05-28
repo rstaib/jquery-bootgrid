@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v0.9.6-beta3 - 05/19/2014
+ * jQuery Bootgrid v0.9.6-rc1 - 05/28/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -10,32 +10,55 @@
     // GRID INTERNAL FIELDS    
     // ====================    
     
-    var namespace = ".rs.jquery.bootgrid";    
+    var namespace = ".rs.jquery.bootgrid",    
+        paginationType = {    
+            "none": 0,    
+            "bottom": 1,    
+            "top": 2    
+        };    
     
     // GRID INTERNAL FUNCTIONS    
     // =====================    
     
-    function getFooterId(element)    
+    function getFirstDictionaryValue(dictionary)    
     {    
-        return element._bgId() + "-footer";    
+        if (typeof dictionary === "object")    
+        {    
+            for (var key in dictionary)    
+            {    
+                return dictionary[key];    
+            }    
+        }    
+    
+        throw new Error("Is not a dictionary!");    
     }    
     
-    function getHeaderId(element)    
+    function getInstance(element)    
     {    
-        return element._bgId() + "-header";    
+        return element.data(namespace);    
     }    
     
-    function getRequest(options, state)    
+    function getParams(context, ctx)    
+    {    
+        return $.extend({}, context.cachedParams, { ctx: ctx || {} });    
+    }    
+    
+    function getRequest(options, context)    
     {    
         var request = {    
-                current: state.current,    
+                current: context.current,    
                 rowCount: options.rowCount,    
-                sort: state.sort    
+                sort: context.sort    
             },    
             post = options.post;    
     
         post = ($.isFunction(post)) ? post() : post;    
         return $.extend(true, request, post);    
+    }    
+    
+    function getSelector(css)    
+    {    
+        return "." + $.trim(css).replace(/\s+/gm, ".");    
     }    
     
     function getUrl(options)    
@@ -44,31 +67,23 @@
         return ($.isFunction(url)) ? url() : url;    
     }    
     
-    function hideLoading(instance)    
+    function hideLoading(element)    
     {    
+        var instance = getInstance(element);    
         instance.loading.fadeOut(300);    
         $(window).off(namespace);    
     }    
     
-    function init(instance)    
+    function init(element, options, context)    
     {    
-        var options = instance.options;    
-        instance.loading = $(options.templates.loading.resolve({    
-            css: options.css.loading,     
-            text: options.labels.loading    
-        })).insertAfter(instance.element);    
-    
-        loadColumns(instance);    
-        render(instance);    
-        loadData(instance);    
+        loadColumns(element, options, context);    
+        render(element, options, context);    
+        loadData(element, options, context);    
     }    
     
-    function loadColumns(instance)    
+    function loadColumns(element, options, context)    
     {    
-        var element = instance.element,    
-            options = instance.options,    
-            state = instance.state,    
-            firstHeadRow = element.find("thead > tr").first(),    
+        var firstHeadRow = element.find("thead > tr").first(),    
             sorted = false;    
     
         firstHeadRow.children().each(function()    
@@ -83,10 +98,10 @@
                     order: (!sorted && (order === "asc" || order === "desc")) ? order : null,    
                     sortable: !(sortable === false || sortable === 0) // default: true    
                 };    
-            state.columns.push(column);    
+            context.columns.push(column);    
             if (column.order != null)    
             {    
-                state.sort[column.id] = column.order;    
+                context.sort[column.id] = column.order;    
             }    
     
             // ensures that only the first order will be applied in case of multi sorting is disabled    
@@ -107,12 +122,9 @@
     }    
     */    
     
-    function loadData(instance)    
+    function loadData(element, options, context)    
     {    
-        var element = instance.element,    
-            options = instance.options,    
-            state = instance.state,    
-            request = getRequest(options, state),    
+        var request = getRequest(options, context),    
             url = getUrl(options);    
     
         if (url == null || typeof url !== "string" || url.length === 0)    
@@ -121,7 +133,7 @@
         }    
     
         element.trigger("load" + namespace);    
-        showLoading(instance);    
+        showLoading(element);    
         // todo: support static data (no ajax)    
         $.post(url, request, function (response)    
         {    
@@ -130,34 +142,62 @@
                 response = $.parseJSON(response);    
             }    
     
-            state.current = response.current;    
-            state.total = response.total;    
-            state.totalPages = Math.round(state.total / state.rowCount);    
+            context.current = response.current;    
+            context.total = response.total;    
+            context.totalPages = Math.ceil(context.total / context.rowCount);    
     
-            renderBody(element, options, state, response.rows);    
-            renderPagination(instance);    
-            hideLoading(instance);    
+            renderBody(element, options, context, response.rows);    
+            renderInfos(element, options, context);    
+            renderPagination(element, options, context);    
+            hideLoading(element);    
             element.trigger("loaded" + namespace);    
-        }).fail(function() { hideLoading(instance); });    
+        }).fail(function() { hideLoading(element); });    
     }    
     
-    function render(instance)    
+    function render(element, options, context)    
     {    
-        var element = instance.element,    
-            options = instance.options,    
+        var instance = getInstance(element),    
             css = options.css,    
-            tpl = options.templates,    
-            header = $(tpl.div.resolve({ id: getHeaderId(element), css: css.header })),    
-            footer = $(tpl.div.resolve({ id: getFooterId(element), css: css.footer }));    
+            tpl = options.templates;    
     
-        element.addClass(css.table).before(header).after(footer);    
-        renderTableHeader(instance);    
+        instance.loading = $(options.templates.loading.resolve(getParams(context)));    
+        instance.header = $(tpl.header.resolve(getParams(context, { id: element._bgId() + "-header" })));    
+        instance.footer = $(tpl.footer.resolve(getParams(context, { id: element._bgId() + "-footer" })));    
+        element.addClass(css.table).before(instance.header).after(instance.footer).after(instance.loading);    
+    
+        renderActions(element, options, context);    
+        renderTableHeader(element, options, context);    
     }    
     
-    function renderBody(element, options, state, rows)    
+    function renderActions(element, options, context)    
     {    
-        var labels = options.labels,    
-            tpl = options.templates,    
+        if (options.navigation !== 0)    
+        {    
+            var instance = getInstance(element),    
+                css = options.css,    
+                tpl = options.templates,    
+                refresh = $(tpl.actionButton.resolve(getParams(context,     
+                    { iconCss: css.iconRefresh, text: options.labels.refresh })))    
+                        .one("click" + namespace, function (e)    
+                        {    
+                            // todo: prevent multiple fast clicks (fast click detection)    
+                            e.preventDefault();    
+                            var $this = $(this);    
+                            context.current = 1;    
+                            loadData(element, options, context);    
+                            $this.trigger("blur");    
+                        }),    
+                actions = $(tpl.actions.resolve(getParams(context))).append(refresh),    
+                selector = getSelector(css.actions);    
+    
+            replacePlaceHolder(options, instance.header.find(selector), actions, 1);    
+            replacePlaceHolder(options, instance.footer.find(selector), actions, 2);    
+        }    
+    }    
+    
+    function renderBody(element, options, context, rows)    
+    {    
+        var tpl = options.templates,    
             tbody = element.children("tbody").first().empty();    
     
         if (rows.length > 0)    
@@ -165,12 +205,12 @@
             $.each(rows, function(i, row)    
             {    
                 var tr = $(tpl.row);    
-                $.each(state.columns, function(j, column)    
+                $.each(context.columns, function(j, column)    
                 {    
                     if (column.custom)    
                     {    
                         element.trigger("custom" + namespace, {    
-                            cell: $(tpl.cell.resolve({ content: "&nbsp;" })).appendTo(tr),    
+                            cell: $(tpl.cell.resolve(getParams(context, { content: "&nbsp;" }))).appendTo(tr),    
                             column: column,    
                             row: row    
                         });    
@@ -178,7 +218,7 @@
                     else    
                     {    
                         var value = row[column.id];    
-                        tr.append(tpl.cell.resolve({ content: (value == null || value === "") ? "&nbsp;" : value }));    
+                        tr.append(tpl.cell.resolve(getParams(context, { content: (value == null || value === "") ? "&nbsp;" : value })));    
                     }    
                 });    
                 tbody.append(tr);    
@@ -186,143 +226,171 @@
         }    
         else    
         {    
-            tbody.append(tpl.noResults.resolve({ columns: state.columns.length, text: labels.noResults }));    
+            tbody.append(tpl.noResults.resolve(getParams(context, { columns: context.columns.length, text: options.labels.noResults })));    
         }    
     }    
     
-    function renderPagination(instance)    
+    function renderInfos(element, options, context)    
     {    
-        var options = instance.options;    
-        if (options.pagination)    
+        if (options.navigation !== 0)    
         {    
-            var element = instance.element,    
-                state = instance.state,    
-                css = options.css,    
+            var instance = getInstance(element),    
+                end = (context.current * context.rowCount),    
+                infos = $(options.templates.infos.resolve(getParams(context,     
+                    { end: end, start: (end - context.rowCount + 1), total: context.total }))),    
+                selector = getSelector(options.css.infos);    
+    
+            replacePlaceHolder(options, instance.header.find(selector), infos, 1);    
+            replacePlaceHolder(options, instance.footer.find(selector), infos, 2);    
+        }    
+    }    
+    
+    function renderPagination(element, options, context)    
+    {    
+        if (options.navigation !== 0)    
+        {    
+            var instance = getInstance(element),    
                 tpl = options.templates,    
-                current = state.current,    
-                totalPages = state.totalPages,    
-                list = $(tpl.list.resolve({ css: css.pagination })),    
+                current = context.current,    
+                totalPages = context.totalPages,    
+                pagination = $(tpl.pagination.resolve(getParams(context))),    
                 offsetRight = totalPages - current,    
                 offsetLeft = (options.padding - current) * -1,    
                 startWith = ((offsetRight >= options.padding) ?    
                     Math.max(offsetLeft, 1) :    
                     Math.max((offsetLeft - options.padding + offsetRight), 1)),    
                 maxCount = options.padding * 2 + 1,    
-                count = (totalPages >= maxCount) ? maxCount : totalPages;    
+                count = (totalPages >= maxCount) ? maxCount : totalPages,    
+                selector = getSelector(options.css.pagination);    
     
-            renderPaginationItem(instance, list, "first", "&laquo;", "first")    
+            renderPaginationItem(element, options, context, pagination, "first", "&laquo;", "first")    
                 ._bgEnableAria(current > 1);    
-            renderPaginationItem(instance, list, "prev", "&lt;", "prev")    
+            renderPaginationItem(element, options, context, pagination, "prev", "&lt;", "prev")    
                 ._bgEnableAria(current > 1);    
     
             for (var i = 0; i < count; i++)    
             {    
                 var pos = i + startWith;    
-                renderPaginationItem(instance, list, pos, pos, "page-" + pos)    
+                renderPaginationItem(element, options, context, pagination, pos, pos, "page-" + pos)    
                     ._bgEnableAria()._bgSelectAria(pos === current);    
             }    
     
-            renderPaginationItem(instance, list, "next", "&gt;", "next")    
+            renderPaginationItem(element, options, context, pagination, "next", "&gt;", "next")    
                 ._bgEnableAria(totalPages > current);    
-            renderPaginationItem(instance, list, "last", "&raquo;", "last")    
+            renderPaginationItem(element, options, context, pagination, "last", "&raquo;", "last")    
                 ._bgEnableAria(totalPages > current);    
     
-            $("#" + getFooterId(element)).empty().append(list);    
-            if (options.topPagination)    
-            {    
-                $("#" + getHeaderId(element)).empty().append(list.clone(true));    
-            }    
+            replacePlaceHolder(options, instance.header.find(selector), pagination, 1);    
+            replacePlaceHolder(options, instance.footer.find(selector), pagination, 2);    
         }    
     }    
     
-    function renderPaginationItem(instance, list, uri, text, css)    
+    function renderPaginationItem(element, options, context, list, uri, text, markerCss)    
     {    
-        var options = instance.options,    
-            state = instance.state,    
-            tpl = options.templates,    
-            anchor = $(tpl.anchor.resolve({ href: "#" + uri, text: text }))    
-                .on("click" + namespace, function (e)    
-                {    
-                    e.preventDefault();    
-                    var $this = $(this);    
-                    if (!$this.parent().hasClass("disabled"))    
-                    {    
-                        var commandList = {    
-                            first: 1,    
-                            prev: state.current - 1,    
-                            next: state.current + 1,    
-                            last: state.totalPages    
-                        };    
-                        var command = $this.attr("href").substr(1);    
-                        state.current = commandList[command] || +command; // + converts string to int    
-                        loadData(instance);    
-                    }    
-                }),    
-            listItem = $(tpl.listItem).addClass(css).append(anchor);    
+        var tpl = options.templates,    
+            css = options.css,    
+            values = getParams(context, { css: markerCss, text: text, uri: "#" + uri }),    
+            item = $(tpl.paginationItem.resolve(values)).addClass(css);    
     
-        list.append(listItem);    
-        return listItem;    
+        item.find(getSelector(css.paginationButton)).on("click" + namespace, function (e)    
+        {    
+            e.preventDefault();    
+            var $this = $(this),    
+                parent = $this.parent();    
+            if (!parent.hasClass("active") && !parent.hasClass("disabled"))    
+            {    
+                var commandList = {    
+                    first: 1,    
+                    prev: context.current - 1,    
+                    next: context.current + 1,    
+                    last: context.totalPages    
+                };    
+                var command = $this.attr("href").substr(1);    
+                context.current = commandList[command] || +command; // + converts string to int    
+                loadData(element, options, context);    
+            }    
+            $this.trigger("blur");    
+        });    
+    
+        list.append(item);    
+        return item;    
     }    
     
-    function renderTableHeader(instance)    
+    function renderTableHeader(element, options, context)    
     {    
-        var element = instance.element,    
-            options = instance.options,    
-            state = instance.state,    
-            columns = element.find("thead > tr > th"),    
+        var columns = element.find("thead > tr > th"),    
             css = options.css,    
             tpl = options.templates;    
     
-        $.each(state.columns, function(index, column)    
+        $.each(context.columns, function(index, column)    
         {    
             if (column.sortable)    
             {    
-                var sort = state.sort[column.id],    
-                    iconCss = css.icon +     
-                        ((sort && sort === "asc") ? " " + css.iconDown :     
-                            (sort && sort === "desc") ? " " + css.iconUp : "");    
-                columns.eq(index).addClass(css.sortable).append(" " + tpl.icon.resolve({ css: iconCss }))    
+                var sort = context.sort[column.id],    
+                    iconCss = ((sort && sort === "asc") ? " " + css.iconDown :     
+                        (sort && sort === "desc") ? " " + css.iconUp : "");    
+                columns.eq(index).addClass(css.sortable).append(" " + tpl.icon.resolve(getParams(context, { iconCss: iconCss })))    
                     .on("click" + namespace, function(e)    
                     {    
                         e.preventDefault();    
                         var $this = $(this),     
-                            $sort = state.sort[column.id],    
+                            $sort = context.sort[column.id],    
                             $icon = $this.find("." + css.icon);    
     
                         if (!options.multiSort)    
                         {    
                             columns.find("." + css.icon).removeClass(css.iconDown + " " + css.iconUp);    
-                            state.sort = {};    
+                            context.sort = {};    
                         }    
     
                         if ($sort && $sort === "asc")    
                         {    
-                            state.sort[column.id] = "desc";    
+                            context.sort[column.id] = "desc";    
                             $icon.removeClass(css.iconDown).addClass(css.iconUp);    
                         }    
                         else if ($sort && $sort === "desc")    
                         {    
-                            delete state.sort[column.id];    
-                            $icon.removeClass(css.iconUp);    
+                            if (options.multiSort)    
+                            {    
+                                delete context.sort[column.id];    
+                                $icon.removeClass(css.iconUp);    
+                            }    
+                            else    
+                            {    
+                                context.sort[column.id] = "asc";    
+                                $icon.removeClass(css.iconUp).addClass(css.iconDown);    
+                            }    
                         }    
                         else    
                         {    
-                            state.sort[column.id] = "asc";    
+                            context.sort[column.id] = "asc";    
                             $icon.addClass(css.iconDown);    
                         }    
     
-                        loadData(instance);    
+                        loadData(element, options, context);    
                     });    
             }    
         });    
     }    
     
-    function showLoading(instance)    
+    function replacePlaceHolder(options, placeholder, element, flag)    
     {    
+        if (options.navigation & flag)    
+        {    
+            placeholder.each(function(index, item)    
+            {    
+                // todo: check how append is implemented. Perhaps cloning here is superfluous.    
+                $(item).before(element.clone(true)).remove();    
+            });    
+        }    
+    }    
+    
+    function showLoading(element)    
+    {    
+        var instance = getInstance(element);    
         $(window).on("resize" + namespace, function ()    
         {    
-            var element = instance.element,    
-                position = element.position();    
+            var position = element.position();    
             instance.loading.css("left", position.left).css("top", position.top)    
                 .height(element.height()).width(element.width());    
         }).resize();    
@@ -336,53 +404,76 @@
     {    
         this.element = $(element);    
         this.options = $.extend(true, {}, Grid.defaults, this.element.data(), options);    
-        this.state = {    
+        var rowCount = this.options.rowCount;    
+        this.context = {    
             columns: [],    
             current: 1,    
-            rowCount: this.options.rowCount,    
+            rowCount: (typeof rowCount === "object") ? getFirstDictionaryValue(rowCount) : rowCount,    
             sort: {},    
             total: 0,    
-            totalPages: 0    
+            totalPages: 0,    
+            cachedParams: {    
+                tpl: this.options.templates,    
+                lbl: this.options.labels,    
+                css: this.options.css,    
+                ctx:  {}    
+            }    
         };    
-    
-        init(this);    
     };    
     
     Grid.defaults = {    
-        post: {},     // or use function () { return {}; }    
-        padding: 2,   // page padding (pagination)    
-        rowCount: 10, // rows per page    
-        url: "",      // or use function () { return ""; }    
-        pagination: true,    
-        topPagination: false,    
+        navigation: 3,          // it's a flag: 0 = none, 1 = top, 2 = bottom, 3 = both (top and bottom)    
         multiSort: false,    
+        padding: 2,             // page padding (pagination)    
+        post: {},               // or use function () { return {}; }    
+        rowCount: {             // rows per page    
+            "10": 10,    
+            "25": 25,    
+            "50": 50,    
+            "All": -1    
+        },    
+        url: "",                // or use function () { return ""; }    
+    
         // todo: implement cache    
     
         // note: The following properties are not available via data-api attributes    
         css: {    
-            footer: "bootgrid-footer",    
+            actions: "actions btn-group",        // must be a unique class name or constellation of class names within the header and footer    
+            dropDown: "btn dropdown-toggle",    
+            footer: "bootgrid-footer container-fluid",    
             icon: "glyphicon",    
             iconDown: "glyphicon-chevron-down",    
+            iconRefresh: "glyphicon-refresh",    
             iconUp: "glyphicon-chevron-up",    
+            infos: "infos",                      // must be a unique class name or constellation of class names within the header and footer    
             loading: "bootgrid-loading",    
-            pagination: "pagination",    
-            header: "bootgrid-header",    
+            pagination: "pagination",            // must be a unique class name or constellation of class names within the header and footer    
+            paginationButton: "button",          // must be a unique class name or constellation of class names within the pagination    
+            header: "bootgrid-header container-fluid",    
             sortable: "sortable",    
             table: "bootgrid-table table"    
         },    
         labels: {    
+            infos: "Showing {{ctx.start}} to {{ctx.end}} of {{ctx.total}} entries",    
             loading: "Loading...",    
-            noResults: "No results found!"    
+            noResults: "No results found!",    
+            refresh: "Refresh"    
         },    
         templates: {    
-            anchor: "<a href=\"{{href}}\">{{text}}</a>",    
-            cell: "<td>{{content}}</td>",    
-            div: "<div id=\"{{id}}\" class=\"{{css}}\"></div>",    
-            icon: "<span class=\"{{css}}\"></span>",    
-            list: "<ul class=\"{{css}}\"></ul>",    
-            listItem: "<li></li>",    
-            loading: "<div class=\"{{css}}\"><div>{{text}}</div></div>",    
-            noResults: "<tr><td colspan=\"{{columns}}\" class=\"no-results\">{{text}}</td></tr>",    
+            // note: Grenzen der template sprache sind: Templates duerfen nur einmal ineinander verschachtelt werden und     
+            //       es darf mittels des Kontexts kein weiteres HTML, dass wiederum Variablen enthalten kann, die auch ersetzt werden muessen, eingefuegt werden.    
+            actionButton: "<button class=\"btn\" type=\"button\" title=\"{{ctx.text}}\">{{tpl.icon}}</button>",    
+            actionDropDown: "<button class=\"btn dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\">{{ctx.text}} <span class=\"caret\"></span></button><ul class=\"dropdown-menu\" role=\"menu\"></ul>",    
+            actions: "<div class=\"{{css.actions}}\"></div>",    
+            cell: "<td>{{ctx.content}}</td>",    
+            header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.actions}}\"></p></div></div></div>",    
+            footer: "<div id=\"{{ctx.id}}\" class=\"{{css.footer}}\"><div class=\"row\"><div class=\"col-sm-6\"><p class=\"{{css.pagination}}\"></p></div><div class=\"col-sm-6 infoBar\"><p class=\"{{css.infos}}\"></p></div></div></div>",    
+            icon: "<span class=\"{{css.icon}} {{ctx.iconCss}}\"></span>",    
+            infos: "<div class=\"{{css.infos}}\">{{lbl.infos}}</div>",    
+            loading: "<div class=\"{{css.loading}}\"><div>{{lbl.loading}}</div></div>",    
+            noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{ctx.text}}</td></tr>",    
+            pagination: "<ul class=\"{{css.pagination}}\"></ul>",    
+            paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",    
             row: "<tr></tr>"    
         }    
     };    
@@ -395,20 +486,20 @@
     
     Grid.prototype.reload = function()    
     {    
-        this.state.current = 1; // reset    
+        this.context.current = 1; // reset    
         // todo: support static data (no ajax)    
-        loadData(this);    
+        loadData(this.element, this.options, this.context);    
     };    
     
     Grid.prototype.sort = function(dictionary)    
     {    
         var values = (dictionary) ? $.extend({}, dictionary) : {};    
-        if (values === this.state.sort)    
+        if (values === this.context.sort)    
         {    
             return this;    
         }    
     
-        this.state.sort = values;    
+        this.context.sort = values;    
     
         $.each(values, function(field, direction)    
         {    
@@ -431,20 +522,21 @@
         return this.each(function ()    
         {    
             var $this = $(this),    
-                data = $this.data(namespace),    
+                instance = $this.data(namespace),    
                 options = typeof option === "object" && option;    
     
-            if (!data && option === "destroy")    
+            if (!instance && option === "destroy")    
             {    
                 return;    
             }    
-            if (!data)    
+            if (!instance)    
             {    
-                $this.data(namespace, (data = new Grid(this, options)));    
+                $this.data(namespace, (instance = new Grid(this, options)));    
+                init(instance.element, instance.options, instance.context);    
             }    
             if (typeof option === "string")    
             {    
-                return data[option]();    
+                return instance[option]();    
             }    
         });    
     };    
@@ -514,13 +606,23 @@
     
     if (!String.prototype.resolve)    
     {    
-        String.prototype.resolve = function (substitutes)    
+        String.prototype.resolve = function (substitutes, prefixes)    
         {    
             var result = this;    
             $.each(substitutes, function (key, value)    
             {    
-                var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");    
-                result = result.replace(pattern, value);    
+                if (typeof value === "object")    
+                {    
+                    var keys = (prefixes) ? $.extend([], prefixes) : [];    
+                    keys.push(key);    
+                    result = result.resolve(value, keys);    
+                }    
+                else    
+                {    
+                    key = (prefixes) ? prefixes.join(".") + "." + key : key;    
+                    var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");    
+                    result = result.replace(pattern, value);    
+                }    
             });    
             return result;    
         };    

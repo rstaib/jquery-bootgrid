@@ -1,3 +1,15 @@
+.bootgrid-header,
+.bootgrid-footer {
+  margin: 15px 0;
+}
+.bootgrid-header .pagination,
+.bootgrid-footer .pagination {
+  margin: 0 !important;
+}
+.bootgrid-header .actionBar,
+.bootgrid-footer .infoBar {
+  text-align: right;
+}
 .bootgrid-table th.sortable {
   cursor: pointer;
 }

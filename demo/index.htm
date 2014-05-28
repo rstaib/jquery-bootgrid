@@ -76,7 +76,8 @@
                             mailboxItemId: "b0df282a-0d67-40e5-8558-c9e93b7befed"
                         };
                     },
-                    url: "data.json"
+                    url: "data.json",
+					pagination: 3
                 }).on("custom.rs.jquery.bootgrid", function(e, args)
                 {
                     args.cell.empty().append("<a href=\"#\">" + args.column.id + ": " + args.row.id + "</a>");

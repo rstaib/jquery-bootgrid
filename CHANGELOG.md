@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.6-rc1
+- Prevent click event on active pagination item
+
 ## 0.9.6-beta3
 - Added a new default property (pagination) to disable the pagination
 

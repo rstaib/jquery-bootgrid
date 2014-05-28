@@ -8,20 +8,21 @@ $.fn.bootgrid = function (option)
     return this.each(function ()
     {
         var $this = $(this),
-            data = $this.data(namespace),
+            instance = $this.data(namespace),
             options = typeof option === "object" && option;
 
-        if (!data && option === "destroy")
+        if (!instance && option === "destroy")
         {
             return;
         }
-        if (!data)
+        if (!instance)
         {
-            $this.data(namespace, (data = new Grid(this, options)));
+            $this.data(namespace, (instance = new Grid(this, options)));
+            init(instance.element, instance.options, instance.context);
         }
         if (typeof option === "string")
         {
-            return data[option]();
+            return instance[option]();
         }
     });
 };
