@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v0.9.6-rc2 - 05/28/2014
+ * jQuery Bootgrid v0.9.6-rc3 - 05/28/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -275,22 +275,14 @@
         if (options.navigation !== 0)
         {
             var instance = getInstance(element),
-                selector = getSelector(options.css.infos),
-                header = instance.header.find(selector)._bgShowAria(context.rowCount !== -1),
-                footer = instance.footer.find(selector)._bgShowAria(context.rowCount !== -1);
-
-            if (context.rowCount === -1)
-            {
-                return;
-            }
-
-            var end = (context.current * context.rowCount),
+                end = (context.current * context.rowCount),
                 infos = $(options.templates.infos.resolve(getParams(context, 
                     { end: (end > context.total) ? context.total : end, 
-                        start: (end - context.rowCount + 1), total: context.total })));
+                        start: (end - context.rowCount + 1), total: context.total }))),
+                selector = getSelector(options.css.infos);
 
-            replacePlaceHolder(options, header, infos, 1);
-            replacePlaceHolder(options, footer, infos, 2);
+            replacePlaceHolder(options, instance.header.find(selector), infos, 1);
+            replacePlaceHolder(options, instance.footer.find(selector), infos, 2);
         }
     }
 

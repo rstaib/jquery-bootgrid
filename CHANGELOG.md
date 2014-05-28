@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.6-rc3
+- Showing infos even if rowCount is -1 (all)
+
 ## 0.9.6-rc2
 - Fixed a bug regarding rowCount
 - Improved visualization generally
