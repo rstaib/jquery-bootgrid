@@ -133,13 +133,13 @@ test("getRequest post object test", 1, function ()
     propEqual(result, expected, "Valid request object");
 });
 
-test("getSelector test", 1, function ()
+test("getCssSelector test", 1, function ()
 {
     // given
     var classNames = "       itallic bold  normal   ";
 
     // when
-    var result = getSelector(classNames);
+    var result = getCssSelector(classNames);
 
     // then
     equal(result, ".itallic.bold.normal", "Valid css selector");
@@ -174,47 +174,4 @@ test("getUrl string test", 1, function ()
 
     // then
     equal(result, "url/test/1", "Valid URL");
-});
-
-module("extensions");
-
-test("String.resolve basic (one dimension) test", 1, function ()
-{
-    // given
-    var values = {
-            first: "test",
-            second: "case"
-        },
-        stringToResolve = "{{first}} {{second}}";
-
-    // when
-    var result = stringToResolve.resolve(values);
-
-    // then
-    equal(result, "test case", "Valid string");
-});
-
-test("String.resolve advanced (n dimension) test", 1, function ()
-{
-    // given
-    var values = {
-            first: {
-                sub: "this is"
-            },
-            second: "a",
-            third: {
-                more: "more",
-                adv: {
-                    test: "advanced test"
-                },
-                "case": "case"
-            }
-        },
-        stringToResolve = "{{first.sub}} {{second}} {{third.more}} {{third.adv.test}} {{third.case}}";
-
-    // when
-    var result = stringToResolve.resolve(values);
-
-    // then
-    equal(result, "this is a more advanced test case", "Valid string");
 });

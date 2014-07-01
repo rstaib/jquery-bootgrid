@@ -18,8 +18,40 @@
 .bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu {
   text-align: left;
 }
-.bootgrid-table th.sortable {
+.bootgrid-table {
+  table-layout: fixed;
+}
+.bootgrid-table th > .column-header-anchor {
+  color: #333;
+  cursor: not-allowed;
+  display: block;
+  position: relative;
+  text-decoration: none;
+}
+.bootgrid-table th > .column-header-anchor.sortable {
   cursor: pointer;
+}
+.bootgrid-table th > .column-header-anchor > .text {
+  display: block;
+  margin: 0 16px 0 0;
+  overflow: hidden;
+  -ms-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bootgrid-table th > .column-header-anchor > .icon {
+  display: block;
+  position: absolute;
+  right: 0;
+  top: 2px;
+}
+.bootgrid-table td {
+  overflow: hidden;
+  -ms-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .bootgrid-loading {
   background: #fff;

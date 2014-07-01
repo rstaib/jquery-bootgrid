@@ -129,7 +129,9 @@ module.exports = function (grunt)
                 },
                 files: {
                     src: [
-                        'test/tests.js'
+                        'test/tests-internal.js',
+                        'test/tests-rendering.js',
+                        'test/tests-extensions.js'
                     ]
                 }
             },

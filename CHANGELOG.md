@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.6
+- CSS and HTML optimization for column headers
+- Minor bug fix regarding status bar ("-1")
+
 ## 0.9.6-rc3
 - Showing infos even if rowCount is -1 (all)
 

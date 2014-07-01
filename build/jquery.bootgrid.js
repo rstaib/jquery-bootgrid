@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v0.9.6-rc3 - 05/28/2014
+ * jQuery Bootgrid v0.9.6 - 07/01/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -61,7 +61,7 @@
         return $.extend(true, request, post);
     }
 
-    function getSelector(css)
+    function getCssSelector(css)
     {
         return "." + $.trim(css).replace(/\s+/gm, ".");
     }
@@ -201,7 +201,7 @@
                             $this.trigger("blur");
                         }),
                 actions = $(tpl.actions.resolve(getParams(context))).append(refresh),
-                selector = getSelector(css.actions);
+                selector = getCssSelector(css.actions);
 
             if (typeof options.rowCount === "object")
             {
@@ -212,7 +212,7 @@
                     var item = $(tpl.actionDropDownItem.resolve(getParams(context, 
                         { buttonCss: css.dropDownItemButton, key: key, uri: "#" + value })))
                         ._bgSelectAria(key === currentKey);
-                    item.find(getSelector(css.dropDownItemButton)).on("click" + namespace, function (e)
+                    item.find(getCssSelector(css.dropDownItemButton)).on("click" + namespace, function (e)
                     {
                         e.preventDefault();
                         var $this = $(this);
@@ -225,7 +225,7 @@
                         }
                         $this.trigger("blur");
                     });
-                    rowCount.find(getSelector(css.dropDownMenu)).append(item);
+                    rowCount.find(getCssSelector(css.dropDownMenu)).append(item);
                 });
                 actions.append(rowCount);
             }
@@ -276,10 +276,12 @@
         {
             var instance = getInstance(element),
                 end = (context.current * context.rowCount),
-                infos = $(options.templates.infos.resolve(getParams(context, 
-                    { end: (end > context.total) ? context.total : end, 
-                        start: (end - context.rowCount + 1), total: context.total }))),
-                selector = getSelector(options.css.infos);
+                infos = $(options.templates.infos.resolve(getParams(context, { 
+                    end: (context.total === 0 || end === -1 || end > context.total) ? context.total : end, 
+                    start: (context.total === 0) ? 0 : (end - context.rowCount + 1), 
+                    total: context.total
+                }))),
+                selector = getCssSelector(options.css.infos);
 
             replacePlaceHolder(options, instance.header.find(selector), infos, 1);
             replacePlaceHolder(options, instance.footer.find(selector), infos, 2);
@@ -291,7 +293,7 @@
         if (options.navigation !== 0)
         {
             var instance = getInstance(element),
-                selector = getSelector(options.css.pagination),
+                selector = getCssSelector(options.css.pagination),
                 header = instance.header.find(selector)._bgShowAria(context.rowCount !== -1),
                 footer = instance.footer.find(selector)._bgShowAria(context.rowCount !== -1);
 
@@ -347,7 +349,7 @@
             values = getParams(context, { css: markerCss, text: text, uri: "#" + uri }),
             item = $(tpl.paginationItem.resolve(values)).addClass(css);
 
-        item.find(getSelector(css.paginationButton)).on("click" + namespace, function (e)
+        item.find(getCssSelector(css.paginationButton)).on("click" + namespace, function (e)
         {
             e.preventDefault();
             var $this = $(this),
@@ -379,53 +381,67 @@
 
         $.each(context.columns, function(index, column)
         {
+            var headerCell = columns.eq(index);
             if (column.sortable)
             {
                 var sort = context.sort[column.id],
-                    iconCss = ((sort && sort === "asc") ? " " + css.iconDown : 
-                        (sort && sort === "desc") ? " " + css.iconUp : "");
-                columns.eq(index).addClass(css.sortable).append(" " + tpl.icon.resolve(getParams(context, { iconCss: iconCss })))
-                    .on("click" + namespace, function(e)
+                    iconCss = ((sort && sort === "asc") ? css.iconDown : 
+                        (sort && sort === "desc") ? css.iconUp : ""),
+                    headerCellContent = renderTableHeaderCell(options, context, headerCell, 
+                        tpl.icon.resolve(getParams(context, { iconCss: iconCss })), true);
+                headerCellContent.on("click" + namespace, function(e)
+                {
+                    e.preventDefault();
+                    var $this = $(this), 
+                        $sort = context.sort[column.id],
+                        $icon = $this.find(getCssSelector(css.icon));
+
+                    if (!options.multiSort)
                     {
-                        e.preventDefault();
-                        var $this = $(this), 
-                            $sort = context.sort[column.id],
-                            $icon = $this.find("." + css.icon);
+                        columns.find(getCssSelector(css.icon)).removeClass(css.iconDown + " " + css.iconUp);
+                        context.sort = {};
+                    }
 
-                        if (!options.multiSort)
+                    if ($sort && $sort === "asc")
+                    {
+                        context.sort[column.id] = "desc";
+                        $icon.removeClass(css.iconDown).addClass(css.iconUp);
+                    }
+                    else if ($sort && $sort === "desc")
+                    {
+                        if (options.multiSort)
                         {
-                            columns.find("." + css.icon).removeClass(css.iconDown + " " + css.iconUp);
-                            context.sort = {};
-                        }
-
-                        if ($sort && $sort === "asc")
-                        {
-                            context.sort[column.id] = "desc";
-                            $icon.removeClass(css.iconDown).addClass(css.iconUp);
-                        }
-                        else if ($sort && $sort === "desc")
-                        {
-                            if (options.multiSort)
-                            {
-                                delete context.sort[column.id];
-                                $icon.removeClass(css.iconUp);
-                            }
-                            else
-                            {
-                                context.sort[column.id] = "asc";
-                                $icon.removeClass(css.iconUp).addClass(css.iconDown);
-                            }
+                            delete context.sort[column.id];
+                            $icon.removeClass(css.iconUp);
                         }
                         else
                         {
                             context.sort[column.id] = "asc";
-                            $icon.addClass(css.iconDown);
+                            $icon.removeClass(css.iconUp).addClass(css.iconDown);
                         }
+                    }
+                    else
+                    {
+                        context.sort[column.id] = "asc";
+                        $icon.addClass(css.iconDown);
+                    }
 
-                        loadData(element, options, context);
-                    });
+                    loadData(element, options, context);
+                });
+            }
+            else
+            {
+                renderTableHeaderCell(options, context, headerCell, "", false);
             }
         });
+    }
+
+    function renderTableHeaderCell(options, context, headerCell, icon, sortable)
+    {
+        var css = options.css,
+            tpl = options.templates;
+        return headerCell.html(tpl.headerCellContent.resolve(getParams(context, { content: headerCell.html(), 
+            icon: icon, sortable: (sortable) ? css.sortable : "" }))).children(getCssSelector(css.columnHeaderAnchor)).first();
     }
 
     function replacePlaceHolder(options, placeholder, element, flag)
@@ -477,35 +493,37 @@
     };
 
     Grid.defaults = {
-        navigation: 3,          // it's a flag: 0 = none, 1 = top, 2 = bottom, 3 = both (top and bottom)
+        navigation: 3, // it's a flag: 0 = none, 1 = top, 2 = bottom, 3 = both (top and bottom)
         multiSort: false,
-        padding: 2,             // page padding (pagination)
-        post: {},               // or use function () { return {}; }
-        rowCount: {             // rows per page
+        padding: 2, // page padding (pagination)
+        post: {}, // or use function () { return {}; }
+        rowCount: { // rows per page
             "10": 10,
             "25": 25,
             "50": 50,
             "All": -1
         },
-        url: "",                // or use function () { return ""; }
+        url: "", // or use function () { return ""; }
 
         // todo: implement cache
 
         // note: The following properties are not available via data-api attributes
         css: {
-            actions: "actions btn-group",              // must be a unique class name or constellation of class names within the header and footer
-            dropDownItemButton: "dropdown-button",     // must be a unique class name or constellation of class names within the actionDropDown
-            dropDownMenu: "dropdown-menu pull-right",  // must be a unique class name or constellation of class names within the actionDropDown
+            actions: "actions btn-group", // must be a unique class name or constellation of class names within the header and footer
+            columnHeaderAnchor: "column-header-anchor", // must be a unique class name or constellation of class names within the column header cell
+            columnHeaderText: "text",
+            dropDownItemButton: "dropdown-button", // must be a unique class name or constellation of class names within the actionDropDown
+            dropDownMenu: "dropdown-menu pull-right", // must be a unique class name or constellation of class names within the actionDropDown
             footer: "bootgrid-footer container-fluid",
             header: "bootgrid-header container-fluid",
-            icon: "glyphicon",
+            icon: "icon glyphicon",
             iconDown: "glyphicon-chevron-down",
             iconRefresh: "glyphicon-refresh",
             iconUp: "glyphicon-chevron-up",
-            infos: "infos",                            // must be a unique class name or constellation of class names within the header and footer
+            infos: "infos", // must be a unique class name or constellation of class names within the header and footer
             loading: "bootgrid-loading",
-            pagination: "pagination",                  // must be a unique class name or constellation of class names within the header and footer
-            paginationButton: "button",                // must be a unique class name or constellation of class names within the pagination
+            pagination: "pagination", // must be a unique class name or constellation of class names within the header and footer
+            paginationButton: "button", // must be a unique class name or constellation of class names within the pagination
             sortable: "sortable",
             table: "bootgrid-table table"
         },
@@ -525,6 +543,7 @@
             cell: "<td>{{ctx.content}}</td>",
             footer: "<div id=\"{{ctx.id}}\" class=\"{{css.footer}}\"><div class=\"row\"><div class=\"col-sm-6\"><p class=\"{{css.pagination}}\"></p></div><div class=\"col-sm-6 infoBar\"><p class=\"{{css.infos}}\"></p></div></div></div>",
             header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.actions}}\"></p></div></div></div>",
+            headerCellContent: "<a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.content}}</span>{{ctx.icon}}</a>",
             icon: "<span class=\"{{css.icon}} {{ctx.iconCss}}\"></span>",
             infos: "<div class=\"{{css.infos}}\">{{lbl.infos}}</div>",
             loading: "<div class=\"{{css.loading}}\"><div>{{lbl.loading}}</div></div>",
