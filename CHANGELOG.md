@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.7
+- Fixed a column header visualization bug regarding sorting
+
 ## 0.9.6
 - CSS and HTML optimization for column headers
 - Minor bug fix regarding status bar ("-1")

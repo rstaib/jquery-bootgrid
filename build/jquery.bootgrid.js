@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v0.9.6 - 07/01/2014
+ * jQuery Bootgrid v0.9.7 - 07/01/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -385,8 +385,8 @@
             if (column.sortable)
             {
                 var sort = context.sort[column.id],
-                    iconCss = ((sort && sort === "asc") ? css.iconDown : 
-                        (sort && sort === "desc") ? css.iconUp : ""),
+                    iconCss = ((sort && sort === "asc") ? css.iconUp : 
+                        (sort && sort === "desc") ? css.iconDown : ""),
                     headerCellContent = renderTableHeaderCell(options, context, headerCell, 
                         tpl.icon.resolve(getParams(context, { iconCss: iconCss })), true);
                 headerCellContent.on("click" + namespace, function(e)
@@ -405,25 +405,25 @@
                     if ($sort && $sort === "asc")
                     {
                         context.sort[column.id] = "desc";
-                        $icon.removeClass(css.iconDown).addClass(css.iconUp);
+                        $icon.removeClass(css.iconUp).addClass(css.iconDown);
                     }
                     else if ($sort && $sort === "desc")
                     {
                         if (options.multiSort)
                         {
                             delete context.sort[column.id];
-                            $icon.removeClass(css.iconUp);
+                            $icon.removeClass(css.iconDown);
                         }
                         else
                         {
                             context.sort[column.id] = "asc";
-                            $icon.removeClass(css.iconUp).addClass(css.iconDown);
+                            $icon.removeClass(css.iconDown).addClass(css.iconUp);
                         }
                     }
                     else
                     {
                         context.sort[column.id] = "asc";
-                        $icon.addClass(css.iconDown);
+                        $icon.addClass(css.iconUp);
                     }
 
                     loadData(element, options, context);
