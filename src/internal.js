@@ -82,11 +82,14 @@ function loadColumns()
         var $this = $(this),
             order = $this.data("order"),
             sortable = $this.data("sortable"),
+            visible = $this.data("visible"),
             column = {
                 id: $this.data("column-id"),
+                name: $this.text(),
                 formatter: that.options.formatters[$this.data("formatter")],
                 order: (!sorted && (order === "asc" || order === "desc")) ? order : null,
-                sortable: !(sortable === false || sortable === 0) // default: true
+                sortable: !(sortable === false || sortable === 0), // default: true
+                visible: !(visible === false || visible === 0) // default: true
             };
         that.columns.push(column);
         if (column.order != null)
@@ -154,11 +157,19 @@ function render()
     var tpl = this.options.templates;
 
     this.element.addClass(this.options.css.table);
+
+    // checks whether there is an tbody element; otherwise creates one
+    if (this.element.children("tbody").length === 0)
+    {
+        this.element.append(tpl.body);
+    }
+
     if (this.options.navigation & 1)
     {
         this.header = $(tpl.header.resolve(getParams.call(this, { id: this.element._bgId() + "-header" })));
         this.element.before(this.header);
     }
+
     if (this.options.navigation & 2)
     {
         this.footer = $(tpl.footer.resolve(getParams.call(this, { id: this.element._bgId() + "-footer" })));
@@ -172,99 +183,87 @@ function renderActions()
 {
     if (this.options.navigation !== 0)
     {
-        var that = this,
-            css = this.options.css,
-            tpl = this.options.templates,
-            refresh = $(tpl.actionButton.resolve(getParams.call(this, 
-                { iconCss: css.iconRefresh, text: this.options.labels.refresh })))
-                    .on("click" + namespace, function (e)
-                    {
-                        // todo: prevent multiple fast clicks (fast click detection)
-                        e.preventDefault();
-                        var $this = $(this);
-                        that.current = 1;
-                        loadData.call(that);
-                        $this.trigger("blur");
-                    }),
-            actions = $(tpl.actions.resolve(getParams.call(this))).append(refresh),
-            selector = getCssSelector(css.actions);
+        var css = this.options.css,
+            selector = getCssSelector(css.actions),
+            headerActions = this.header.find(selector),
+            footerActions = this.footer.find(selector);
 
-        if (typeof this.options.rowCount === "object")
+        if ((headerActions.length + footerActions.length) > 0)
         {
-            var currentKey = getFirstDictionaryItem(this.options.rowCount, this.rowCount).key,
-                rowCount = $(tpl.actionDropDown.resolve(getParams.call(this, { text: currentKey })));
-            $.each(this.options.rowCount, function(key, value)
-            {
-                var item = $(tpl.actionDropDownItem.resolve(getParams.call(that, 
-                    { buttonCss: css.dropDownItemButton, key: key, uri: "#" + value })))
-                    ._bgSelectAria(key === currentKey);
-                item.find(getCssSelector(css.dropDownItemButton)).on("click" + namespace, function (e)
-                {
-                    e.preventDefault();
-                    var $this = $(this);
-                    if ($this.text() !== currentKey)
-                    {
-                        // todo: sophisticated solution needed for calculating which page is selected
-                        that.current = 1; // that.rowCount === -1 ---> All
-                        that.rowCount = +$this.attr("href").substr(1);
-                        loadData.call(that);
-                    }
-                    $this.trigger("blur");
-                });
-                rowCount.find(getCssSelector(css.dropDownMenu)).append(item);
-            });
-            actions.append(rowCount);
-        }
+            var that = this,
+                tpl = this.options.templates,
+                refresh = $(tpl.actionButton.resolve(getParams.call(this, 
+                    { iconCss: css.iconRefresh, text: this.options.labels.refresh })))
+                        .on("click" + namespace, function (e)
+                        {
+                            // todo: prevent multiple fast clicks (fast click detection)
+                            e.preventDefault();
 
-        replacePlaceHolder.call(this, this.header.find(selector), actions, 1);
-        replacePlaceHolder.call(this, this.footer.find(selector), actions, 2);
+                            var $this = $(this);
+                            that.current = 1;
+                            loadData.call(that);
+                            $this.trigger("blur");
+                        }),
+                actions = $(tpl.actions.resolve(getParams.call(this))).append(refresh);
+
+            // Row count selection
+            renderRowCountSelection.call(this, actions);
+
+            // Column selection
+            renderColumnSelection.call(this, actions);
+
+            replacePlaceHolder.call(this, headerActions, actions, 1);
+            replacePlaceHolder.call(this, footerActions, actions, 2);
+        }
     }
 }
 
-function renderRows(rows)
+function renderColumnSelection(actions)
 {
-    if (rows.length > 0)
-    {
-        var that = this,
-            tpl = this.options.templates,
-            tbody = this.element.children("tbody").first(),
-            html = "";
+    var that = this,
+        css = this.options.css,
+        tpl = this.options.templates,
+        icon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconColumns })),
+        dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: icon })));
 
-        $.each(rows, function(i, row)
-        {
-            html += "<tr>";
-            $.each(that.columns, function(j, column)
-            {
-                var value = ($.isFunction(column.formatter)) ? 
-                    column.formatter.call(that, column, row) : row[column.id];
-                html += tpl.cell.resolve(getParams.call(that, { content: 
-                    (value == null || value === "") ? "&nbsp;" : value }));
-            });
-            html += "</tr>";
-        });
-
-        tbody.html(html);
-    }
-    else
+    $.each(this.columns, function(i, column)
     {
-        renderNoResultsRow.call(this);
-    }
+        var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that, 
+            { value: column.id, label: column.name, checked: column.visible })))
+                .find(getCssSelector(css.dropDownItemCheckbox))
+                .on("click" + namespace, function (e)
+                {
+                    e.preventDefault();
+                    var $this = $(this);
+                    column.visible = !$this.children("input[type=checkbox]").prop("checked");
+                    loadData.call(that);
+                    $this.trigger("blur");
+                }).end();
+        dropDown.find(getCssSelector(css.dropDownMenu)).append(item);
+    });
+    actions.append(dropDown);
 }
 
 function renderInfos()
 {
     if (this.options.navigation !== 0)
     {
-        var end = (this.current * this.rowCount),
-            infos = $(this.options.templates.infos.resolve(getParams.call(this, { 
-                end: (this.total === 0 || end === -1 || end > this.total) ? this.total : end, 
-                start: (this.total === 0) ? 0 : (end - this.rowCount + 1), 
-                total: this.total
-            }))),
-            selector = getCssSelector(this.options.css.infos);
+        var selector = getCssSelector(this.options.css.infos),
+            headerInfos = this.header.find(selector),
+            footerInfos = this.footer.find(selector);
 
-        replacePlaceHolder.call(this, this.header.find(selector), infos, 1);
-        replacePlaceHolder.call(this, this.footer.find(selector), infos, 2);
+        if ((headerInfos.length + footerInfos.length) > 0)
+        {
+            var end = (this.current * this.rowCount),
+                infos = $(this.options.templates.infos.resolve(getParams.call(this, { 
+                    end: (this.total === 0 || end === -1 || end > this.total) ? this.total : end, 
+                    start: (this.total === 0) ? 0 : (end - this.rowCount + 1), 
+                    total: this.total
+                })));
+
+            replacePlaceHolder.call(this, headerInfos, infos, 1);
+            replacePlaceHolder.call(this, footerInfos, infos, 2);
+        }
     }
 }
 
@@ -281,10 +280,10 @@ function renderPagination()
     if (this.options.navigation !== 0)
     {
         var selector = getCssSelector(this.options.css.pagination),
-            header = this.header.find(selector)._bgShowAria(this.rowCount !== -1),
-            footer = this.footer.find(selector)._bgShowAria(this.rowCount !== -1);
+            headerPagination = this.header.find(selector)._bgShowAria(this.rowCount !== -1),
+            footerPagination = this.footer.find(selector)._bgShowAria(this.rowCount !== -1);
 
-        if (this.rowCount !== -1)
+        if (this.rowCount !== -1 && (headerPagination.length + footerPagination.length) > 0)
         {
             var tpl = this.options.templates,
                 current = this.current,
@@ -321,8 +320,8 @@ function renderPagination()
             renderPaginationItem.call(this, pagination, "last", "&raquo;", "last")
                 ._bgEnableAria(totalPages > current);
 
-            replacePlaceHolder.call(this, header, pagination, 1);
-            replacePlaceHolder.call(this, footer, pagination, 2);
+            replacePlaceHolder.call(this, headerPagination, pagination, 1);
+            replacePlaceHolder.call(this, footerPagination, pagination, 2);
         }
     }
 }
@@ -357,6 +356,73 @@ function renderPaginationItem(list, uri, text, markerCss)
 
     list.append(item);
     return item;
+}
+
+function renderRowCountSelection(actions)
+{
+    if (typeof this.options.rowCount === "object")
+    {
+        var that = this,
+            css = this.options.css,
+            tpl = this.options.templates,
+            currentKey = getFirstDictionaryItem(this.options.rowCount, this.rowCount).key,
+            rowCount = $(tpl.actionDropDown.resolve(getParams.call(this, { content: currentKey })));
+
+        $.each(this.options.rowCount, function(key, value)
+        {
+            var item = $(tpl.actionDropDownItem.resolve(getParams.call(that, { key: key, uri: "#" + value })))
+                ._bgSelectAria(key === currentKey).find(getCssSelector(css.dropDownItemButton))
+                    .on("click" + namespace, function (e)
+                    {
+                        e.preventDefault();
+
+                        var $this = $(this);
+                        if ($this.text() !== currentKey)
+                        {
+                            // todo: sophisticated solution needed for calculating which page is selected
+                            that.current = 1; // that.rowCount === -1 ---> All
+                            that.rowCount = +$this.attr("href").substr(1);
+                            loadData.call(that);
+                        }
+                        $this.trigger("blur");
+                    }).end();
+            rowCount.find(getCssSelector(css.dropDownMenu)).append(item);
+        });
+        actions.append(rowCount);
+    }
+}
+
+function renderRows(rows)
+{
+    if (rows.length > 0)
+    {
+        var that = this,
+            tpl = this.options.templates,
+            tbody = this.element.children("tbody").first(),
+            html = "",
+            cells = "";
+
+        $.each(rows, function(i, row)
+        {
+            cells = "";
+
+            $.each(that.columns, function(j, column)
+            {
+                var value = ($.isFunction(column.formatter)) ? 
+                    column.formatter.call(that, column, row) : row[column.id];
+                cells += tpl.cell.resolve(getParams.call(that, { content: 
+                    (value == null || value === "") ? "&nbsp;" : value }));
+            });
+
+            html += tpl.row.resolve(getParams.call(that, { cells: cells }));
+        });
+
+        tbody.html(html);
+    }
+    else
+    {
+        renderNoResultsRow.call(this);
+    }
 }
 
 function renderTableHeader()
@@ -427,8 +493,9 @@ function renderTableHeaderCell(headerCell, icon, sortable)
 {
     var css = this.options.css,
         tpl = this.options.templates;
-    return headerCell.html(tpl.headerCellContent.resolve(getParams.call(this, { content: headerCell.html(), 
-        icon: icon, sortable: (sortable) ? css.sortable : "" }))).children(getCssSelector(css.columnHeaderAnchor)).first();
+    return headerCell.html(tpl.headerCellContent.resolve(getParams.call(this, 
+        { content: headerCell.html(), icon: icon, sortable: (sortable) ? css.sortable : "" })))
+            .children(getCssSelector(css.columnHeaderAnchor)).first();
 }
 
 function replacePlaceHolder(placeholder, element, flag)

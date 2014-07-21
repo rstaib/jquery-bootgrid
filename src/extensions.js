@@ -41,6 +41,18 @@ $.fn.extend({
 
 if (!String.prototype.resolve)
 {
+    var formatter = {
+        "checked": function(value)
+        {
+            if (typeof value === "boolean")
+            {
+                return (value) ? "checked=\"checked\"" : "";
+            }
+
+            return value;
+        }
+    };
+
     String.prototype.resolve = function (substitutes, prefixes)
     {
         var result = this;
@@ -54,6 +66,10 @@ if (!String.prototype.resolve)
             }
             else
             {
+                if ($.isFunction(formatter[key]))
+                {
+                    value = formatter[key](value);
+                }
                 key = (prefixes) ? prefixes.join(".") + "." + key : key;
                 var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");
                 result = result.replace(pattern, value);

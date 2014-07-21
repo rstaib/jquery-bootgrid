@@ -50,10 +50,12 @@ Grid.defaults = {
         columnHeaderAnchor: "column-header-anchor", // must be a unique class name or constellation of class names within the column header cell
         columnHeaderText: "text",
         dropDownItemButton: "dropdown-button", // must be a unique class name or constellation of class names within the actionDropDown
+        dropDownItemCheckbox: "dropdown-checkbox", // must be a unique class name or constellation of class names within the actionDropDown
         dropDownMenu: "dropdown-menu pull-right", // must be a unique class name or constellation of class names within the actionDropDown
         footer: "bootgrid-footer container-fluid",
         header: "bootgrid-header container-fluid",
         icon: "icon glyphicon",
+        iconColumns: "glyphicon-th-list",
         iconDown: "glyphicon-chevron-down",
         iconRefresh: "glyphicon-refresh",
         iconUp: "glyphicon-chevron-up",
@@ -74,9 +76,11 @@ Grid.defaults = {
         // note: Grenzen der template sprache sind: Templates duerfen nur einmal ineinander verschachtelt werden und 
         //       es darf mittels des Kontexts kein weiteres HTML, dass wiederum Variablen enthalten kann, die auch ersetzt werden muessen, eingefuegt werden.
         actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{tpl.icon}}</button>",
-        actionDropDown: "<div class=\"btn-group\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\">{{ctx.text}} <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenu}}\" role=\"menu\"></ul></div>",
-        actionDropDownItem: "<li><a href=\"{{ctx.uri}}\" class=\"{{ctx.buttonCss}}\">{{ctx.key}}</a></li>",
+        actionDropDown: "<div class=\"btn-group\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\">{{ctx.content}} <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenu}}\" role=\"menu\"></ul></div>",
+        actionDropDownItem: "<li><a href=\"{{ctx.uri}}\" class=\"{{css.dropDownItemButton}}\">{{ctx.key}}</a></li>",
+        actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItemCheckbox}}\"><input type=\"checkbox\" value=\"{{ctx.value}}\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
         actions: "<div class=\"{{css.actions}}\"></div>",
+        body: "<tbody></tbody>",
         cell: "<td>{{ctx.content}}</td>",
         footer: "<div id=\"{{ctx.id}}\" class=\"{{css.footer}}\"><div class=\"row\"><div class=\"col-sm-6\"><p class=\"{{css.pagination}}\"></p></div><div class=\"col-sm-6 infoBar\"><p class=\"{{css.infos}}\"></p></div></div></div>",
         header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.actions}}\"></p></div></div></div>",
@@ -86,7 +90,8 @@ Grid.defaults = {
         loading: "<tr><td colspan=\"{{ctx.columns}}\" class=\"loading\">{{lbl.loading}}</td></tr>",
         noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{lbl.noResults}}</td></tr>",
         pagination: "<ul class=\"{{css.pagination}}\"></ul>",
-        paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>"
+        paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
+        row: "<tr>{{ctx.cells}}</tr>"
     }
 };
 
@@ -133,6 +138,19 @@ Grid.prototype.reload = function()
     this.current = 1; // reset
     // todo: support static data (no ajax)
     loadData.call(this);
+};
+
+Grid.prototype.remove = function(id)
+{
+    // todo: implement!
+    if (typeof id === "string")
+    {
+        // single remove
+    }
+    else if ($.isArray(id))
+    {
+        // multi remove (range)
+    }
 };
 
 Grid.prototype.select = function()
