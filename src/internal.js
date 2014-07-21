@@ -29,24 +29,25 @@ function getFirstDictionaryItem(dictionary, value)
     throw new Error("Is not a dictionary!");
 }
 
-function getInstance(element)
+function getParams(context)
 {
-    return element.data(namespace);
+    var staticParams = {
+        tpl: this.options.templates,
+        lbl: this.options.labels,
+        css: this.options.css,
+        ctx: {}
+    };
+    return $.extend({}, staticParams, { ctx: context || {} });
 }
 
-function getParams(context, ctx)
-{
-    return $.extend({}, context.cachedParams, { ctx: ctx || {} });
-}
-
-function getRequest(options, context)
+function getRequest()
 {
     var request = {
-            current: context.current,
-            rowCount: context.rowCount,
-            sort: context.sort
+            current: this.current,
+            rowCount: this.rowCount,
+            sort: this.sort
         },
-        post = options.post;
+        post = this.options.post;
 
     post = ($.isFunction(post)) ? post() : post;
     return $.extend(true, request, post);
@@ -57,51 +58,44 @@ function getCssSelector(css)
     return "." + $.trim(css).replace(/\s+/gm, ".");
 }
 
-function getUrl(options)
+function getUrl()
 {
-    var url = options.url;
+    var url = this.options.url;
     return ($.isFunction(url)) ? url() : url;
 }
 
-function hideLoading(element)
+function init()
 {
-    var instance = getInstance(element);
-    instance.loading.fadeOut(300);
-    $(window).off(namespace);
+    loadColumns.call(this);
+    render.call(this);
+    loadData.call(this);
 }
 
-function init(element, options, context)
+function loadColumns()
 {
-    loadColumns(element, options, context);
-    render(element, options, context);
-    loadData(element, options, context);
-}
-
-function loadColumns(element, options, context)
-{
-    var firstHeadRow = element.find("thead > tr").first(),
+    var that = this,
+        firstHeadRow = this.element.find("thead > tr").first(),
         sorted = false;
 
     firstHeadRow.children().each(function()
     {
         var $this = $(this),
-            custom = $this.data("custom"),
             order = $this.data("order"),
             sortable = $this.data("sortable"),
             column = {
                 id: $this.data("column-id"),
-                custom: (custom === true || custom === 1), // default: false
+                formatter: that.options.formatters[$this.data("formatter")],
                 order: (!sorted && (order === "asc" || order === "desc")) ? order : null,
                 sortable: !(sortable === false || sortable === 0) // default: true
             };
-        context.columns.push(column);
+        that.columns.push(column);
         if (column.order != null)
         {
-            context.sort[column.id] = column.order;
+            that.sort[column.id] = column.order;
         }
 
         // ensures that only the first order will be applied in case of multi sorting is disabled
-        if (!options.multiSort && column.order !== null)
+        if (!that.options.multiSort && column.order !== null)
         {
             sorted = true;
         }
@@ -118,18 +112,19 @@ response = {
 }
 */
 
-function loadData(element, options, context)
+function loadData()
 {
-    var request = getRequest(options, context),
-        url = getUrl(options);
+    var that = this,
+        request = getRequest.call(this),
+        url = getUrl.call(this);
 
     if (url == null || typeof url !== "string" || url.length === 0)
     {
         throw new Error("Url setting must be a none empty string or a function that returns one.");
     }
 
-    element.trigger("load" + namespace);
-    showLoading(element);
+    this.element.trigger("load" + namespace);
+    showLoading.call(this);
     // todo: support static data (no ajax)
     $.post(url, request, function (response)
     {
@@ -138,69 +133,69 @@ function loadData(element, options, context)
             response = $.parseJSON(response);
         }
 
-        context.current = response.current;
-        context.total = response.total;
-        context.totalPages = Math.ceil(context.total / context.rowCount);
+        that.current = response.current;
+        that.total = response.total;
+        that.totalPages = Math.ceil(that.total / that.rowCount);
 
-        renderBody(element, options, context, response.rows);
-        renderActions(element, options, context);
-        renderInfos(element, options, context);
-        renderPagination(element, options, context);
-        hideLoading(element);
-        element.trigger("loaded" + namespace);
-    }).fail(function() { hideLoading(element); });
+        renderRows.call(that, response.rows);
+        renderActions.call(that);
+        renderInfos.call(that);
+        renderPagination.call(that);
+        that.element.trigger("loaded" + namespace);
+    }).fail(function()
+    {
+        // overrides loading mask
+        renderNoResultsRow.call(that);
+    });
 }
 
-function render(element, options, context)
+function render()
 {
-    var instance = getInstance(element),
-        css = options.css,
-        tpl = options.templates;
+    var tpl = this.options.templates;
 
-    instance.loading = $(options.templates.loading.resolve(getParams(context)));
-    element.addClass(css.table).after(instance.loading);
-    if (options.navigation & 1)
+    this.element.addClass(this.options.css.table);
+    if (this.options.navigation & 1)
     {
-        instance.header = $(tpl.header.resolve(getParams(context, { id: element._bgId() + "-header" })));
-        element.before(instance.header);
+        this.header = $(tpl.header.resolve(getParams.call(this, { id: this.element._bgId() + "-header" })));
+        this.element.before(this.header);
     }
-    if (options.navigation & 2)
+    if (this.options.navigation & 2)
     {
-        instance.footer = $(tpl.footer.resolve(getParams(context, { id: element._bgId() + "-footer" })));
-        element.after(instance.footer);
+        this.footer = $(tpl.footer.resolve(getParams.call(this, { id: this.element._bgId() + "-footer" })));
+        this.element.after(this.footer);
     }
 
-    renderTableHeader(element, options, context);
+    renderTableHeader.call(this);
 }
 
-function renderActions(element, options, context)
+function renderActions()
 {
-    if (options.navigation !== 0)
+    if (this.options.navigation !== 0)
     {
-        var instance = getInstance(element),
-            css = options.css,
-            tpl = options.templates,
-            refresh = $(tpl.actionButton.resolve(getParams(context, 
-                { iconCss: css.iconRefresh, text: options.labels.refresh })))
+        var that = this,
+            css = this.options.css,
+            tpl = this.options.templates,
+            refresh = $(tpl.actionButton.resolve(getParams.call(this, 
+                { iconCss: css.iconRefresh, text: this.options.labels.refresh })))
                     .on("click" + namespace, function (e)
                     {
                         // todo: prevent multiple fast clicks (fast click detection)
                         e.preventDefault();
                         var $this = $(this);
-                        context.current = 1;
-                        loadData(element, options, context);
+                        that.current = 1;
+                        loadData.call(that);
                         $this.trigger("blur");
                     }),
-            actions = $(tpl.actions.resolve(getParams(context))).append(refresh),
+            actions = $(tpl.actions.resolve(getParams.call(this))).append(refresh),
             selector = getCssSelector(css.actions);
 
-        if (typeof options.rowCount === "object")
+        if (typeof this.options.rowCount === "object")
         {
-            var currentKey = getFirstDictionaryItem(options.rowCount, context.rowCount).key,
-                rowCount = $(tpl.actionDropDown.resolve(getParams(context, { text: currentKey })));
-            $.each(options.rowCount, function(key, value)
+            var currentKey = getFirstDictionaryItem(this.options.rowCount, this.rowCount).key,
+                rowCount = $(tpl.actionDropDown.resolve(getParams.call(this, { text: currentKey })));
+            $.each(this.options.rowCount, function(key, value)
             {
-                var item = $(tpl.actionDropDownItem.resolve(getParams(context, 
+                var item = $(tpl.actionDropDownItem.resolve(getParams.call(that, 
                     { buttonCss: css.dropDownItemButton, key: key, uri: "#" + value })))
                     ._bgSelectAria(key === currentKey);
                 item.find(getCssSelector(css.dropDownItemButton)).on("click" + namespace, function (e)
@@ -210,9 +205,9 @@ function renderActions(element, options, context)
                     if ($this.text() !== currentKey)
                     {
                         // todo: sophisticated solution needed for calculating which page is selected
-                        context.current = 1; // context.rowCount === -1 ---> All
-                        context.rowCount = +$this.attr("href").substr(1);
-                        loadData(element, options, context);
+                        that.current = 1; // that.rowCount === -1 ---> All
+                        that.rowCount = +$this.attr("href").substr(1);
+                        loadData.call(that);
                     }
                     $this.trigger("blur");
                 });
@@ -221,123 +216,123 @@ function renderActions(element, options, context)
             actions.append(rowCount);
         }
 
-        replacePlaceHolder(options, instance.header.find(selector), actions, 1);
-        replacePlaceHolder(options, instance.footer.find(selector), actions, 2);
+        replacePlaceHolder.call(this, this.header.find(selector), actions, 1);
+        replacePlaceHolder.call(this, this.footer.find(selector), actions, 2);
     }
 }
 
-function renderBody(element, options, context, rows)
+function renderRows(rows)
 {
-    var tpl = options.templates,
-        tbody = element.children("tbody").first().empty();
-
     if (rows.length > 0)
     {
+        var that = this,
+            tpl = this.options.templates,
+            tbody = this.element.children("tbody").first(),
+            html = "";
+
         $.each(rows, function(i, row)
         {
-            var tr = $(tpl.row);
-            $.each(context.columns, function(j, column)
+            html += "<tr>";
+            $.each(that.columns, function(j, column)
             {
-                if (column.custom)
-                {
-                    element.trigger("custom" + namespace, {
-                        cell: $(tpl.cell.resolve(getParams(context, { content: "&nbsp;" }))).appendTo(tr),
-                        column: column,
-                        row: row
-                    });
-                }
-                else
-                {
-                    var value = row[column.id];
-                    tr.append(tpl.cell.resolve(getParams(context, { content: (value == null || value === "") ? "&nbsp;" : value })));
-                }
+                var value = ($.isFunction(column.formatter)) ? 
+                    column.formatter.call(that, column, row) : row[column.id];
+                html += tpl.cell.resolve(getParams.call(that, { content: 
+                    (value == null || value === "") ? "&nbsp;" : value }));
             });
-            tbody.append(tr);
+            html += "</tr>";
         });
+
+        tbody.html(html);
     }
     else
     {
-        tbody.append(tpl.noResults.resolve(getParams(context, { columns: context.columns.length, text: options.labels.noResults })));
+        renderNoResultsRow.call(this);
     }
 }
 
-function renderInfos(element, options, context)
+function renderInfos()
 {
-    if (options.navigation !== 0)
+    if (this.options.navigation !== 0)
     {
-        var instance = getInstance(element),
-            end = (context.current * context.rowCount),
-            infos = $(options.templates.infos.resolve(getParams(context, { 
-                end: (context.total === 0 || end === -1 || end > context.total) ? context.total : end, 
-                start: (context.total === 0) ? 0 : (end - context.rowCount + 1), 
-                total: context.total
+        var end = (this.current * this.rowCount),
+            infos = $(this.options.templates.infos.resolve(getParams.call(this, { 
+                end: (this.total === 0 || end === -1 || end > this.total) ? this.total : end, 
+                start: (this.total === 0) ? 0 : (end - this.rowCount + 1), 
+                total: this.total
             }))),
-            selector = getCssSelector(options.css.infos);
+            selector = getCssSelector(this.options.css.infos);
 
-        replacePlaceHolder(options, instance.header.find(selector), infos, 1);
-        replacePlaceHolder(options, instance.footer.find(selector), infos, 2);
+        replacePlaceHolder.call(this, this.header.find(selector), infos, 1);
+        replacePlaceHolder.call(this, this.footer.find(selector), infos, 2);
     }
 }
 
-function renderPagination(element, options, context)
+function renderNoResultsRow()
 {
-    if (options.navigation !== 0)
+    var tbody = this.element.children("tbody").first(),
+        tpl = this.options.templates;
+
+    tbody.html(tpl.noResults.resolve(getParams.call(this, { columns: this.columns.length })));
+}
+
+function renderPagination()
+{
+    if (this.options.navigation !== 0)
     {
-        var instance = getInstance(element),
-            selector = getCssSelector(options.css.pagination),
-            header = instance.header.find(selector)._bgShowAria(context.rowCount !== -1),
-            footer = instance.footer.find(selector)._bgShowAria(context.rowCount !== -1);
+        var selector = getCssSelector(this.options.css.pagination),
+            header = this.header.find(selector)._bgShowAria(this.rowCount !== -1),
+            footer = this.footer.find(selector)._bgShowAria(this.rowCount !== -1);
 
-        if (context.rowCount === -1)
+        if (this.rowCount !== -1)
         {
-            return;
+            var tpl = this.options.templates,
+                current = this.current,
+                totalPages = this.totalPages,
+                pagination = $(tpl.pagination.resolve(getParams.call(this))),
+                offsetRight = totalPages - current,
+                offsetLeft = (this.options.padding - current) * -1,
+                startWith = ((offsetRight >= this.options.padding) ?
+                    Math.max(offsetLeft, 1) :
+                    Math.max((offsetLeft - this.options.padding + offsetRight), 1)),
+                maxCount = this.options.padding * 2 + 1,
+                count = (totalPages >= maxCount) ? maxCount : totalPages;
+
+            renderPaginationItem.call(this, pagination, "first", "&laquo;", "first")
+                ._bgEnableAria(current > 1);
+            renderPaginationItem.call(this, pagination, "prev", "&lt;", "prev")
+                ._bgEnableAria(current > 1);
+
+            for (var i = 0; i < count; i++)
+            {
+                var pos = i + startWith;
+                renderPaginationItem.call(this, pagination, pos, pos, "page-" + pos)
+                    ._bgEnableAria()._bgSelectAria(pos === current);
+            }
+
+            if (count === 0)
+            {
+                renderPaginationItem.call(this, pagination, 1, 1, "page-" + 1)
+                    ._bgEnableAria(false)._bgSelectAria();
+            }
+
+            renderPaginationItem.call(this, pagination, "next", "&gt;", "next")
+                ._bgEnableAria(totalPages > current);
+            renderPaginationItem.call(this, pagination, "last", "&raquo;", "last")
+                ._bgEnableAria(totalPages > current);
+
+            replacePlaceHolder.call(this, header, pagination, 1);
+            replacePlaceHolder.call(this, footer, pagination, 2);
         }
-
-        var tpl = options.templates,
-            current = context.current,
-            totalPages = context.totalPages,
-            pagination = $(tpl.pagination.resolve(getParams(context))),
-            offsetRight = totalPages - current,
-            offsetLeft = (options.padding - current) * -1,
-            startWith = ((offsetRight >= options.padding) ?
-                Math.max(offsetLeft, 1) :
-                Math.max((offsetLeft - options.padding + offsetRight), 1)),
-            maxCount = options.padding * 2 + 1,
-            count = (totalPages >= maxCount) ? maxCount : totalPages;
-
-        renderPaginationItem(element, options, context, pagination, "first", "&laquo;", "first")
-            ._bgEnableAria(current > 1);
-        renderPaginationItem(element, options, context, pagination, "prev", "&lt;", "prev")
-            ._bgEnableAria(current > 1);
-
-        for (var i = 0; i < count; i++)
-        {
-            var pos = i + startWith;
-            renderPaginationItem(element, options, context, pagination, pos, pos, "page-" + pos)
-                ._bgEnableAria()._bgSelectAria(pos === current);
-        }
-
-        if (count === 0)
-        {
-            renderPaginationItem(element, options, context, pagination, 1, 1, "page-" + 1)
-                ._bgEnableAria(false)._bgSelectAria();
-        }
-
-        renderPaginationItem(element, options, context, pagination, "next", "&gt;", "next")
-            ._bgEnableAria(totalPages > current);
-        renderPaginationItem(element, options, context, pagination, "last", "&raquo;", "last")
-            ._bgEnableAria(totalPages > current);
-
-        replacePlaceHolder(options, header, pagination, 1);
-        replacePlaceHolder(options, footer, pagination, 2);
     }
 }
 
-function renderPaginationItem(element, options, context, list, uri, text, markerCss)
+function renderPaginationItem(list, uri, text, markerCss)
 {
-    var tpl = options.templates,
-        css = options.css,
-        values = getParams(context, { css: markerCss, text: text, uri: "#" + uri }),
+    var that = this,
+        tpl = this.options.templates,
+        css = this.options.css,
+        values = getParams.call(this, { css: markerCss, text: text, uri: "#" + uri }),
         item = $(tpl.paginationItem.resolve(values)).addClass(css);
 
     item.find(getCssSelector(css.paginationButton)).on("click" + namespace, function (e)
@@ -349,13 +344,13 @@ function renderPaginationItem(element, options, context, list, uri, text, marker
         {
             var commandList = {
                 first: 1,
-                prev: context.current - 1,
-                next: context.current + 1,
-                last: context.totalPages
+                prev: that.current - 1,
+                next: that.current + 1,
+                last: that.totalPages
             };
             var command = $this.attr("href").substr(1);
-            context.current = commandList[command] || +command; // + converts string to int
-            loadData(element, options, context);
+            that.current = commandList[command] || +command; // + converts string to int
+            loadData.call(that);
         }
         $this.trigger("blur");
     });
@@ -364,80 +359,81 @@ function renderPaginationItem(element, options, context, list, uri, text, marker
     return item;
 }
 
-function renderTableHeader(element, options, context)
+function renderTableHeader()
 {
-    var columns = element.find("thead > tr > th"),
-        css = options.css,
-        tpl = options.templates;
+    var that = this,
+        columns = this.element.find("thead > tr > th"),
+        css = this.options.css,
+        tpl = this.options.templates;
 
-    $.each(context.columns, function(index, column)
+    $.each(this.columns, function(index, column)
     {
         var headerCell = columns.eq(index);
         if (column.sortable)
         {
-            var sort = context.sort[column.id],
+            var sort = that.sort[column.id],
                 iconCss = ((sort && sort === "asc") ? css.iconUp : 
                     (sort && sort === "desc") ? css.iconDown : ""),
-                headerCellContent = renderTableHeaderCell(options, context, headerCell, 
-                    tpl.icon.resolve(getParams(context, { iconCss: iconCss })), true);
+                headerCellContent = renderTableHeaderCell.call(that, headerCell, 
+                    tpl.icon.resolve(getParams.call(that, { iconCss: iconCss })), true);
             headerCellContent.on("click" + namespace, function(e)
             {
                 e.preventDefault();
                 var $this = $(this), 
-                    $sort = context.sort[column.id],
+                    $sort = that.sort[column.id],
                     $icon = $this.find(getCssSelector(css.icon));
 
-                if (!options.multiSort)
+                if (!that.options.multiSort)
                 {
                     columns.find(getCssSelector(css.icon)).removeClass(css.iconDown + " " + css.iconUp);
-                    context.sort = {};
+                    that.sort = {};
                 }
 
                 if ($sort && $sort === "asc")
                 {
-                    context.sort[column.id] = "desc";
+                    that.sort[column.id] = "desc";
                     $icon.removeClass(css.iconUp).addClass(css.iconDown);
                 }
                 else if ($sort && $sort === "desc")
                 {
-                    if (options.multiSort)
+                    if (that.options.multiSort)
                     {
-                        delete context.sort[column.id];
+                        delete that.sort[column.id];
                         $icon.removeClass(css.iconDown);
                     }
                     else
                     {
-                        context.sort[column.id] = "asc";
+                        that.sort[column.id] = "asc";
                         $icon.removeClass(css.iconDown).addClass(css.iconUp);
                     }
                 }
                 else
                 {
-                    context.sort[column.id] = "asc";
+                    that.sort[column.id] = "asc";
                     $icon.addClass(css.iconUp);
                 }
 
-                loadData(element, options, context);
+                loadData.call(that);
             });
         }
         else
         {
-            renderTableHeaderCell(options, context, headerCell, "", false);
+            renderTableHeaderCell.call(that, headerCell, "", false);
         }
     });
 }
 
-function renderTableHeaderCell(options, context, headerCell, icon, sortable)
+function renderTableHeaderCell(headerCell, icon, sortable)
 {
-    var css = options.css,
-        tpl = options.templates;
-    return headerCell.html(tpl.headerCellContent.resolve(getParams(context, { content: headerCell.html(), 
+    var css = this.options.css,
+        tpl = this.options.templates;
+    return headerCell.html(tpl.headerCellContent.resolve(getParams.call(this, { content: headerCell.html(), 
         icon: icon, sortable: (sortable) ? css.sortable : "" }))).children(getCssSelector(css.columnHeaderAnchor)).first();
 }
 
-function replacePlaceHolder(options, placeholder, element, flag)
+function replacePlaceHolder(placeholder, element, flag)
 {
-    if (options.navigation & flag)
+    if (this.options.navigation & flag)
     {
         placeholder.each(function(index, item)
         {
@@ -447,14 +443,16 @@ function replacePlaceHolder(options, placeholder, element, flag)
     }
 }
 
-function showLoading(element)
+function showLoading()
 {
-    var instance = getInstance(element);
-    $(window).on("resize" + namespace, function ()
+    var tpl = this.options.templates,
+        tbody = this.element.children("tbody").first(),
+        firstCell = tbody.find("tr > td").first(),
+        padding = Math.floor(((tbody.height() || 0) - firstCell.height()) / 2);
+
+    tbody.html(tpl.loading.resolve(getParams.call(this, { columns: this.columns.length })));
+    if (padding > 0)
     {
-        var position = element.position();
-        instance.loading.css("left", position.left).css("top", position.top)
-            .height(element.height()).width(element.width());
-    }).resize();
-    instance.loading.fadeIn(300);
+        tbody.find("tr > td").css("padding", padding + "px 0");
+    }
 }

@@ -1,30 +1,37 @@
 // GRID PUBLIC CLASS DEFINITION
 // ====================
 
+/**
+ * Represents the jQuery Bootgrid plugin.
+ *
+ * @class Grid
+ * @constructor
+ * @param [element] {Object} The corresponding DOM element.
+ * @param [options] {Object} The options to initialize the plugin.
+ * @chainable
+ **/
 var Grid = function(element, options)
 {
     this.element = $(element);
     this.options = $.extend(true, {}, Grid.defaults, this.element.data(), options);
+    this.columns = [];
+    this.current = 1;
+    this.items = null; // todo: implement (static data)
     var rowCount = this.options.rowCount;
-    this.context = {
-        columns: [],
-        current: 1,
-        rowCount: (typeof rowCount === "object") ? getFirstDictionaryItem(rowCount).value : rowCount,
-        sort: {},
-        total: 0,
-        totalPages: 0,
-        cachedParams: {
-            tpl: this.options.templates,
-            lbl: this.options.labels,
-            css: this.options.css,
-            ctx:  {}
-        }
-    };
+    this.rowCount = (typeof rowCount === "object") ? getFirstDictionaryItem(rowCount).value : rowCount;
+    this.sort = {};
+    this.total = 0;
+    this.totalPages = 0;
 };
 
 Grid.defaults = {
     navigation: 3, // it's a flag: 0 = none, 1 = top, 2 = bottom, 3 = both (top and bottom)
+    enableAsync: false, // todo: implement and find a better name for this property!
+    enableSelection: false, // todo: implement!
+    enableSorting: false, // todo: implement!
+    multiSelect: false, // todo: implement!
     multiSort: false,
+    selectRows: false, // todo: implement and find a better name for this property [select new rows after adding]!
     padding: 2, // page padding (pagination)
     post: {}, // or use function () { return {}; }
     rowCount: { // rows per page
@@ -50,13 +57,13 @@ Grid.defaults = {
         iconDown: "glyphicon-chevron-down",
         iconRefresh: "glyphicon-refresh",
         iconUp: "glyphicon-chevron-up",
-        infos: "infos", // must be a unique class name or constellation of class names within the header and footer
-        loading: "bootgrid-loading",
+        infos: "infos", // must be a unique class name or constellation of class names within the header and footer,
         pagination: "pagination", // must be a unique class name or constellation of class names within the header and footer
         paginationButton: "button", // must be a unique class name or constellation of class names within the pagination
         sortable: "sortable",
         table: "bootgrid-table table"
     },
+    formatters: {},
     labels: {
         infos: "Showing {{ctx.start}} to {{ctx.end}} of {{ctx.total}} entries",
         loading: "Loading...",
@@ -76,25 +83,61 @@ Grid.defaults = {
         headerCellContent: "<a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.content}}</span>{{ctx.icon}}</a>",
         icon: "<span class=\"{{css.icon}} {{ctx.iconCss}}\"></span>",
         infos: "<div class=\"{{css.infos}}\">{{lbl.infos}}</div>",
-        loading: "<div class=\"{{css.loading}}\"><div>{{lbl.loading}}</div></div>",
-        noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{ctx.text}}</td></tr>",
+        loading: "<tr><td colspan=\"{{ctx.columns}}\" class=\"loading\">{{lbl.loading}}</td></tr>",
+        noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{lbl.noResults}}</td></tr>",
         pagination: "<ul class=\"{{css.pagination}}\"></ul>",
-        paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
-        row: "<tr></tr>"
+        paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>"
     }
+};
+
+Grid.prototype.add = function(item)
+{
+    // todo: implement!
+    if ($.isPlainObject(item))
+    {
+        // single add
+    }
+    else if ($.isArray(item))
+    {
+        // multi add (range)
+    }
+};
+
+Grid.prototype.clear = function()
+{
+    // todo: implement!
 };
 
 Grid.prototype.destroy = function()
 {
     $(window).off(namespace);
     this.element.off(namespace).removeData(namespace);
+    // todo: empty body and remove surrounding elements
+};
+
+Grid.prototype.insert = function(index, item)
+{
+    // todo: implement!
+    if ($.isPlainObject(item))
+    {
+        // single insert
+    }
+    else if ($.isArray(item))
+    {
+        // multi insert (range)
+    }
 };
 
 Grid.prototype.reload = function()
 {
-    this.context.current = 1; // reset
+    this.current = 1; // reset
     // todo: support static data (no ajax)
-    loadData(this.element, this.options, this.context);
+    loadData.call(this);
+};
+
+Grid.prototype.select = function()
+{
+    // todo: implement!
 };
 
 Grid.prototype.sort = function(dictionary)

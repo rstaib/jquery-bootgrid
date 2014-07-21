@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.0
+- Added public functions for dynamic manipulation such as add, insert and remove row(s)
+- Added column filter
+- Static data (without ajax calls)
+- Added selection
+- Show/Hide column headers
+- Search field
+
+### Breaking Changes
+- `data-custom` is now `data-formatter` and instead of being a `bool` it is a event name
+
 ## 0.9.7
 - Fixed a column header visualization bug regarding sorting
 

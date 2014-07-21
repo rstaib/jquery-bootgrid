@@ -4,55 +4,53 @@
 module("render functions", {
     setup: function ()
     {
-        $("#qunit-fixture").append($("<div id=\"header\"><div class=\"infos\"></div></div><div id=\"table\"></div><div id=\"footer\"><div class=\"infos\"></div></div>"));
+        $("#qunit-fixture").html("<div id=\"header\"><div class=\"infos\"></div></div><div id=\"table\"></div><div id=\"footer\"><div class=\"infos\"></div></div>");
     },
     teardown: function ()
     {
-        $("#test").remove();
+        $("#qunit-fixture").empty();
     }
 });
 
-function renderInfosTest(expected, message, context)
+function renderInfosTest(expected, message, current, rowCount, total)
 {
     // given
-    var header = $("#header"),
-        footer = $("#footer"),
-        element = $("#table").data(namespace, {
-            header: header,
-            footer: footer
-        }),
-        options = {
-            navigation: 1,
-            css: {
-                infos: "infos"
+    var 
+        instance = {
+            element: $("#table").data(namespace, {
+                header: header,
+                footer: footer
+            }),
+            options: {
+                navigation: 1,
+                css: {
+                    infos: "infos"
+                },
+                templates: {
+                    infos: "<div class=\"infos\">{{ctx.start}}{{ctx.end}}{{ctx.total}}</div>"
+                }
             },
-            templates: {
-                infos: "<div class=\"infos\">{{ctx.start}}{{ctx.end}}{{ctx.total}}</div>"
-            }
+            current: current,
+            rowCount: rowCount,
+            total: total,
+            header: $("#header"),
+            footer: $("#footer")
         };
 
     // when
-    renderInfos(element, options, context);
+    renderInfos.call(instance);
 
     // then
-    var infos = header.find(".infos").text();
+    var infos = instance.header.find(".infos").text();
     equal(infos, expected, message);
 }
 
 test("renderInfos all test", 1, function ()
 {
-    renderInfosTest("11010", "Valid infos", {
-        current: 1,
-        rowCount: -1,
-        total: 10
-    });
+    renderInfosTest("11010", "Valid infos", 1, -1, 10);
 });
 
 test("renderInfos paged test", 1, function ()
 {
-    renderInfosTest("1510", "Valid infos", {
-        current: 1,
-        rowCount: 5,
-        total: 10
-    });
+    renderInfosTest("1510", "Valid infos", 1, 5, 10);
 });

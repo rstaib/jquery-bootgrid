@@ -54,7 +54,7 @@
             {
                 display: block;
                 margin: 0 16px 0 0;
-                .turncate()
+                .turncate();
             }
 
             & > .icon
@@ -69,25 +69,12 @@
 
     td
     {
-        .turncate()
-    }
-}
+        .turncate();
 
-.bootgrid-loading
-{
-    background: #fff;
-    display: none;
-    .opacity(0.9);
-    position: absolute;
-    z-index: 1000;
-
-    > div
-    {
-        background: #fff;
-        border: 2px solid #ddd;
-        margin: 20px auto auto;
-        padding: 10px 20px;
-        text-align: center;
-        width: 200px;
+        &.loading
+        {
+            background: #fff;
+            text-align: center;
+        }
     }
 }

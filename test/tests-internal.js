@@ -4,11 +4,11 @@
 module("internal functions", {
     setup: function ()
     {
-        $("#qunit-fixture").append($("<table id=\"test\"><thead><th><td data-column-id=\"id\"></td></th></thead></table>"));
+        $("#qunit-fixture").html("<table id=\"test\"><thead><th><td data-column-id=\"id\"></td></th></thead></table>");
     },
     teardown: function ()
     {
-        $("#test").remove();
+        $("#qunit-fixture").empty();
     }
 });
 
@@ -64,30 +64,18 @@ test("getFirstDictionaryItem by value test", 1, function ()
     propEqual(result, { key: "second", value: 2 }, "Valid dictionary item");
 });
 
-test("getInstance test", 1, function ()
-{
-    // given
-    var element = $("#test").data(namespace, true);
-
-    // when
-    var result = getInstance(element);
-
-    // then
-    ok(result, "Valid instance");
-});
-
 test("getRequest post function test", 1, function ()
 {
     // given
-    var options = {
-            post: function()
-            {
-                return {
-                    id: "test"
-                };
-            }
-        },
-        context = {
+    var instance = {
+            options: {
+                post: function()
+                {
+                    return {
+                        id: "test"
+                    };
+                }
+            },
             current: 1,
             rowCount: 5,
             sort: []
@@ -100,21 +88,20 @@ test("getRequest post function test", 1, function ()
         };
 
     // when
-    var result = getRequest(options, context);
+    var result = getRequest.call(instance);
 
     // then
     propEqual(result, expected, "Valid request object");
 });
 
-test("getRequest post object test", 1, function ()
-{
+test("getRequest post object test", 1, function() {
     // given
-    var options = {
-            post: {
-                id: "test"
-            }
-        },
-        context = {
+    var instance = {
+            options: {
+                post: {
+                    id: "test"
+                }
+            },
             current: 1,
             rowCount: 5,
             sort: []
@@ -127,7 +114,7 @@ test("getRequest post object test", 1, function ()
         };
 
     // when
-    var result = getRequest(options, context);
+    var result = getRequest.call(instance);
 
     // then
     propEqual(result, expected, "Valid request object");
@@ -148,15 +135,17 @@ test("getCssSelector test", 1, function ()
 test("getUrl function test", 1, function ()
 {
     // given
-    var options = {
-        url: function()
-        {
-            return "url/test/1";
+    var instance = {
+        options: {
+            url: function()
+            {
+                return "url/test/1";
+            }
         }
     };
 
     // when
-    var result = getUrl(options);
+    var result = getUrl.call(instance);
 
     // then
     equal(result, "url/test/1", "Valid URL");
@@ -165,12 +154,14 @@ test("getUrl function test", 1, function ()
 test("getUrl string test", 1, function ()
 {
     // given
-    var options = {
-        url: "url/test/1"
+    var instance = {
+        options: {
+            url: "url/test/1"
+        }
     };
 
     // when
-    var result = getUrl(options);
+    var result = getUrl.call(instance);
 
     // then
     equal(result, "url/test/1", "Valid URL");

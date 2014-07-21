@@ -18,7 +18,7 @@ $.fn.bootgrid = function (option)
         if (!instance)
         {
             $this.data(namespace, (instance = new Grid(this, options)));
-            init(instance.element, instance.options, instance.context);
+            init.call(instance);
         }
         if (typeof option === "string")
         {
