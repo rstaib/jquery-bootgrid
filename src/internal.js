@@ -455,7 +455,7 @@ function renderTableHeader()
         }
     });
 
-    headerRow.html(html)
+    headerRow.html(html).off("click" + namespace)
         .on("click" + namespace, getCssSelector(css.sortable), function(e)
         {
             e.preventDefault();
