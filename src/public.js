@@ -16,7 +16,7 @@ var Grid = function(element, options)
     this.options = $.extend(true, {}, Grid.defaults, this.element.data(), options);
     this.columns = [];
     this.current = 1;
-    this.items = null; // todo: implement (static data)
+    this.rows = []; // cached rows
     var rowCount = this.options.rowCount;
     this.rowCount = (typeof rowCount === "object") ? getFirstDictionaryItem(rowCount).value : rowCount;
     this.sort = {};
@@ -78,13 +78,13 @@ Grid.defaults = {
         actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{tpl.icon}}</button>",
         actionDropDown: "<div class=\"btn-group\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\">{{ctx.content}} <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenu}}\" role=\"menu\"></ul></div>",
         actionDropDownItem: "<li><a href=\"{{ctx.uri}}\" class=\"{{css.dropDownItemButton}}\">{{ctx.key}}</a></li>",
-        actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItemCheckbox}}\"><input type=\"checkbox\" value=\"{{ctx.value}}\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
+        actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItemCheckbox}}\"><input name=\"{{ctx.name}}\" type=\"checkbox\" value=\"1\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
         actions: "<div class=\"{{css.actions}}\"></div>",
         body: "<tbody></tbody>",
         cell: "<td>{{ctx.content}}</td>",
         footer: "<div id=\"{{ctx.id}}\" class=\"{{css.footer}}\"><div class=\"row\"><div class=\"col-sm-6\"><p class=\"{{css.pagination}}\"></p></div><div class=\"col-sm-6 infoBar\"><p class=\"{{css.infos}}\"></p></div></div></div>",
         header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.actions}}\"></p></div></div></div>",
-        headerCellContent: "<a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.content}}</span>{{ctx.icon}}</a>",
+        headerCell: "<th data-column-id=\"{{ctx.columnId}}\"><a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.content}}</span>{{ctx.icon}}</a></th>",
         icon: "<span class=\"{{css.icon}} {{ctx.iconCss}}\"></span>",
         infos: "<div class=\"{{css.infos}}\">{{lbl.infos}}</div>",
         loading: "<tr><td colspan=\"{{ctx.columns}}\" class=\"loading\">{{lbl.loading}}</td></tr>",

@@ -13,7 +13,7 @@
         "accessibility",
         "bootstrap"
     ],
-    "version": "1.0.0-alpha",
+    "version": "1.0.0-beta",
     "authors": [
         { "name": "Rafael Staib", "email": "me@rafaelstaib.com", "url": "http://www.rafaelstaib.com" }
     ],

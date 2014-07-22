@@ -78,3 +78,20 @@ if (!String.prototype.resolve)
         return result;
     };
 }
+
+if (!Array.prototype.where)
+{
+    Array.prototype.where = function (predicate)
+    {
+        var result = [];
+        for (var i = 0; i < this.length; i++)
+        {
+            var item = this[i];
+            if (predicate(item))
+            {
+                result.push(item);
+            }
+        }
+        return result;
+    };
+}

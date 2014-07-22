@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.0.0-alpha - 07/21/2014
+ * jQuery Bootgrid v1.0.0-beta - 07/22/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -78,7 +78,13 @@
     {
         loadColumns.call(this);
         render.call(this);
+        renderActions.call(this);
         loadData.call(this);
+    }
+
+    function isVisible(column)
+    {
+        return column.visible;
     }
 
     function loadColumns()
@@ -95,7 +101,7 @@
                 visible = $this.data("visible"),
                 column = {
                     id: $this.data("column-id"),
-                    name: $this.text(),
+                    text: $this.text(),
                     formatter: that.options.formatters[$this.data("formatter")],
                     order: (!sorted && (order === "asc" || order === "desc")) ? order : null,
                     sortable: !(sortable === false || sortable === 0), // default: true
@@ -146,12 +152,12 @@
                 response = $.parseJSON(response);
             }
 
+            that.rows = response.rows;
             that.current = response.current;
             that.total = response.total;
             that.totalPages = Math.ceil(that.total / that.rowCount);
 
-            renderRows.call(that, response.rows);
-            renderActions.call(that);
+            renderRows.call(that);
             renderInfos.call(that);
             renderPagination.call(that);
             that.element.trigger("loaded" + namespace);
@@ -234,21 +240,20 @@
             css = this.options.css,
             tpl = this.options.templates,
             icon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconColumns })),
-            dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: icon })));
+            dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: icon }))),
+            selector = getCssSelector(css.dropDownItemCheckbox);
 
         $.each(this.columns, function(i, column)
         {
             var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that, 
-                { value: column.id, label: column.name, checked: column.visible })))
-                    .find(getCssSelector(css.dropDownItemCheckbox))
-                    .on("click" + namespace, function (e)
+                { name: column.id, label: column.text, checked: column.visible })))
+                    .on("click" + namespace, selector, function (e)
                     {
-                        e.preventDefault();
-                        var $this = $(this);
-                        column.visible = !$this.children("input[type=checkbox]").prop("checked");
-                        loadData.call(that);
-                        $this.trigger("blur");
-                    }).end();
+                        e.stopPropagation();
+                        column.visible = $(this).find("input").prop("checked");
+                        renderTableHeader.call(that);
+                        renderRows.call(that);
+                    });
             dropDown.find(getCssSelector(css.dropDownMenu)).append(item);
         });
         actions.append(dropDown);
@@ -282,7 +287,7 @@
         var tbody = this.element.children("tbody").first(),
             tpl = this.options.templates;
 
-        tbody.html(tpl.noResults.resolve(getParams.call(this, { columns: this.columns.length })));
+        tbody.html(tpl.noResults.resolve(getParams.call(this, { columns: this.columns.where(isVisible).length })));
     }
 
     function renderPagination()
@@ -402,9 +407,9 @@
         }
     }
 
-    function renderRows(rows)
+    function renderRows()
     {
-        if (rows.length > 0)
+        if (this.rows.length > 0)
         {
             var that = this,
                 tpl = this.options.templates,
@@ -412,16 +417,19 @@
                 html = "",
                 cells = "";
 
-            $.each(rows, function(i, row)
+            $.each(this.rows, function(i, row)
             {
                 cells = "";
 
                 $.each(that.columns, function(j, column)
                 {
-                    var value = ($.isFunction(column.formatter)) ? 
-                        column.formatter.call(that, column, row) : row[column.id];
-                    cells += tpl.cell.resolve(getParams.call(that, { content: 
-                        (value == null || value === "") ? "&nbsp;" : value }));
+                    if (column.visible)
+                    {
+                        var value = ($.isFunction(column.formatter)) ? 
+                            column.formatter.call(that, column, row) : row[column.id];
+                        cells += tpl.cell.resolve(getParams.call(that, { content: 
+                            (value == null || value === "") ? "&nbsp;" : value }));
+                    }
                 });
 
                 html += tpl.row.resolve(getParams.call(that, { cells: cells }));
@@ -438,74 +446,66 @@
     function renderTableHeader()
     {
         var that = this,
-            columns = this.element.find("thead > tr > th"),
+            headerRow = this.element.find("thead > tr"),
             css = this.options.css,
-            tpl = this.options.templates;
+            tpl = this.options.templates,
+            html = "";
 
         $.each(this.columns, function(index, column)
         {
-            var headerCell = columns.eq(index);
-            if (column.sortable)
+            if (column.visible)
             {
-                var sort = that.sort[column.id],
-                    iconCss = ((sort && sort === "asc") ? css.iconUp : 
-                        (sort && sort === "desc") ? css.iconDown : ""),
-                    headerCellContent = renderTableHeaderCell.call(that, headerCell, 
-                        tpl.icon.resolve(getParams.call(that, { iconCss: iconCss })), true);
-                headerCellContent.on("click" + namespace, function(e)
+                var sortOrder = that.sort[column.id],
+                    iconCss = ((sortOrder && sortOrder === "asc") ? css.iconUp : 
+                        (sortOrder && sortOrder === "desc") ? css.iconDown : ""),
+                    icon = tpl.icon.resolve(getParams.call(that, { iconCss: iconCss }));
+                html += tpl.headerCell.resolve(getParams.call(that, 
+                    { content: column.text, icon: icon, columnId: column.id,
+                        sortable: (column.sortable) ? css.sortable : "" }));
+            }
+        });
+
+        headerRow.html(html)
+            .on("click" + namespace, getCssSelector(css.sortable), function(e)
+            {
+                e.preventDefault();
+                var $this = $(this),
+                    columnId = $this.data("column-id") || $this.parents("th").first().data("column-id"),
+                    sortOrder = that.sort[columnId],
+                    icon = $this.find(getCssSelector(css.icon));
+
+                if (!that.options.multiSort)
                 {
-                    e.preventDefault();
-                    var $this = $(this), 
-                        $sort = that.sort[column.id],
-                        $icon = $this.find(getCssSelector(css.icon));
+                    $this.parents("tr").first().find(getCssSelector(css.icon)).removeClass(css.iconDown + " " + css.iconUp);
+                    that.sort = {};
+                }
 
-                    if (!that.options.multiSort)
+                if (sortOrder && sortOrder === "asc")
+                {
+                    that.sort[columnId] = "desc";
+                    icon.removeClass(css.iconUp).addClass(css.iconDown);
+                }
+                else if (sortOrder && sortOrder === "desc")
+                {
+                    if (that.options.multiSort)
                     {
-                        columns.find(getCssSelector(css.icon)).removeClass(css.iconDown + " " + css.iconUp);
-                        that.sort = {};
-                    }
-
-                    if ($sort && $sort === "asc")
-                    {
-                        that.sort[column.id] = "desc";
-                        $icon.removeClass(css.iconUp).addClass(css.iconDown);
-                    }
-                    else if ($sort && $sort === "desc")
-                    {
-                        if (that.options.multiSort)
-                        {
-                            delete that.sort[column.id];
-                            $icon.removeClass(css.iconDown);
-                        }
-                        else
-                        {
-                            that.sort[column.id] = "asc";
-                            $icon.removeClass(css.iconDown).addClass(css.iconUp);
-                        }
+                        delete that.sort[columnId];
+                        icon.removeClass(css.iconDown);
                     }
                     else
                     {
-                        that.sort[column.id] = "asc";
-                        $icon.addClass(css.iconUp);
+                        that.sort[columnId] = "asc";
+                        icon.removeClass(css.iconDown).addClass(css.iconUp);
                     }
+                }
+                else
+                {
+                    that.sort[columnId] = "asc";
+                    icon.addClass(css.iconUp);
+                }
 
-                    loadData.call(that);
-                });
-            }
-            else
-            {
-                renderTableHeaderCell.call(that, headerCell, "", false);
-            }
-        });
-    }
-
-    function renderTableHeaderCell(headerCell, icon, sortable)
-    {
-        var css = this.options.css,
-            tpl = this.options.templates;
-        return headerCell.html(tpl.headerCellContent.resolve(getParams.call(this, 
-            { content: headerCell.html(), icon: icon, sortable: (sortable) ? css.sortable : "" })))
-                .children(getCssSelector(css.columnHeaderAnchor)).first();
+                loadData.call(that);
+            });
     }
 
     function replacePlaceHolder(placeholder, element, flag)
@@ -527,7 +527,7 @@
             firstCell = tbody.find("tr > td").first(),
             padding = Math.floor(((tbody.height() || 0) - firstCell.height()) / 2);
 
-        tbody.html(tpl.loading.resolve(getParams.call(this, { columns: this.columns.length })));
+        tbody.html(tpl.loading.resolve(getParams.call(this, { columns: this.columns.where(isVisible).length })));
         if (padding > 0)
         {
             tbody.find("tr > td").css("padding", padding + "px 0");
@@ -552,7 +552,7 @@
         this.options = $.extend(true, {}, Grid.defaults, this.element.data(), options);
         this.columns = [];
         this.current = 1;
-        this.items = null; // todo: implement (static data)
+        this.rows = []; // cached rows
         var rowCount = this.options.rowCount;
         this.rowCount = (typeof rowCount === "object") ? getFirstDictionaryItem(rowCount).value : rowCount;
         this.sort = {};
@@ -614,13 +614,13 @@
             actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{tpl.icon}}</button>",
             actionDropDown: "<div class=\"btn-group\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\">{{ctx.content}} <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenu}}\" role=\"menu\"></ul></div>",
             actionDropDownItem: "<li><a href=\"{{ctx.uri}}\" class=\"{{css.dropDownItemButton}}\">{{ctx.key}}</a></li>",
-            actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItemCheckbox}}\"><input type=\"checkbox\" value=\"{{ctx.value}}\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
+            actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItemCheckbox}}\"><input name=\"{{ctx.name}}\" type=\"checkbox\" value=\"1\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
             actions: "<div class=\"{{css.actions}}\"></div>",
             body: "<tbody></tbody>",
             cell: "<td>{{ctx.content}}</td>",
             footer: "<div id=\"{{ctx.id}}\" class=\"{{css.footer}}\"><div class=\"row\"><div class=\"col-sm-6\"><p class=\"{{css.pagination}}\"></p></div><div class=\"col-sm-6 infoBar\"><p class=\"{{css.infos}}\"></p></div></div></div>",
             header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.actions}}\"></p></div></div></div>",
-            headerCellContent: "<a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.content}}</span>{{ctx.icon}}</a>",
+            headerCell: "<th data-column-id=\"{{ctx.columnId}}\"><a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.content}}</span>{{ctx.icon}}</a></th>",
             icon: "<span class=\"{{css.icon}} {{ctx.iconCss}}\"></span>",
             infos: "<div class=\"{{css.infos}}\">{{lbl.infos}}</div>",
             loading: "<tr><td colspan=\"{{ctx.columns}}\" class=\"loading\">{{lbl.loading}}</td></tr>",
@@ -843,6 +843,23 @@
                     result = result.replace(pattern, value);
                 }
             });
+            return result;
+        };
+    }
+
+    if (!Array.prototype.where)
+    {
+        Array.prototype.where = function (predicate)
+        {
+            var result = [];
+            for (var i = 0; i < this.length; i++)
+            {
+                var item = this[i];
+                if (predicate(item))
+                {
+                    result.push(item);
+                }
+            }
             return result;
         };
     }

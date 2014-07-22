@@ -1,10 +1,9 @@
 # Changelog
 
 ## 1.0.0
-- Added public functions for dynamic manipulation such as add, insert and remove row(s)
-- Added column filter
+- Public functions for dynamic manipulation such as add, insert and remove row(s)
 - Static data (without ajax calls)
-- Added selection
+- Row selecton (multi and single)
 - Show/Hide column headers
 - Search field
 
