@@ -524,11 +524,11 @@ function showLoading()
     var tpl = this.options.templates,
         tbody = this.element.children("tbody").first(),
         firstCell = tbody.find("tr > td").first(),
-        padding = Math.floor(((tbody.height() || 0) - firstCell.height()) / 2);
+        padding = Math.ceil((tbody.height() || 0) - (firstCell.height() + 20));
 
     tbody.html(tpl.loading.resolve(getParams.call(this, { columns: this.columns.where(isVisible).length })));
-    if (padding > 0)
+    if (this.rowCount !== -1 && padding > 0)
     {
-        tbody.find("tr > td").css("padding", padding + "px 0");
+        tbody.find("tr > td").css("padding", "20px 0 " + padding + "px");
     }
 }
