@@ -12,58 +12,6 @@ module("internal functions", {
     }
 });
 
-test("getFirstDictionaryItem test", 1, function ()
-{
-    // given
-    var dictionary = {
-        "first": 1,
-        "second": 2,
-        "third": 3
-    };
-
-    // when
-    var result = getFirstDictionaryItem(dictionary);
-
-    // then
-    propEqual(result, { key: "first", value: 1 }, "Valid dictionary item");
-});
-
-test("getFirstDictionaryItem passing wrong type test", 1, function ()
-{
-    // given
-    var number = 1;
-
-    // when
-    var errorMessage;
-    try
-    {
-        getFirstDictionaryItem(number);
-    }
-    catch (e)
-    {
-        errorMessage = e.message;
-    }
-
-    // then
-    equal(errorMessage, "Is not a dictionary!", "Invalid call");
-});
-
-test("getFirstDictionaryItem by value test", 1, function ()
-{
-    // given
-    var dictionary = {
-        "first": 1,
-        "second": 2,
-        "third": 3
-    };
-
-    // when
-    var result = getFirstDictionaryItem(dictionary, 2);
-
-    // then
-    propEqual(result, { key: "second", value: 2 }, "Valid dictionary item");
-});
-
 test("getRequest post function test", 1, function ()
 {
     // given

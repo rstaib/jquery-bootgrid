@@ -6,29 +6,6 @@ var namespace = ".rs.jquery.bootgrid";
 // GRID INTERNAL FUNCTIONS
 // =====================
 
-function getFirstDictionaryItem(dictionary, value)
-{
-    if (typeof dictionary === "object")
-    {
-        for (var key in dictionary)
-        {
-            if (value != null)
-            {
-                if (value === dictionary[key])
-                {
-                    return { key: key, value: dictionary[key] };
-                }
-            }
-            else
-            {
-                return { key: key, value: dictionary[key] };
-            }
-        }
-    }
-
-    throw new Error("Is not a dictionary!");
-}
-
 function getParams(context)
 {
     var staticParams = {
@@ -365,44 +342,52 @@ function renderPaginationItem(list, uri, text, markerCss)
 
 function renderRowCountSelection(actions)
 {
-    if (typeof this.options.rowCount === "object")
-    {
-        var that = this,
-            css = this.options.css,
-            tpl = this.options.templates,
-            currentKey = getFirstDictionaryItem(this.options.rowCount, this.rowCount).key,
-            rowCount = $(tpl.actionDropDown.resolve(getParams.call(this, { content: currentKey })));
-        
-        $.each(this.options.rowCount, function(key, value)
-        {
-            var item = $(tpl.actionDropDownItem.resolve(getParams.call(that, { key: key, uri: "#" + value })))
-                ._bgSelectAria(key === currentKey)
-                .on("click" + namespace, getCssSelector(css.dropDownItemButton), function (e)
-                {
-                    e.preventDefault();
+    var that = this,
+        rowCountList = this.options.rowCount;
 
-                    var $this = $(this),
-                        currentKey = getFirstDictionaryItem(that.options.rowCount, that.rowCount).key,
-                        newKey = $this.text();
-                    if (newKey !== currentKey)
+    function getText(value)
+    {
+        return (value === -1) ? that.options.labels.all : value;
+    }
+
+    if ($.isArray(rowCountList)) {
+        var css = this.options.css,
+            tpl = this.options.templates,
+            dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: this.rowCount }))),
+            menuSelector = getCssSelector(css.dropDownMenu),
+            menuTextSelector = getCssSelector(css.dropDownMenuText),
+            menuItemsSelector = getCssSelector(css.dropDownMenuItems),
+            menuItemSelector = getCssSelector(css.dropDownItemButton);
+
+        $.each(rowCountList, function(index, value)
+        {
+            var item = $(tpl.actionDropDownItem.resolve(getParams.call(that, 
+                { text: getText(value), uri: "#" + value })))
+                    ._bgSelectAria(value === that.rowCount)
+                    .on("click" + namespace, menuItemSelector, function (e)
                     {
-                        // todo: sophisticated solution needed for calculating which page is selected
-                        that.current = 1; // that.rowCount === -1 ---> All
-                        that.rowCount = +$this.attr("href").substr(1);
-                        $this.parents(getCssSelector(css.dropDownMenuItems)).children()
-                            .each(function()
+                        e.preventDefault();
+
+                        var $this = $(this),
+                            newRowCount = +$this.attr("href").substr(1);
+                        if (newRowCount !== that.rowCount)
+                        {
+                            // todo: sophisticated solution needed for calculating which page is selected
+                            that.current = 1; // that.rowCount === -1 ---> All
+                            that.rowCount = newRowCount;
+                            $this.parents(menuItemsSelector).children().each(function()
                             {
-                                var $item = $(this);
-                                $item._bgSelectAria($item.text() === newKey);
+                                var $item = $(this),
+                                    currentRowCount = +$item.find(menuItemSelector).attr("href").substr(1);
+                                $item._bgSelectAria(currentRowCount === newRowCount);
                             });
-                        $this.parents(getCssSelector(css.dropDownMenu))
-                            .find(getCssSelector(css.dropDownMenuText)).text(newKey);
-                        loadData.call(that);
-                    }
-                });
-            rowCount.find(getCssSelector(css.dropDownMenuItems)).append(item);
+                            $this.parents(menuSelector).find(menuTextSelector).text(getText(newRowCount));
+                            loadData.call(that);
+                        }
+                    });
+            dropDown.find(menuItemsSelector).append(item);
         });
-        actions.append(rowCount);
+        actions.append(dropDown);
     }
 }
 
@@ -448,63 +433,68 @@ function renderTableHeader()
         headerRow = this.element.find("thead > tr"),
         css = this.options.css,
         tpl = this.options.templates,
-        html = "";
+        html = "",
+        sorting = this.options.sorting;
 
     $.each(this.columns, function(index, column)
     {
         if (column.visible)
         {
             var sortOrder = that.sort[column.id],
-                iconCss = ((sortOrder && sortOrder === "asc") ? css.iconUp : 
-                    (sortOrder && sortOrder === "desc") ? css.iconDown : ""),
+                iconCss = ((sorting && sortOrder && sortOrder === "asc") ? css.iconUp : 
+                    (sorting && sortOrder && sortOrder === "desc") ? css.iconDown : ""),
                 icon = tpl.icon.resolve(getParams.call(that, { iconCss: iconCss }));
             html += tpl.headerCell.resolve(getParams.call(that, 
                 { content: column.text, icon: icon, columnId: column.id,
-                    sortable: (column.sortable) ? css.sortable : "" }));
+                    sortable: (sorting && column.sortable) ? css.sortable : "" }));
         }
     });
 
-    headerRow.html(html).off("click" + namespace)
-        .on("click" + namespace, getCssSelector(css.sortable), function(e)
-        {
-            e.preventDefault();
-            var $this = $(this),
-                columnId = $this.data("column-id") || $this.parents("th").first().data("column-id"),
-                sortOrder = that.sort[columnId],
-                icon = $this.find(getCssSelector(css.icon));
+    headerRow.html(html);
+    if (sorting)
+    {
+        headerRow.off("click" + namespace)
+            .on("click" + namespace, getCssSelector(css.sortable), function(e)
+            {
+                e.preventDefault();
+                var $this = $(this),
+                    columnId = $this.data("column-id") || $this.parents("th").first().data("column-id"),
+                    sortOrder = that.sort[columnId],
+                    icon = $this.find(getCssSelector(css.icon));
 
-            if (!that.options.multiSort)
-            {
-                $this.parents("tr").first().find(getCssSelector(css.icon)).removeClass(css.iconDown + " " + css.iconUp);
-                that.sort = {};
-            }
-
-            if (sortOrder && sortOrder === "asc")
-            {
-                that.sort[columnId] = "desc";
-                icon.removeClass(css.iconUp).addClass(css.iconDown);
-            }
-            else if (sortOrder && sortOrder === "desc")
-            {
-                if (that.options.multiSort)
+                if (!that.options.multiSort)
                 {
-                    delete that.sort[columnId];
-                    icon.removeClass(css.iconDown);
+                    $this.parents("tr").first().find(getCssSelector(css.icon)).removeClass(css.iconDown + " " + css.iconUp);
+                    that.sort = {};
+                }
+
+                if (sortOrder && sortOrder === "asc")
+                {
+                    that.sort[columnId] = "desc";
+                    icon.removeClass(css.iconUp).addClass(css.iconDown);
+                }
+                else if (sortOrder && sortOrder === "desc")
+                {
+                    if (that.options.multiSort)
+                    {
+                        delete that.sort[columnId];
+                        icon.removeClass(css.iconDown);
+                    }
+                    else
+                    {
+                        that.sort[columnId] = "asc";
+                        icon.removeClass(css.iconDown).addClass(css.iconUp);
+                    }
                 }
                 else
                 {
                     that.sort[columnId] = "asc";
-                    icon.removeClass(css.iconDown).addClass(css.iconUp);
+                    icon.addClass(css.iconUp);
                 }
-            }
-            else
-            {
-                that.sort[columnId] = "asc";
-                icon.addClass(css.iconUp);
-            }
 
-            loadData.call(that);
-        });
+                loadData.call(that);
+            });
+    }
 }
 
 function replacePlaceHolder(placeholder, element, flag)

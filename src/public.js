@@ -14,11 +14,12 @@ var Grid = function(element, options)
 {
     this.element = $(element);
     this.options = $.extend(true, {}, Grid.defaults, this.element.data(), options);
+    // overrides rowCount explicitly because deep copy ($.extend) leads to strange behaviour
+    var rowCount = this.options.rowCount = this.element.data().rowCount || options.rowCount || this.options.rowCount;
     this.columns = [];
     this.current = 1;
     this.rows = []; // cached rows
-    var rowCount = this.options.rowCount;
-    this.rowCount = (typeof rowCount === "object") ? getFirstDictionaryItem(rowCount).value : rowCount;
+    this.rowCount = ($.isArray(rowCount)) ? rowCount[0] : rowCount;
     this.sort = {};
     this.total = 0;
     this.totalPages = 0;
@@ -26,20 +27,15 @@ var Grid = function(element, options)
 
 Grid.defaults = {
     navigation: 3, // it's a flag: 0 = none, 1 = top, 2 = bottom, 3 = both (top and bottom)
-    enableAsync: false, // todo: implement and find a better name for this property!
-    enableSelection: false, // todo: implement!
-    enableSorting: false, // todo: implement!
-    multiSelect: false, // todo: implement!
-    multiSort: false,
-    selectRows: false, // todo: implement and find a better name for this property [select new rows after adding]!
     padding: 2, // page padding (pagination)
+    rowCount: [10, 25, 50, -1], // rows per page int or array of int
+    selection: false, // todo: implement!
+    multiSelect: false, // todo: implement!
+    selectRows: false, // todo: implement and find a better name for this property [select new rows after adding]!
+    sorting: true,
+    multiSort: false,
+    ajax: false, // todo: implement and find a better name for this property!
     post: {}, // or use function () { return {}; }
-    rowCount: { // rows per page
-        "10": 10,
-        "25": 25,
-        "50": 50,
-        "All": -1
-    },
     url: "", // or use function () { return ""; }
 
     // todo: implement cache
@@ -69,6 +65,7 @@ Grid.defaults = {
     },
     formatters: {},
     labels: {
+        all: "All",
         infos: "Showing {{ctx.start}} to {{ctx.end}} of {{ctx.total}} entries",
         loading: "Loading...",
         noResults: "No results found!",
@@ -79,7 +76,7 @@ Grid.defaults = {
         //       es darf mittels des Kontexts kein weiteres HTML, dass wiederum Variablen enthalten kann, die auch ersetzt werden muessen, eingefuegt werden.
         actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{tpl.icon}}</button>",
         actionDropDown: "<div class=\"{{css.dropDownMenu}}\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\"><span class=\"{{css.dropDownMenuText}}\">{{ctx.content}}</span> <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenuItems}}\" role=\"menu\"></ul></div>",
-        actionDropDownItem: "<li><a href=\"{{ctx.uri}}\" class=\"{{css.dropDownItemButton}}\">{{ctx.key}}</a></li>",
+        actionDropDownItem: "<li><a href=\"{{ctx.uri}}\" class=\"{{css.dropDownItemButton}}\">{{ctx.text}}</a></li>",
         actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItemCheckbox}}\"><input name=\"{{ctx.name}}\" type=\"checkbox\" value=\"1\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
         actions: "<div class=\"{{css.actions}}\"></div>",
         body: "<tbody></tbody>",
