@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.0.0-beta - 07/22/2014
+ * jQuery Bootgrid v1.0.0-beta - 07/23/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -76,10 +76,15 @@
 
     function init()
     {
+        this.element.trigger("initialize" + namespace);
+
         loadColumns.call(this);
-        render.call(this);
+        prepareTable.call(this);
+        renderTableHeader.call(this);
         renderActions.call(this);
         loadData.call(this);
+
+        this.element.trigger("initialized" + namespace);
     }
 
     function isVisible(column)
@@ -168,7 +173,7 @@
         });
     }
 
-    function render()
+    function prepareTable()
     {
         var tpl = this.options.templates;
 
@@ -191,8 +196,6 @@
             this.footer = $(tpl.footer.resolve(getParams.call(this, { id: this.element._bgId() + "-footer" })));
             this.element.after(this.footer);
         }
-
-        renderTableHeader.call(this);
     }
 
     function renderActions()
@@ -213,12 +216,9 @@
                             .on("click" + namespace, function (e)
                             {
                                 // todo: prevent multiple fast clicks (fast click detection)
-                                e.preventDefault();
-
-                                var $this = $(this);
+                                e.stopPropagation();
                                 that.current = 1;
                                 loadData.call(that);
-                                $this.trigger("blur");
                             }),
                     actions = $(tpl.actions.resolve(getParams.call(this))).append(refresh);
 
@@ -254,7 +254,7 @@
                         renderTableHeader.call(that);
                         renderRows.call(that);
                     });
-            dropDown.find(getCssSelector(css.dropDownMenu)).append(item);
+            dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
         });
         actions.append(dropDown);
     }
@@ -347,27 +347,27 @@
             tpl = this.options.templates,
             css = this.options.css,
             values = getParams.call(this, { css: markerCss, text: text, uri: "#" + uri }),
-            item = $(tpl.paginationItem.resolve(values)).addClass(css);
+            item = $(tpl.paginationItem.resolve(values)).addClass(css)
+                .on("click" + namespace, getCssSelector(css.paginationButton), function (e)
+                {
+                    e.stopPropagation();
 
-        item.find(getCssSelector(css.paginationButton)).on("click" + namespace, function (e)
-        {
-            e.preventDefault();
-            var $this = $(this),
-                parent = $this.parent();
-            if (!parent.hasClass("active") && !parent.hasClass("disabled"))
-            {
-                var commandList = {
-                    first: 1,
-                    prev: that.current - 1,
-                    next: that.current + 1,
-                    last: that.totalPages
-                };
-                var command = $this.attr("href").substr(1);
-                that.current = commandList[command] || +command; // + converts string to int
-                loadData.call(that);
-            }
-            $this.trigger("blur");
-        });
+                    var $this = $(this),
+                        parent = $this.parent();
+                    if (!parent.hasClass("active") && !parent.hasClass("disabled"))
+                    {
+                        var commandList = {
+                            first: 1,
+                            prev: that.current - 1,
+                            next: that.current + 1,
+                            last: that.totalPages
+                        };
+                        var command = $this.attr("href").substr(1);
+                        that.current = commandList[command] || +command; // + converts string to int
+                        loadData.call(that);
+                    }
+                    $this.trigger("blur");
+                });
 
         list.append(item);
         return item;
@@ -382,26 +382,35 @@
                 tpl = this.options.templates,
                 currentKey = getFirstDictionaryItem(this.options.rowCount, this.rowCount).key,
                 rowCount = $(tpl.actionDropDown.resolve(getParams.call(this, { content: currentKey })));
-
+            
             $.each(this.options.rowCount, function(key, value)
             {
                 var item = $(tpl.actionDropDownItem.resolve(getParams.call(that, { key: key, uri: "#" + value })))
-                    ._bgSelectAria(key === currentKey).find(getCssSelector(css.dropDownItemButton))
-                        .on("click" + namespace, function (e)
-                        {
-                            e.preventDefault();
+                    ._bgSelectAria(key === currentKey)
+                    .on("click" + namespace, getCssSelector(css.dropDownItemButton), function (e)
+                    {
+                        e.preventDefault();
 
-                            var $this = $(this);
-                            if ($this.text() !== currentKey)
-                            {
-                                // todo: sophisticated solution needed for calculating which page is selected
-                                that.current = 1; // that.rowCount === -1 ---> All
-                                that.rowCount = +$this.attr("href").substr(1);
-                                loadData.call(that);
-                            }
-                            $this.trigger("blur");
-                        }).end();
-                rowCount.find(getCssSelector(css.dropDownMenu)).append(item);
+                        var $this = $(this),
+                            currentKey = getFirstDictionaryItem(that.options.rowCount, that.rowCount).key,
+                            newKey = $this.text();
+                        if (newKey !== currentKey)
+                        {
+                            // todo: sophisticated solution needed for calculating which page is selected
+                            that.current = 1; // that.rowCount === -1 ---> All
+                            that.rowCount = +$this.attr("href").substr(1);
+                            $this.parents(getCssSelector(css.dropDownMenuItems)).children()
+                                .each(function()
+                                {
+                                    var $item = $(this);
+                                    $item._bgSelectAria($item.text() === newKey);
+                                });
+                            $this.parents(getCssSelector(css.dropDownMenu))
+                                .find(getCssSelector(css.dropDownMenuText)).text(newKey);
+                            loadData.call(that);
+                        }
+                    });
+                rowCount.find(getCssSelector(css.dropDownMenuItems)).append(item);
             });
             actions.append(rowCount);
         }
@@ -585,9 +594,11 @@
             actions: "actions btn-group", // must be a unique class name or constellation of class names within the header and footer
             columnHeaderAnchor: "column-header-anchor", // must be a unique class name or constellation of class names within the column header cell
             columnHeaderText: "text",
-            dropDownItemButton: "dropdown-button", // must be a unique class name or constellation of class names within the actionDropDown
-            dropDownItemCheckbox: "dropdown-checkbox", // must be a unique class name or constellation of class names within the actionDropDown
-            dropDownMenu: "dropdown-menu pull-right", // must be a unique class name or constellation of class names within the actionDropDown
+            dropDownItemButton: "dropdown-item-button", // must be a unique class name or constellation of class names within the actionDropDown
+            dropDownItemCheckbox: "dropdown-item-checkbox", // must be a unique class name or constellation of class names within the actionDropDown
+            dropDownMenu: "dropdown btn-group", // must be a unique class name or constellation of class names within the actionDropDown
+            dropDownMenuItems: "dropdown-menu pull-right", // must be a unique class name or constellation of class names within the actionDropDown
+            dropDownMenuText: "dropdown-text", // must be a unique class name or constellation of class names within the actionDropDown
             footer: "bootgrid-footer container-fluid",
             header: "bootgrid-header container-fluid",
             icon: "icon glyphicon",
@@ -612,7 +623,7 @@
             // note: Grenzen der template sprache sind: Templates duerfen nur einmal ineinander verschachtelt werden und 
             //       es darf mittels des Kontexts kein weiteres HTML, dass wiederum Variablen enthalten kann, die auch ersetzt werden muessen, eingefuegt werden.
             actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{tpl.icon}}</button>",
-            actionDropDown: "<div class=\"btn-group\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\">{{ctx.content}} <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenu}}\" role=\"menu\"></ul></div>",
+            actionDropDown: "<div class=\"{{css.dropDownMenu}}\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\"><span class=\"{{css.dropDownMenuText}}\">{{ctx.content}}</span> <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenuItems}}\" role=\"menu\"></ul></div>",
             actionDropDownItem: "<li><a href=\"{{ctx.uri}}\" class=\"{{css.dropDownItemButton}}\">{{ctx.key}}</a></li>",
             actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItemCheckbox}}\"><input name=\"{{ctx.name}}\" type=\"checkbox\" value=\"1\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
             actions: "<div class=\"{{css.actions}}\"></div>",

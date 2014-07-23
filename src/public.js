@@ -49,9 +49,11 @@ Grid.defaults = {
         actions: "actions btn-group", // must be a unique class name or constellation of class names within the header and footer
         columnHeaderAnchor: "column-header-anchor", // must be a unique class name or constellation of class names within the column header cell
         columnHeaderText: "text",
-        dropDownItemButton: "dropdown-button", // must be a unique class name or constellation of class names within the actionDropDown
-        dropDownItemCheckbox: "dropdown-checkbox", // must be a unique class name or constellation of class names within the actionDropDown
-        dropDownMenu: "dropdown-menu pull-right", // must be a unique class name or constellation of class names within the actionDropDown
+        dropDownItemButton: "dropdown-item-button", // must be a unique class name or constellation of class names within the actionDropDown
+        dropDownItemCheckbox: "dropdown-item-checkbox", // must be a unique class name or constellation of class names within the actionDropDown
+        dropDownMenu: "dropdown btn-group", // must be a unique class name or constellation of class names within the actionDropDown
+        dropDownMenuItems: "dropdown-menu pull-right", // must be a unique class name or constellation of class names within the actionDropDown
+        dropDownMenuText: "dropdown-text", // must be a unique class name or constellation of class names within the actionDropDown
         footer: "bootgrid-footer container-fluid",
         header: "bootgrid-header container-fluid",
         icon: "icon glyphicon",
@@ -76,7 +78,7 @@ Grid.defaults = {
         // note: Grenzen der template sprache sind: Templates duerfen nur einmal ineinander verschachtelt werden und 
         //       es darf mittels des Kontexts kein weiteres HTML, dass wiederum Variablen enthalten kann, die auch ersetzt werden muessen, eingefuegt werden.
         actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{tpl.icon}}</button>",
-        actionDropDown: "<div class=\"btn-group\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\">{{ctx.content}} <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenu}}\" role=\"menu\"></ul></div>",
+        actionDropDown: "<div class=\"{{css.dropDownMenu}}\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\"><span class=\"{{css.dropDownMenuText}}\">{{ctx.content}}</span> <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenuItems}}\" role=\"menu\"></ul></div>",
         actionDropDownItem: "<li><a href=\"{{ctx.uri}}\" class=\"{{css.dropDownItemButton}}\">{{ctx.key}}</a></li>",
         actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItemCheckbox}}\"><input name=\"{{ctx.name}}\" type=\"checkbox\" value=\"1\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
         actions: "<div class=\"{{css.actions}}\"></div>",

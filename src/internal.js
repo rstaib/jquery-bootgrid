@@ -66,10 +66,15 @@ function getUrl()
 
 function init()
 {
+    this.element.trigger("initialize" + namespace);
+
     loadColumns.call(this);
-    render.call(this);
+    prepareTable.call(this);
+    renderTableHeader.call(this);
     renderActions.call(this);
     loadData.call(this);
+
+    this.element.trigger("initialized" + namespace);
 }
 
 function isVisible(column)
@@ -158,7 +163,7 @@ function loadData()
     });
 }
 
-function render()
+function prepareTable()
 {
     var tpl = this.options.templates;
 
@@ -181,8 +186,6 @@ function render()
         this.footer = $(tpl.footer.resolve(getParams.call(this, { id: this.element._bgId() + "-footer" })));
         this.element.after(this.footer);
     }
-
-    renderTableHeader.call(this);
 }
 
 function renderActions()
@@ -203,12 +206,9 @@ function renderActions()
                         .on("click" + namespace, function (e)
                         {
                             // todo: prevent multiple fast clicks (fast click detection)
-                            e.preventDefault();
-
-                            var $this = $(this);
+                            e.stopPropagation();
                             that.current = 1;
                             loadData.call(that);
-                            $this.trigger("blur");
                         }),
                 actions = $(tpl.actions.resolve(getParams.call(this))).append(refresh);
 
@@ -244,7 +244,7 @@ function renderColumnSelection(actions)
                     renderTableHeader.call(that);
                     renderRows.call(that);
                 });
-        dropDown.find(getCssSelector(css.dropDownMenu)).append(item);
+        dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
     });
     actions.append(dropDown);
 }
@@ -337,27 +337,27 @@ function renderPaginationItem(list, uri, text, markerCss)
         tpl = this.options.templates,
         css = this.options.css,
         values = getParams.call(this, { css: markerCss, text: text, uri: "#" + uri }),
-        item = $(tpl.paginationItem.resolve(values)).addClass(css);
+        item = $(tpl.paginationItem.resolve(values)).addClass(css)
+            .on("click" + namespace, getCssSelector(css.paginationButton), function (e)
+            {
+                e.stopPropagation();
 
-    item.find(getCssSelector(css.paginationButton)).on("click" + namespace, function (e)
-    {
-        e.preventDefault();
-        var $this = $(this),
-            parent = $this.parent();
-        if (!parent.hasClass("active") && !parent.hasClass("disabled"))
-        {
-            var commandList = {
-                first: 1,
-                prev: that.current - 1,
-                next: that.current + 1,
-                last: that.totalPages
-            };
-            var command = $this.attr("href").substr(1);
-            that.current = commandList[command] || +command; // + converts string to int
-            loadData.call(that);
-        }
-        $this.trigger("blur");
-    });
+                var $this = $(this),
+                    parent = $this.parent();
+                if (!parent.hasClass("active") && !parent.hasClass("disabled"))
+                {
+                    var commandList = {
+                        first: 1,
+                        prev: that.current - 1,
+                        next: that.current + 1,
+                        last: that.totalPages
+                    };
+                    var command = $this.attr("href").substr(1);
+                    that.current = commandList[command] || +command; // + converts string to int
+                    loadData.call(that);
+                }
+                $this.trigger("blur");
+            });
 
     list.append(item);
     return item;
@@ -372,26 +372,35 @@ function renderRowCountSelection(actions)
             tpl = this.options.templates,
             currentKey = getFirstDictionaryItem(this.options.rowCount, this.rowCount).key,
             rowCount = $(tpl.actionDropDown.resolve(getParams.call(this, { content: currentKey })));
-
+        
         $.each(this.options.rowCount, function(key, value)
         {
             var item = $(tpl.actionDropDownItem.resolve(getParams.call(that, { key: key, uri: "#" + value })))
-                ._bgSelectAria(key === currentKey).find(getCssSelector(css.dropDownItemButton))
-                    .on("click" + namespace, function (e)
-                    {
-                        e.preventDefault();
+                ._bgSelectAria(key === currentKey)
+                .on("click" + namespace, getCssSelector(css.dropDownItemButton), function (e)
+                {
+                    e.preventDefault();
 
-                        var $this = $(this);
-                        if ($this.text() !== currentKey)
-                        {
-                            // todo: sophisticated solution needed for calculating which page is selected
-                            that.current = 1; // that.rowCount === -1 ---> All
-                            that.rowCount = +$this.attr("href").substr(1);
-                            loadData.call(that);
-                        }
-                        $this.trigger("blur");
-                    }).end();
-            rowCount.find(getCssSelector(css.dropDownMenu)).append(item);
+                    var $this = $(this),
+                        currentKey = getFirstDictionaryItem(that.options.rowCount, that.rowCount).key,
+                        newKey = $this.text();
+                    if (newKey !== currentKey)
+                    {
+                        // todo: sophisticated solution needed for calculating which page is selected
+                        that.current = 1; // that.rowCount === -1 ---> All
+                        that.rowCount = +$this.attr("href").substr(1);
+                        $this.parents(getCssSelector(css.dropDownMenuItems)).children()
+                            .each(function()
+                            {
+                                var $item = $(this);
+                                $item._bgSelectAria($item.text() === newKey);
+                            });
+                        $this.parents(getCssSelector(css.dropDownMenu))
+                            .find(getCssSelector(css.dropDownMenuText)).text(newKey);
+                        loadData.call(that);
+                    }
+                });
+            rowCount.find(getCssSelector(css.dropDownMenuItems)).append(item);
         });
         actions.append(rowCount);
     }

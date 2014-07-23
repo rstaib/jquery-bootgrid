@@ -14,8 +14,8 @@
 .bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu {
   text-align: left;
 }
-.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-checkbox,
-.bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-checkbox {
+.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item-checkbox,
+.bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item-checkbox {
   display: block;
   margin: 0;
   padding: 3px 20px;
