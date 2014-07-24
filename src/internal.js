@@ -45,7 +45,8 @@ function init()
 {
     this.element.trigger("initialize" + namespace);
 
-    loadColumns.call(this);
+    loadColumns.call(this); // Loads columns from HTML thead tag
+    loadRows.call(this); // Loads rows from HTML tbody tag if ajax is false
     prepareTable.call(this);
     renderTableHeader.call(this);
     renderActions.call(this);
@@ -68,16 +69,15 @@ function loadColumns()
     firstHeadRow.children().each(function()
     {
         var $this = $(this),
-            order = $this.data("order"),
-            sortable = $this.data("sortable"),
-            visible = $this.data("visible"),
+            data = $this.data(),
             column = {
-                id: $this.data("column-id"),
+                id: data.columnId,
+                type: that.options.converters[data.type] && data.type || "string",
                 text: $this.text(),
-                formatter: that.options.formatters[$this.data("formatter")],
-                order: (!sorted && (order === "asc" || order === "desc")) ? order : null,
-                sortable: !(sortable === false || sortable === 0), // default: true
-                visible: !(visible === false || visible === 0) // default: true
+                formatter: that.options.formatters[data.formatter],
+                order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
+                sortable: !(data.sortable === false || data.sortable === 0), // default: true
+                visible: !(data.visible === false || data.visible === 0) // default: true
             };
         that.columns.push(column);
         if (column.order != null)
@@ -116,28 +116,72 @@ function loadData()
 
     this.element.trigger("load" + namespace);
     showLoading.call(this);
-    // todo: support static data (no ajax)
-    $.post(url, request, function (response)
-    {
-        if (typeof (response) === "string")
-        {
-            response = $.parseJSON(response);
-        }
 
-        that.rows = response.rows;
-        that.current = response.current;
-        that.total = response.total;
+    function update()
+    {
         that.totalPages = Math.ceil(that.total / that.rowCount);
 
         renderRows.call(that);
         renderInfos.call(that);
         renderPagination.call(that);
+
         that.element.trigger("loaded" + namespace);
-    }).fail(function()
+    }
+
+    if (this.options.ajax)
     {
-        // overrides loading mask
-        renderNoResultsRow.call(that);
-    });
+        $.post(url, request, function (response)
+        {
+            if (typeof (response) === "string")
+            {
+                response = $.parseJSON(response);
+            }
+
+            that.rows = response.rows;
+            that.current = response.current;
+            that.total = response.total;
+
+            update();
+        }).fail(function()
+        {
+            // overrides loading mask
+            renderNoResultsRow.call(that);
+            that.element.trigger("loaded" + namespace);
+        });
+    }
+    else
+    {
+        update();
+    }
+}
+
+function loadRows()
+{
+    if (!this.options.ajax)
+    {
+        var that = this,
+            rows = this.element.find("tbody > tr");
+
+        rows.each(function()
+        {
+            var $this = $(this),
+                cells = $this.children("td"),
+                row = {};
+
+            $.each(that.columns, function(i, column)
+            {
+                row[column.id] = that.options.converters[column.type].from(cells.eq(i).text());
+            });
+
+            that.rows.push(row);
+        });
+
+        this.total = this.rows.length;
+        this.totalPages = (this.rowCount === -1) ? 1 : 
+            Math.ceil(this.total / this.rowCount);
+
+        sortRows.call(this);
+    }
 }
 
 function prepareTable()
@@ -178,7 +222,12 @@ function renderActions()
         {
             var that = this,
                 tpl = this.options.templates,
-                refresh = $(tpl.actionButton.resolve(getParams.call(this, 
+                actions = $(tpl.actions.resolve(getParams.call(this)));
+
+            // Refresh Button
+            if (this.options.ajax)
+            {
+                var refresh = $(tpl.actionButton.resolve(getParams.call(this, 
                     { iconCss: css.iconRefresh, text: this.options.labels.refresh })))
                         .on("click" + namespace, function (e)
                         {
@@ -186,8 +235,9 @@ function renderActions()
                             e.stopPropagation();
                             that.current = 1;
                             loadData.call(that);
-                        }),
-                actions = $(tpl.actions.resolve(getParams.call(this))).append(refresh);
+                        });
+                actions.append(refresh);
+            }
 
             // Row count selection
             renderRowCountSelection.call(this, actions);
@@ -218,8 +268,9 @@ function renderColumnSelection(actions)
                 {
                     e.stopPropagation();
                     column.visible = $(this).find("input").prop("checked");
+                    that.element.find("tbody").empty(); // Fixes an column visualization bug
                     renderTableHeader.call(that);
-                    renderRows.call(that);
+                    loadData.call(that);
                 });
         dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
     });
@@ -393,7 +444,9 @@ function renderRowCountSelection(actions)
 
 function renderRows()
 {
-    if (this.rows.length > 0)
+    var rows = (this.options.ajax || this.rowCount === -1) ? 
+        this.rows : this.rows.page(this.current, this.rowCount);
+    if (rows.length > 0)
     {
         var that = this,
             tpl = this.options.templates,
@@ -401,7 +454,7 @@ function renderRows()
             html = "",
             cells = "";
 
-        $.each(this.rows, function(i, row)
+        $.each(rows, function(i, row)
         {
             cells = "";
 
@@ -410,7 +463,8 @@ function renderRows()
                 if (column.visible)
                 {
                     var value = ($.isFunction(column.formatter)) ? 
-                        column.formatter.call(that, column, row) : row[column.id];
+                        column.formatter.call(that, column, row) : 
+                        that.options.converters[column.type].to(row[column.id]);
                     cells += tpl.cell.resolve(getParams.call(that, { content: 
                         (value == null || value === "") ? "&nbsp;" : value }));
                 }
@@ -492,6 +546,7 @@ function renderTableHeader()
                     icon.addClass(css.iconUp);
                 }
 
+                sortRows.call(that);
                 loadData.call(that);
             });
     }
@@ -512,13 +567,56 @@ function replacePlaceHolder(placeholder, element, flag)
 function showLoading()
 {
     var tpl = this.options.templates,
+        thead = this.element.children("thead").first(),
         tbody = this.element.children("tbody").first(),
         firstCell = tbody.find("tr > td").first(),
-        padding = Math.ceil((tbody.height() || 0) - (firstCell.height() + 20));
+        padding = (this.element.height() - thead.height()) - (firstCell.height() + 20);
 
     tbody.html(tpl.loading.resolve(getParams.call(this, { columns: this.columns.where(isVisible).length })));
     if (this.rowCount !== -1 && padding > 0)
     {
         tbody.find("tr > td").css("padding", "20px 0 " + padding + "px");
+    }
+}
+
+function sortRows()
+{
+    var sortArray = [];
+
+    function sort(x, y, current)
+    {
+        current = current || 0;
+        var next = current + 1,
+            item = sortArray[current];
+
+        function sortOrder(value)
+        {
+            return (item.order === "asc") ? value : value * -1;
+        }
+
+        return (x[item.id] > y[item.id]) ? sortOrder(1) : 
+            (x[item.id] < y[item.id]) ? sortOrder(-1) : 
+                (sortArray.length > next) ? sort(next) : 0;
+    }
+
+    if (!this.options.ajax)
+    {
+        var that = this;
+
+        for (var key in this.sort)
+        {
+            if (this.options.multiSort || sortArray.length === 0)
+            {
+                sortArray.push({
+                    id: key,
+                    order: this.sort[key]
+                });
+            }
+        }
+
+        if (sortArray.length > 0)
+        {
+            this.rows.sort(sort);
+        }
     }
 }

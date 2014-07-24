@@ -1,11 +1,12 @@
 # Changelog
 
 ## 1.0.0
-- Public functions for dynamic manipulation such as add, insert and remove row(s)
-- Static data (without ajax calls)
+- Public functions for dynamic manipulation such as append and remove row(s)
+- Client-side data support (without ajax calls)
 - Row selecton (multi and single)
 - Show/Hide column headers
-- Search field
+- Improved formatters (former know as `data-custom="true"`)
+- Added type converters per column (`data-converter="string|numeric|custom"`)
 
 ### Breaking Changes
 - `data-custom` is now `data-formatter` and instead of being a `bool` it is a event name

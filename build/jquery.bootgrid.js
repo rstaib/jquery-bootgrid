@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.0.0-beta - 07/23/2014
+ * jQuery Bootgrid v1.0.0-beta - 07/24/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -55,7 +55,8 @@
     {
         this.element.trigger("initialize" + namespace);
 
-        loadColumns.call(this);
+        loadColumns.call(this); // Loads columns from HTML thead tag
+        loadRows.call(this); // Loads rows from HTML tbody tag if ajax is false
         prepareTable.call(this);
         renderTableHeader.call(this);
         renderActions.call(this);
@@ -78,16 +79,15 @@
         firstHeadRow.children().each(function()
         {
             var $this = $(this),
-                order = $this.data("order"),
-                sortable = $this.data("sortable"),
-                visible = $this.data("visible"),
+                data = $this.data(),
                 column = {
-                    id: $this.data("column-id"),
+                    id: data.columnId,
+                    type: that.options.converters[data.type] && data.type || "string",
                     text: $this.text(),
-                    formatter: that.options.formatters[$this.data("formatter")],
-                    order: (!sorted && (order === "asc" || order === "desc")) ? order : null,
-                    sortable: !(sortable === false || sortable === 0), // default: true
-                    visible: !(visible === false || visible === 0) // default: true
+                    formatter: that.options.formatters[data.formatter],
+                    order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
+                    sortable: !(data.sortable === false || data.sortable === 0), // default: true
+                    visible: !(data.visible === false || data.visible === 0) // default: true
                 };
             that.columns.push(column);
             if (column.order != null)
@@ -126,28 +126,72 @@
 
         this.element.trigger("load" + namespace);
         showLoading.call(this);
-        // todo: support static data (no ajax)
-        $.post(url, request, function (response)
-        {
-            if (typeof (response) === "string")
-            {
-                response = $.parseJSON(response);
-            }
 
-            that.rows = response.rows;
-            that.current = response.current;
-            that.total = response.total;
+        function update()
+        {
             that.totalPages = Math.ceil(that.total / that.rowCount);
 
             renderRows.call(that);
             renderInfos.call(that);
             renderPagination.call(that);
+
             that.element.trigger("loaded" + namespace);
-        }).fail(function()
+        }
+
+        if (this.options.ajax)
         {
-            // overrides loading mask
-            renderNoResultsRow.call(that);
-        });
+            $.post(url, request, function (response)
+            {
+                if (typeof (response) === "string")
+                {
+                    response = $.parseJSON(response);
+                }
+
+                that.rows = response.rows;
+                that.current = response.current;
+                that.total = response.total;
+
+                update();
+            }).fail(function()
+            {
+                // overrides loading mask
+                renderNoResultsRow.call(that);
+                that.element.trigger("loaded" + namespace);
+            });
+        }
+        else
+        {
+            update();
+        }
+    }
+
+    function loadRows()
+    {
+        if (!this.options.ajax)
+        {
+            var that = this,
+                rows = this.element.find("tbody > tr");
+
+            rows.each(function()
+            {
+                var $this = $(this),
+                    cells = $this.children("td"),
+                    row = {};
+
+                $.each(that.columns, function(i, column)
+                {
+                    row[column.id] = that.options.converters[column.type].from(cells.eq(i).text());
+                });
+
+                that.rows.push(row);
+            });
+
+            this.total = this.rows.length;
+            this.totalPages = (this.rowCount === -1) ? 1 : 
+                Math.ceil(this.total / this.rowCount);
+
+            sortRows.call(this);
+        }
     }
 
     function prepareTable()
@@ -188,7 +232,12 @@
             {
                 var that = this,
                     tpl = this.options.templates,
-                    refresh = $(tpl.actionButton.resolve(getParams.call(this, 
+                    actions = $(tpl.actions.resolve(getParams.call(this)));
+
+                // Refresh Button
+                if (this.options.ajax)
+                {
+                    var refresh = $(tpl.actionButton.resolve(getParams.call(this, 
                         { iconCss: css.iconRefresh, text: this.options.labels.refresh })))
                             .on("click" + namespace, function (e)
                             {
@@ -196,8 +245,9 @@
                                 e.stopPropagation();
                                 that.current = 1;
                                 loadData.call(that);
-                            }),
-                    actions = $(tpl.actions.resolve(getParams.call(this))).append(refresh);
+                            });
+                    actions.append(refresh);
+                }
 
                 // Row count selection
                 renderRowCountSelection.call(this, actions);
@@ -228,8 +278,9 @@
                     {
                         e.stopPropagation();
                         column.visible = $(this).find("input").prop("checked");
+                        that.element.find("tbody").empty(); // Fixes an column visualization bug
                         renderTableHeader.call(that);
-                        renderRows.call(that);
+                        loadData.call(that);
                     });
             dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
         });
@@ -403,7 +454,9 @@
 
     function renderRows()
     {
-        if (this.rows.length > 0)
+        var rows = (this.options.ajax || this.rowCount === -1) ? 
+            this.rows : this.rows.page(this.current, this.rowCount);
+        if (rows.length > 0)
         {
             var that = this,
                 tpl = this.options.templates,
@@ -411,7 +464,7 @@
                 html = "",
                 cells = "";
 
-            $.each(this.rows, function(i, row)
+            $.each(rows, function(i, row)
             {
                 cells = "";
 
@@ -420,7 +473,8 @@
                     if (column.visible)
                     {
                         var value = ($.isFunction(column.formatter)) ? 
-                            column.formatter.call(that, column, row) : row[column.id];
+                            column.formatter.call(that, column, row) : 
+                            that.options.converters[column.type].to(row[column.id]);
                         cells += tpl.cell.resolve(getParams.call(that, { content: 
                             (value == null || value === "") ? "&nbsp;" : value }));
                     }
@@ -502,6 +556,7 @@
                         icon.addClass(css.iconUp);
                     }
 
+                    sortRows.call(that);
                     loadData.call(that);
                 });
         }
@@ -522,14 +577,57 @@
     function showLoading()
     {
         var tpl = this.options.templates,
+            thead = this.element.children("thead").first(),
             tbody = this.element.children("tbody").first(),
             firstCell = tbody.find("tr > td").first(),
-            padding = Math.ceil((tbody.height() || 0) - (firstCell.height() + 20));
+            padding = (this.element.height() - thead.height()) - (firstCell.height() + 20);
 
         tbody.html(tpl.loading.resolve(getParams.call(this, { columns: this.columns.where(isVisible).length })));
         if (this.rowCount !== -1 && padding > 0)
         {
             tbody.find("tr > td").css("padding", "20px 0 " + padding + "px");
+        }
+    }
+
+    function sortRows()
+    {
+        var sortArray = [];
+
+        function sort(x, y, current)
+        {
+            current = current || 0;
+            var next = current + 1,
+                item = sortArray[current];
+
+            function sortOrder(value)
+            {
+                return (item.order === "asc") ? value : value * -1;
+            }
+
+            return (x[item.id] > y[item.id]) ? sortOrder(1) : 
+                (x[item.id] < y[item.id]) ? sortOrder(-1) : 
+                    (sortArray.length > next) ? sort(next) : 0;
+        }
+
+        if (!this.options.ajax)
+        {
+            var that = this;
+
+            for (var key in this.sort)
+            {
+                if (this.options.multiSort || sortArray.length === 0)
+                {
+                    sortArray.push({
+                        id: key,
+                        order: this.sort[key]
+                    });
+                }
+            }
+
+            if (sortArray.length > 0)
+            {
+                this.rows.sort(sort);
+            }
         }
     }
 
@@ -562,20 +660,31 @@
 
     Grid.defaults = {
         navigation: 3, // it's a flag: 0 = none, 1 = top, 2 = bottom, 3 = both (top and bottom)
-        enableAsync: false, // todo: implement and find a better name for this property!
-        enableSelection: false, // todo: implement!
+        padding: 2, // page padding (pagination)
+        rowCount: [10, 25, 50, -1], // rows per page int or array of int
+        selection: false, // todo: implement!
         multiSelect: false, // todo: implement!
-        multiSort: false,
         selectRows: false, // todo: implement and find a better name for this property [select new rows after adding]!
         sorting: true,
-        padding: 2, // page padding (pagination)
+        multiSort: false,
+        ajax: false, // todo: implement and find a better name for this property!
         post: {}, // or use function () { return {}; }
-        rowCount: [10, 25, 50, -1], // rows per page int or array of int
         url: "", // or use function () { return ""; }
 
         // todo: implement cache
 
         // note: The following properties are not available via data-api attributes
+        converters: {
+            numeric: {
+                from: function (value) { return +value; },
+                to: function (value) { return value; }
+            },
+            string: {
+                // default converter
+                from: function (value) { return value; },
+                to: function (value) { return value; }
+            }
+        },
         css: {
             actions: "actions btn-group", // must be a unique class name or constellation of class names within the header and footer
             columnHeaderAnchor: "column-header-anchor", // must be a unique class name or constellation of class names within the column header cell
@@ -629,22 +738,35 @@
         }
     };
 
-    Grid.prototype.add = function(item)
+    Grid.prototype.append = function(rows)
     {
-        // todo: implement!
-        if ($.isPlainObject(item))
+        // there is only support for client-side data
+        if (!this.options.ajax)
         {
-            // single add
+            for (var i = 0; i < rows.length; i++)
+            {
+                this.rows.splice(this.rows.length - 1, 0, rows[i]);
+            }
+            this.total = this.rows.length;
+            sortRows.call(this);
+            loadData.call(this);
         }
-        else if ($.isArray(item))
-        {
-            // multi add (range)
-        }
+
+        return this;
     };
 
     Grid.prototype.clear = function()
     {
-        // todo: implement!
+        // there is only support for client-side data
+        if (!this.options.ajax)
+        {
+            this.rows = [];
+            this.current = 1;
+            this.total = 0;
+            loadData.call(this);
+        }
+
+        return this;
     };
 
     Grid.prototype.destroy = function()
@@ -652,63 +774,63 @@
         $(window).off(namespace);
         this.element.off(namespace).removeData(namespace);
         // todo: empty body and remove surrounding elements
-    };
 
-    Grid.prototype.insert = function(index, item)
-    {
-        // todo: implement!
-        if ($.isPlainObject(item))
-        {
-            // single insert
-        }
-        else if ($.isArray(item))
-        {
-            // multi insert (range)
-        }
+        return this;
     };
 
     Grid.prototype.reload = function()
     {
         this.current = 1; // reset
-        // todo: support static data (no ajax)
         loadData.call(this);
+
+        return this;
     };
 
-    Grid.prototype.remove = function(id)
+    Grid.prototype.remove = function(rowIds)
+    {
+        // there is only support for client-side data
+        if (!this.options.ajax)
+        {
+            // todo: implement!
+            //for (var i = 0; i < rowIds.length; i++)
+            //{
+            //    this.rows = ;
+            //    this.current = 1;
+            //    this.total = 0;
+            //    loadData.call(this);
+            //}
+        }
+
+        return this;
+    };
+
+    Grid.prototype.search = function(text)
     {
         // todo: implement!
-        if (typeof id === "string")
-        {
-            // single remove
-        }
-        else if ($.isArray(id))
-        {
-            // multi remove (range)
-        }
+
+        return this;
     };
 
     Grid.prototype.select = function()
     {
         // todo: implement!
+
+        return this;
     };
 
     Grid.prototype.sort = function(dictionary)
     {
         var values = (dictionary) ? $.extend({}, dictionary) : {};
-        if (values === this.context.sort)
+        if (values === this.sort)
         {
             return this;
         }
 
-        this.context.sort = values;
+        this.sort = values;
 
-        $.each(values, function(field, direction)
-        {
-            // todo: Implement rendering
-        });
-
-        // todo: Show loading
-        // todo: Execute post
+        renderTableHeader.call(this);
+        sortRows.call(this);
+        loadData.call(this);
 
         return this;
     };
@@ -720,6 +842,7 @@
 
     $.fn.bootgrid = function (option)
     {
+        var args = Array.prototype.slice.call(arguments, 1);
         return this.each(function ()
         {
             var $this = $(this),
@@ -737,7 +860,7 @@
             }
             if (typeof option === "string")
             {
-                return instance[option]();
+                return instance[option].apply(instance, args);
             }
         });
     };
@@ -842,6 +965,18 @@
                 }
             });
             return result;
+        };
+    }
+
+    if (!Array.prototype.page)
+    {
+        Array.prototype.page = function (page, size)
+        {
+            var skip = (page - 1) * size,
+                end = skip + size;
+            return (this.length > skip) ? 
+                (this.length > end) ? this.slice(skip, end) : 
+                    this.slice(skip) : [];
         };
     }
 

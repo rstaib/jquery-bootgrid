@@ -55,7 +55,8 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.bootgrid-table td.loading {
+.bootgrid-table td.loading,
+.bootgrid-table td.no-results {
   background: #fff;
   text-align: center;
 }

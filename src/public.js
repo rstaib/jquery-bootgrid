@@ -41,6 +41,17 @@ Grid.defaults = {
     // todo: implement cache
 
     // note: The following properties are not available via data-api attributes
+    converters: {
+        numeric: {
+            from: function (value) { return +value; },
+            to: function (value) { return value; }
+        },
+        string: {
+            // default converter
+            from: function (value) { return value; },
+            to: function (value) { return value; }
+        }
+    },
     css: {
         actions: "actions btn-group", // must be a unique class name or constellation of class names within the header and footer
         columnHeaderAnchor: "column-header-anchor", // must be a unique class name or constellation of class names within the column header cell
@@ -94,22 +105,35 @@ Grid.defaults = {
     }
 };
 
-Grid.prototype.add = function(item)
+Grid.prototype.append = function(rows)
 {
-    // todo: implement!
-    if ($.isPlainObject(item))
+    // there is only support for client-side data
+    if (!this.options.ajax)
     {
-        // single add
+        for (var i = 0; i < rows.length; i++)
+        {
+            this.rows.splice(this.rows.length - 1, 0, rows[i]);
+        }
+        this.total = this.rows.length;
+        sortRows.call(this);
+        loadData.call(this);
     }
-    else if ($.isArray(item))
-    {
-        // multi add (range)
-    }
+
+    return this;
 };
 
 Grid.prototype.clear = function()
 {
-    // todo: implement!
+    // there is only support for client-side data
+    if (!this.options.ajax)
+    {
+        this.rows = [];
+        this.current = 1;
+        this.total = 0;
+        loadData.call(this);
+    }
+
+    return this;
 };
 
 Grid.prototype.destroy = function()
@@ -117,63 +141,63 @@ Grid.prototype.destroy = function()
     $(window).off(namespace);
     this.element.off(namespace).removeData(namespace);
     // todo: empty body and remove surrounding elements
-};
 
-Grid.prototype.insert = function(index, item)
-{
-    // todo: implement!
-    if ($.isPlainObject(item))
-    {
-        // single insert
-    }
-    else if ($.isArray(item))
-    {
-        // multi insert (range)
-    }
+    return this;
 };
 
 Grid.prototype.reload = function()
 {
     this.current = 1; // reset
-    // todo: support static data (no ajax)
     loadData.call(this);
+
+    return this;
 };
 
-Grid.prototype.remove = function(id)
+Grid.prototype.remove = function(rowIds)
+{
+    // there is only support for client-side data
+    if (!this.options.ajax)
+    {
+        // todo: implement!
+        //for (var i = 0; i < rowIds.length; i++)
+        //{
+        //    this.rows = ;
+        //    this.current = 1;
+        //    this.total = 0;
+        //    loadData.call(this);
+        //}
+    }
+
+    return this;
+};
+
+Grid.prototype.search = function(text)
 {
     // todo: implement!
-    if (typeof id === "string")
-    {
-        // single remove
-    }
-    else if ($.isArray(id))
-    {
-        // multi remove (range)
-    }
+
+    return this;
 };
 
 Grid.prototype.select = function()
 {
     // todo: implement!
+
+    return this;
 };
 
 Grid.prototype.sort = function(dictionary)
 {
     var values = (dictionary) ? $.extend({}, dictionary) : {};
-    if (values === this.context.sort)
+    if (values === this.sort)
     {
         return this;
     }
 
-    this.context.sort = values;
+    this.sort = values;
 
-    $.each(values, function(field, direction)
-    {
-        // todo: Implement rendering
-    });
-
-    // todo: Show loading
-    // todo: Execute post
+    renderTableHeader.call(this);
+    sortRows.call(this);
+    loadData.call(this);
 
     return this;
 };

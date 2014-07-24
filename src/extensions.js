@@ -79,6 +79,18 @@ if (!String.prototype.resolve)
     };
 }
 
+if (!Array.prototype.page)
+{
+    Array.prototype.page = function (page, size)
+    {
+        var skip = (page - 1) * size,
+            end = skip + size;
+        return (this.length > skip) ? 
+            (this.length > end) ? this.slice(skip, end) : 
+                this.slice(skip) : [];
+    };
+}
+
 if (!Array.prototype.where)
 {
     Array.prototype.where = function (predicate)
