@@ -2,6 +2,23 @@
 .bootgrid-footer {
   margin: 15px 0;
 }
+.bootgrid-header .search,
+.bootgrid-footer .search {
+  display: inline-block;
+  margin: 0 20px 0 0;
+  vertical-align: middle;
+  width: 180px;
+}
+.bootgrid-header .search .glyphicon,
+.bootgrid-footer .search .glyphicon {
+  top: 0;
+}
+.bootgrid-header .search.searchField::-ms-clear,
+.bootgrid-footer .search.searchField::-ms-clear,
+.bootgrid-header .search .searchField::-ms-clear,
+.bootgrid-footer .search .searchField::-ms-clear {
+  display: none;
+}
 .bootgrid-header .pagination,
 .bootgrid-footer .pagination {
   margin: 0 !important;

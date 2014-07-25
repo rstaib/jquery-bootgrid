@@ -35,7 +35,8 @@ function getRequest()
     var request = {
             current: this.current,
             rowCount: this.rowCount,
-            sort: this.sort
+            sort: this.sort,
+            searchPhrase: this.searchPhrase
         },
         post = this.options.post;
 
@@ -62,6 +63,7 @@ function init()
     loadRows.call(this); // Loads rows from HTML tbody tag if ajax is false
     prepareTable.call(this);
     renderTableHeader.call(this);
+    renderSearchField.call(this);
     renderActions.call(this);
     loadData.call(this);
 
@@ -86,10 +88,10 @@ function loadColumns()
             data = $this.data(),
             column = {
                 id: data.columnId,
-                identifier: that.identifier == null && data.identifier,
+                identifier: that.identifier == null && data.identifier || false,
                 type: that.options.converters[data.type] && data.type || "string",
                 text: $this.text(),
-                formatter: that.options.formatters[data.formatter],
+                formatter: that.options.formatters[data.formatter] || null,
                 order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
                 sortable: !(data.sortable === false), // default: true
                 visible: !(data.visible === false) // default: true
@@ -139,11 +141,30 @@ function loadData()
     this.element.trigger("load" + namespace);
     showLoading.call(this);
 
-    function update()
+    function containsPhrase(row)
     {
-        that.totalPages = Math.ceil(that.total / that.rowCount);
+        var column;
 
-        renderRows.call(that);
+        for (var i = 0; i < that.columns.length; i++)
+        {
+            column = that.columns[i];
+
+            if (column.visible && that.options.converters[column.type]
+                .to(row[column.id]).indexOf(that.searchPhrase) > -1)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function update(rows, total)
+    {
+        that.total = total;
+        that.totalPages = Math.ceil(total / that.rowCount);
+
+        renderRows.call(that, rows);
         renderInfos.call(that);
         renderPagination.call(that);
 
@@ -161,9 +182,8 @@ function loadData()
 
             that.rows = response.rows;
             that.current = response.current;
-            that.total = response.total;
 
-            update();
+            update(that.rows, response.total);
         }).fail(function()
         {
             // overrides loading mask
@@ -173,7 +193,14 @@ function loadData()
     }
     else
     {
-        update();
+        var rows = (this.searchPhrase.length > 0) ? this.rows.where(containsPhrase) : this.rows,
+            total = rows.length;
+        if (this.rowCount !== -1)
+        {
+            rows = rows.page(this.current, this.rowCount);
+        }
+
+        update(rows, total);
     }
 }
 
@@ -465,10 +492,8 @@ function renderRowCountSelection(actions)
     }
 }
 
-function renderRows()
+function renderRows(rows)
 {
-    var rows = (this.options.ajax || this.rowCount === -1) ? 
-        this.rows : this.rows.page(this.current, this.rowCount);
     if (rows.length > 0)
     {
         var that = this,
@@ -487,7 +512,7 @@ function renderRows()
                 {
                     var value = ($.isFunction(column.formatter)) ? 
                         column.formatter.call(that, column, row) : 
-                        that.options.converters[column.type].to(row[column.id]);
+                            that.options.converters[column.type].to(row[column.id]);
                     cells += tpl.cell.resolve(getParams.call(that, { content: 
                         (value == null || value === "") ? "&nbsp;" : value }));
                 }
@@ -501,6 +526,47 @@ function renderRows()
     else
     {
         renderNoResultsRow.call(this);
+    }
+}
+
+function renderSearchField()
+{
+    if (this.options.navigation !== 0)
+    {
+        var css = this.options.css,
+            selector = getCssSelector(css.search),
+            headerSearch = this.header.find(selector),
+            footerSearch = this.footer.find(selector);
+
+        if ((headerSearch.length + footerSearch.length) > 0)
+        {
+            var that = this,
+                tpl = this.options.templates,
+                timer = null, // fast keyup detection
+                currentValue = "",
+                searchFieldSelector = getCssSelector(css.searchField),
+                search = $(tpl.search.resolve(getParams.call(this))),
+                searchField = (search.is(searchFieldSelector)) ? search : 
+                    search.find(searchFieldSelector);
+
+            searchField.on("keyup" + namespace, function (e)
+            {
+                e.stopPropagation();
+				var newValue = $(this).val();
+				if (currentValue !== newValue)
+				{
+					currentValue = newValue;
+					window.clearTimeout(timer);
+					timer = window.setTimeout(function ()
+					{
+						that.search(newValue);
+					}, 250);
+				}
+            });
+
+            replacePlaceHolder.call(this, headerSearch, search, 1);
+            replacePlaceHolder.call(this, footerSearch, search, 2);
+        }
     }
 }
 
@@ -522,8 +588,7 @@ function renderTableHeader()
                     (sorting && sortOrder && sortOrder === "desc") ? css.iconDown : ""),
                 icon = tpl.icon.resolve(getParams.call(that, { iconCss: iconCss }));
             html += tpl.headerCell.resolve(getParams.call(that, 
-                { content: column.text, icon: icon, columnId: column.id,
-                    sortable: (sorting && column.sortable) ? css.sortable : "" }));
+                { column: column, icon: icon, sortable: sorting && column.sortable && css.sortable || "" }));
         }
     });
 

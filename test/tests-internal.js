@@ -26,13 +26,15 @@ test("getRequest post function test", 1, function ()
             },
             current: 1,
             rowCount: 5,
-            sort: []
+            sort: [],
+            searchPhrase: ""
         },
         expected = {
             current: 1,
             id: "test",
             rowCount: 5,
-            sort: []
+            sort: [],
+            searchPhrase: ""
         };
 
     // when
@@ -52,13 +54,15 @@ test("getRequest post object test", 1, function() {
             },
             current: 1,
             rowCount: 5,
-            sort: []
+            sort: [],
+            searchPhrase: ""
         },
         expected = {
             current: 1,
             id: "test",
             rowCount: 5,
-            sort: []
+            sort: [],
+            searchPhrase: ""
         };
 
     // when

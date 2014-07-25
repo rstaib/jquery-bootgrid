@@ -22,6 +22,7 @@ var Grid = function(element, options)
     this.rows = [];
     this.rowCount = ($.isArray(rowCount)) ? rowCount[0] : rowCount;
     this.sort = {};
+    this.searchPhrase = "";
     this.total = 0;
     this.totalPages = 0;
     this.cachedParams = {
@@ -31,28 +32,28 @@ var Grid = function(element, options)
     };
     this.header = null;
     this.footer = null;
+
+    // todo: implement cache
 };
 
 Grid.defaults = {
     navigation: 3, // it's a flag: 0 = none, 1 = top, 2 = bottom, 3 = both (top and bottom)
     padding: 2, // page padding (pagination)
-    rowCount: [10, 25, 50, -1], // rows per page int or array of int
+    rowCount: [10, 25, 50, -1], // rows per page int or array of int (-1 represents "All")
     selection: false, // todo: implement!
     multiSelect: false, // todo: implement!
     selectRows: false, // todo: implement and find a better name for this property [select new rows after adding]!
     sorting: true,
     multiSort: false,
-    ajax: false, // todo: implement and find a better name for this property!
-    post: {}, // or use function () { return {}; }
+    ajax: false, // todo: find a better name for this property to differentiate between client-side and server-side data
+    post: {}, // or use function () { return {}; } (reserved properties are "current", "rowCount", "sort" and "searchPhrase")
     url: "", // or use function () { return ""; }
-
-    // todo: implement cache
 
     // note: The following properties should be used via data-api attributes
     converters: {
         numeric: {
-            from: function (value) { return +value; },
-            to: function (value) { return value; }
+            from: function (value) { return +value; }, // converts from string to numeric
+            to: function (value) { return value + ""; } // converts from numeric to string
         },
         string: {
             // default converter
@@ -79,6 +80,8 @@ Grid.defaults = {
         infos: "infos", // must be a unique class name or constellation of class names within the header and footer,
         pagination: "pagination", // must be a unique class name or constellation of class names within the header and footer
         paginationButton: "button", // must be a unique class name or constellation of class names within the pagination
+        search: "search form-group", // must be a unique class name or constellation of class names within the header and footer
+        searchField: "searchField form-control",
         sortable: "sortable",
         table: "bootgrid-table table"
     },
@@ -88,7 +91,8 @@ Grid.defaults = {
         infos: "Showing {{ctx.start}} to {{ctx.end}} of {{ctx.total}} entries",
         loading: "Loading...",
         noResults: "No results found!",
-        refresh: "Refresh"
+        refresh: "Refresh",
+        search: "Search"
     },
     templates: {
         actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{ctx.content}}</button>",
@@ -99,15 +103,16 @@ Grid.defaults = {
         body: "<tbody></tbody>",
         cell: "<td>{{ctx.content}}</td>",
         footer: "<div id=\"{{ctx.id}}\" class=\"{{css.footer}}\"><div class=\"row\"><div class=\"col-sm-6\"><p class=\"{{css.pagination}}\"></p></div><div class=\"col-sm-6 infoBar\"><p class=\"{{css.infos}}\"></p></div></div></div>",
-        header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.actions}}\"></p></div></div></div>",
-        headerCell: "<th data-column-id=\"{{ctx.columnId}}\"><a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.content}}</span>{{ctx.icon}}</a></th>",
+        header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.search}}\"></p><p class=\"{{css.actions}}\"></p></div></div></div>",
+        headerCell: "<th data-column-id=\"{{ctx.column.id}}\"><a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.column.text}}</span>{{ctx.icon}}</a></th>",
         icon: "<span class=\"{{css.icon}} {{ctx.iconCss}}\"></span>",
         infos: "<div class=\"{{css.infos}}\">{{lbl.infos}}</div>",
         loading: "<tr><td colspan=\"{{ctx.columns}}\" class=\"loading\">{{lbl.loading}}</td></tr>",
         noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{lbl.noResults}}</td></tr>",
         pagination: "<ul class=\"{{css.pagination}}\"></ul>",
         paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
-        row: "<tr>{{ctx.cells}}</tr>"
+        row: "<tr>{{ctx.cells}}</tr>",
+        search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon glyphicon-search\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>"
     }
 };
 
@@ -120,7 +125,6 @@ Grid.prototype.append = function(rows)
         {
             appendRow.call(this, rows[i]);
         }
-        this.total = this.rows.length;
         sortRows.call(this);
         loadData.call(this);
     }
@@ -167,10 +171,10 @@ Grid.prototype.reload = function()
     return this;
 };
 
-Grid.prototype.remove = function(rowIds)
+Grid.prototype.remove = function(id)
 {
     // there is only support for client-side data
-    if (!this.options.ajax)
+    if (!this.options.ajax) // check also is identifier available
     {
         // todo: implement!
     }
@@ -178,9 +182,10 @@ Grid.prototype.remove = function(rowIds)
     return this;
 };
 
-Grid.prototype.search = function(text)
+Grid.prototype.search = function(phrase)
 {
-    // todo: implement!
+    this.searchPhrase = phrase;
+    loadData.call(this);
 
     return this;
 };

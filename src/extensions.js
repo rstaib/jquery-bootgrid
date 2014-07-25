@@ -58,21 +58,24 @@ if (!String.prototype.resolve)
         var result = this;
         $.each(substitutes, function (key, value)
         {
-            if (typeof value === "object")
+            if (value != null && typeof value !== "function")
             {
-                var keys = (prefixes) ? $.extend([], prefixes) : [];
-                keys.push(key);
-                result = result.resolve(value, keys);
-            }
-            else
-            {
-                if ($.isFunction(formatter[key]))
+                if (typeof value === "object")
                 {
-                    value = formatter[key](value);
+                    var keys = (prefixes) ? $.extend([], prefixes) : [];
+                    keys.push(key);
+                    result = result.resolve(value, keys);
                 }
-                key = (prefixes) ? prefixes.join(".") + "." + key : key;
-                var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");
-                result = result.replace(pattern, value);
+                else
+                {
+                    if ($.isFunction(formatter[key]))
+                    {
+                        value = formatter[key](value);
+                    }
+                    key = (prefixes) ? prefixes.join(".") + "." + key : key;
+                    var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");
+                    result = result.replace(pattern, value);
+                }
             }
         });
         return result;

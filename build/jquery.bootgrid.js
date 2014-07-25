@@ -45,7 +45,8 @@
         var request = {
                 current: this.current,
                 rowCount: this.rowCount,
-                sort: this.sort
+                sort: this.sort,
+                searchPhrase: this.searchPhrase
             },
             post = this.options.post;
 
@@ -72,6 +73,7 @@
         loadRows.call(this); // Loads rows from HTML tbody tag if ajax is false
         prepareTable.call(this);
         renderTableHeader.call(this);
+        renderSearchField.call(this);
         renderActions.call(this);
         loadData.call(this);
 
@@ -96,10 +98,10 @@
                 data = $this.data(),
                 column = {
                     id: data.columnId,
-                    identifier: that.identifier == null && data.identifier,
+                    identifier: that.identifier == null && data.identifier || false,
                     type: that.options.converters[data.type] && data.type || "string",
                     text: $this.text(),
-                    formatter: that.options.formatters[data.formatter],
+                    formatter: that.options.formatters[data.formatter] || null,
                     order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
                     sortable: !(data.sortable === false), // default: true
                     visible: !(data.visible === false) // default: true
@@ -149,11 +151,30 @@
         this.element.trigger("load" + namespace);
         showLoading.call(this);
 
-        function update()
+        function containsPhrase(row)
         {
-            that.totalPages = Math.ceil(that.total / that.rowCount);
+            var column;
 
-            renderRows.call(that);
+            for (var i = 0; i < that.columns.length; i++)
+            {
+                column = that.columns[i];
+
+                if (column.visible && that.options.converters[column.type]
+                    .to(row[column.id]).indexOf(that.searchPhrase) > -1)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        function update(rows, total)
+        {
+            that.total = total;
+            that.totalPages = Math.ceil(total / that.rowCount);
+
+            renderRows.call(that, rows);
             renderInfos.call(that);
             renderPagination.call(that);
 
@@ -171,9 +192,8 @@
 
                 that.rows = response.rows;
                 that.current = response.current;
-                that.total = response.total;
 
-                update();
+                update(that.rows, response.total);
             }).fail(function()
             {
                 // overrides loading mask
@@ -183,7 +203,14 @@
         }
         else
         {
-            update();
+            var rows = (this.searchPhrase.length > 0) ? this.rows.where(containsPhrase) : this.rows,
+                total = rows.length;
+            if (this.rowCount !== -1)
+            {
+                rows = rows.page(this.current, this.rowCount);
+            }
+
+            update(rows, total);
         }
     }
 
@@ -475,10 +502,8 @@
         }
     }
 
-    function renderRows()
+    function renderRows(rows)
     {
-        var rows = (this.options.ajax || this.rowCount === -1) ? 
-            this.rows : this.rows.page(this.current, this.rowCount);
         if (rows.length > 0)
         {
             var that = this,
@@ -497,7 +522,7 @@
                     {
                         var value = ($.isFunction(column.formatter)) ? 
                             column.formatter.call(that, column, row) : 
-                            that.options.converters[column.type].to(row[column.id]);
+                                that.options.converters[column.type].to(row[column.id]);
                         cells += tpl.cell.resolve(getParams.call(that, { content: 
                             (value == null || value === "") ? "&nbsp;" : value }));
                     }
@@ -511,6 +536,47 @@
         else
         {
             renderNoResultsRow.call(this);
+        }
+    }
+
+    function renderSearchField()
+    {
+        if (this.options.navigation !== 0)
+        {
+            var css = this.options.css,
+                selector = getCssSelector(css.search),
+                headerSearch = this.header.find(selector),
+                footerSearch = this.footer.find(selector);
+
+            if ((headerSearch.length + footerSearch.length) > 0)
+            {
+                var that = this,
+                    tpl = this.options.templates,
+                    timer = null, // fast keyup detection
+                    currentValue = "",
+                    searchFieldSelector = getCssSelector(css.searchField),
+                    search = $(tpl.search.resolve(getParams.call(this))),
+                    searchField = (search.is(searchFieldSelector)) ? search : 
+                        search.find(searchFieldSelector);
+
+                searchField.on("keyup" + namespace, function (e)
+                {
+                    e.stopPropagation();
+    				var newValue = $(this).val();
+    				if (currentValue !== newValue)
+    				{
+    					currentValue = newValue;
+    					window.clearTimeout(timer);
+    					timer = window.setTimeout(function ()
+    					{
+    						that.search(newValue);
+    					}, 250);
+    				}
+                });
+
+                replacePlaceHolder.call(this, headerSearch, search, 1);
+                replacePlaceHolder.call(this, footerSearch, search, 2);
+            }
         }
     }
 
@@ -532,8 +598,7 @@
                         (sorting && sortOrder && sortOrder === "desc") ? css.iconDown : ""),
                     icon = tpl.icon.resolve(getParams.call(that, { iconCss: iconCss }));
                 html += tpl.headerCell.resolve(getParams.call(that, 
-                    { content: column.text, icon: icon, columnId: column.id,
-                        sortable: (sorting && column.sortable) ? css.sortable : "" }));
+                    { column: column, icon: icon, sortable: sorting && column.sortable && css.sortable || "" }));
             }
         });
 
@@ -678,6 +743,7 @@
         this.rows = [];
         this.rowCount = ($.isArray(rowCount)) ? rowCount[0] : rowCount;
         this.sort = {};
+        this.searchPhrase = "";
         this.total = 0;
         this.totalPages = 0;
         this.cachedParams = {
@@ -687,28 +753,28 @@
         };
         this.header = null;
         this.footer = null;
+
+        // todo: implement cache
     };
 
     Grid.defaults = {
         navigation: 3, // it's a flag: 0 = none, 1 = top, 2 = bottom, 3 = both (top and bottom)
         padding: 2, // page padding (pagination)
-        rowCount: [10, 25, 50, -1], // rows per page int or array of int
+        rowCount: [10, 25, 50, -1], // rows per page int or array of int (-1 represents "All")
         selection: false, // todo: implement!
         multiSelect: false, // todo: implement!
         selectRows: false, // todo: implement and find a better name for this property [select new rows after adding]!
         sorting: true,
         multiSort: false,
-        ajax: false, // todo: implement and find a better name for this property!
-        post: {}, // or use function () { return {}; }
+        ajax: false, // todo: find a better name for this property to differentiate between client-side and server-side data
+        post: {}, // or use function () { return {}; } (reserved properties are "current", "rowCount", "sort" and "searchPhrase")
         url: "", // or use function () { return ""; }
-
-        // todo: implement cache
 
         // note: The following properties should be used via data-api attributes
         converters: {
             numeric: {
-                from: function (value) { return +value; },
-                to: function (value) { return value; }
+                from: function (value) { return +value; }, // converts from string to numeric
+                to: function (value) { return value + ""; } // converts from numeric to string
             },
             string: {
                 // default converter
@@ -735,6 +801,8 @@
             infos: "infos", // must be a unique class name or constellation of class names within the header and footer,
             pagination: "pagination", // must be a unique class name or constellation of class names within the header and footer
             paginationButton: "button", // must be a unique class name or constellation of class names within the pagination
+            search: "search form-group", // must be a unique class name or constellation of class names within the header and footer
+            searchField: "searchField form-control",
             sortable: "sortable",
             table: "bootgrid-table table"
         },
@@ -744,7 +812,8 @@
             infos: "Showing {{ctx.start}} to {{ctx.end}} of {{ctx.total}} entries",
             loading: "Loading...",
             noResults: "No results found!",
-            refresh: "Refresh"
+            refresh: "Refresh",
+            search: "Search"
         },
         templates: {
             actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{ctx.content}}</button>",
@@ -755,15 +824,16 @@
             body: "<tbody></tbody>",
             cell: "<td>{{ctx.content}}</td>",
             footer: "<div id=\"{{ctx.id}}\" class=\"{{css.footer}}\"><div class=\"row\"><div class=\"col-sm-6\"><p class=\"{{css.pagination}}\"></p></div><div class=\"col-sm-6 infoBar\"><p class=\"{{css.infos}}\"></p></div></div></div>",
-            header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.actions}}\"></p></div></div></div>",
-            headerCell: "<th data-column-id=\"{{ctx.columnId}}\"><a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.content}}</span>{{ctx.icon}}</a></th>",
+            header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.search}}\"></p><p class=\"{{css.actions}}\"></p></div></div></div>",
+            headerCell: "<th data-column-id=\"{{ctx.column.id}}\"><a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.column.text}}</span>{{ctx.icon}}</a></th>",
             icon: "<span class=\"{{css.icon}} {{ctx.iconCss}}\"></span>",
             infos: "<div class=\"{{css.infos}}\">{{lbl.infos}}</div>",
             loading: "<tr><td colspan=\"{{ctx.columns}}\" class=\"loading\">{{lbl.loading}}</td></tr>",
             noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{lbl.noResults}}</td></tr>",
             pagination: "<ul class=\"{{css.pagination}}\"></ul>",
             paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
-            row: "<tr>{{ctx.cells}}</tr>"
+            row: "<tr>{{ctx.cells}}</tr>",
+            search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon glyphicon-search\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>"
         }
     };
 
@@ -776,7 +846,6 @@
             {
                 appendRow.call(this, rows[i]);
             }
-            this.total = this.rows.length;
             sortRows.call(this);
             loadData.call(this);
         }
@@ -823,10 +892,10 @@
         return this;
     };
 
-    Grid.prototype.remove = function(rowIds)
+    Grid.prototype.remove = function(id)
     {
         // there is only support for client-side data
-        if (!this.options.ajax)
+        if (!this.options.ajax) // check also is identifier available
         {
             // todo: implement!
         }
@@ -834,9 +903,10 @@
         return this;
     };
 
-    Grid.prototype.search = function(text)
+    Grid.prototype.search = function(phrase)
     {
-        // todo: implement!
+        this.searchPhrase = phrase;
+        loadData.call(this);
 
         return this;
     };
@@ -977,21 +1047,24 @@
             var result = this;
             $.each(substitutes, function (key, value)
             {
-                if (typeof value === "object")
+                if (value != null && typeof value !== "function")
                 {
-                    var keys = (prefixes) ? $.extend([], prefixes) : [];
-                    keys.push(key);
-                    result = result.resolve(value, keys);
-                }
-                else
-                {
-                    if ($.isFunction(formatter[key]))
+                    if (typeof value === "object")
                     {
-                        value = formatter[key](value);
+                        var keys = (prefixes) ? $.extend([], prefixes) : [];
+                        keys.push(key);
+                        result = result.resolve(value, keys);
                     }
-                    key = (prefixes) ? prefixes.join(".") + "." + key : key;
-                    var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");
-                    result = result.replace(pattern, value);
+                    else
+                    {
+                        if ($.isFunction(formatter[key]))
+                        {
+                            value = formatter[key](value);
+                        }
+                        key = (prefixes) ? prefixes.join(".") + "." + key : key;
+                        var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");
+                        result = result.replace(pattern, value);
+                    }
                 }
             });
             return result;
