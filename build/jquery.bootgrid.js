@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.0.0-beta - 07/24/2014
+ * jQuery Bootgrid v1.0.0-beta - 07/25/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -16,15 +16,28 @@
     // GRID INTERNAL FUNCTIONS
     // =====================
 
+    function appendRow(row)
+    {
+        var that = this;
+
+        function exists(item)
+        {
+            return that.identifier && item[that.identifier] === row[that.identifier];
+        }
+
+        if (!this.rows.contains(exists))
+        {
+            this.rows.push(row);
+        }
+    }
+
     function getParams(context)
     {
-        var staticParams = {
-            tpl: this.options.templates,
-            lbl: this.options.labels,
-            css: this.options.css,
-            ctx: {}
-        };
-        return $.extend({}, staticParams, { ctx: context || {} });
+        if (context)
+        {
+            return $.extend({}, this.cachedParams, { ctx: context });
+        }
+        return this.cachedParams;
     }
 
     function getRequest()
@@ -76,23 +89,31 @@
             firstHeadRow = this.element.find("thead > tr").first(),
             sorted = false;
 
+        /*jshint -W018*/
         firstHeadRow.children().each(function()
         {
             var $this = $(this),
                 data = $this.data(),
                 column = {
                     id: data.columnId,
+                    identifier: that.identifier == null && data.identifier,
                     type: that.options.converters[data.type] && data.type || "string",
                     text: $this.text(),
                     formatter: that.options.formatters[data.formatter],
                     order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
-                    sortable: !(data.sortable === false || data.sortable === 0), // default: true
-                    visible: !(data.visible === false || data.visible === 0) // default: true
+                    sortable: !(data.sortable === false), // default: true
+                    visible: !(data.visible === false) // default: true
                 };
             that.columns.push(column);
             if (column.order != null)
             {
                 that.sort[column.id] = column.order;
+            }
+
+            // Prevents multiple identifiers
+            if (column.identifier)
+            {
+                that.identifier = column.id;
             }
 
             // ensures that only the first order will be applied in case of multi sorting is disabled
@@ -101,6 +122,7 @@
                 sorted = true;
             }
         });
+        /*jshint +W018*/
     }
 
     /*
@@ -183,7 +205,7 @@
                     row[column.id] = that.options.converters[column.type].from(cells.eq(i).text());
                 });
 
-                that.rows.push(row);
+                appendRow.call(that, row);
             });
 
             this.total = this.rows.length;
@@ -237,8 +259,9 @@
                 // Refresh Button
                 if (this.options.ajax)
                 {
-                    var refresh = $(tpl.actionButton.resolve(getParams.call(this, 
-                        { iconCss: css.iconRefresh, text: this.options.labels.refresh })))
+                    var refreshIcon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconRefresh })),
+                        refresh = $(tpl.actionButton.resolve(getParams.call(this, 
+                        { content: refreshIcon, text: this.options.labels.refresh })))
                             .on("click" + namespace, function (e)
                             {
                                 // todo: prevent multiple fast clicks (fast click detection)
@@ -650,12 +673,20 @@
         // overrides rowCount explicitly because deep copy ($.extend) leads to strange behaviour
         var rowCount = this.options.rowCount = this.element.data().rowCount || options.rowCount || this.options.rowCount;
         this.columns = [];
+        this.identifier = null; // The first column ID that is marked as identifier
         this.current = 1;
-        this.rows = []; // cached rows
+        this.rows = [];
         this.rowCount = ($.isArray(rowCount)) ? rowCount[0] : rowCount;
         this.sort = {};
         this.total = 0;
         this.totalPages = 0;
+        this.cachedParams = {
+            lbl: this.options.labels,
+            css: this.options.css,
+            ctx: {}
+        };
+        this.header = null;
+        this.footer = null;
     };
 
     Grid.defaults = {
@@ -673,7 +704,7 @@
 
         // todo: implement cache
 
-        // note: The following properties are not available via data-api attributes
+        // note: The following properties should be used via data-api attributes
         converters: {
             numeric: {
                 from: function (value) { return +value; },
@@ -716,9 +747,7 @@
             refresh: "Refresh"
         },
         templates: {
-            // note: Grenzen der template sprache sind: Templates duerfen nur einmal ineinander verschachtelt werden und 
-            //       es darf mittels des Kontexts kein weiteres HTML, dass wiederum Variablen enthalten kann, die auch ersetzt werden muessen, eingefuegt werden.
-            actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{tpl.icon}}</button>",
+            actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{ctx.content}}</button>",
             actionDropDown: "<div class=\"{{css.dropDownMenu}}\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\"><span class=\"{{css.dropDownMenuText}}\">{{ctx.content}}</span> <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenuItems}}\" role=\"menu\"></ul></div>",
             actionDropDownItem: "<li><a href=\"{{ctx.uri}}\" class=\"{{css.dropDownItemButton}}\">{{ctx.text}}</a></li>",
             actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItemCheckbox}}\"><input name=\"{{ctx.name}}\" type=\"checkbox\" value=\"1\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
@@ -745,7 +774,7 @@
         {
             for (var i = 0; i < rows.length; i++)
             {
-                this.rows.splice(this.rows.length - 1, 0, rows[i]);
+                appendRow.call(this, rows[i]);
             }
             this.total = this.rows.length;
             sortRows.call(this);
@@ -771,9 +800,17 @@
 
     Grid.prototype.destroy = function()
     {
+        // todo: this method has to be optimized (the complete initial state must be restored)
         $(window).off(namespace);
-        this.element.off(namespace).removeData(namespace);
-        // todo: empty body and remove surrounding elements
+        if (this.options.navigation & 1)
+        {
+            this.header.remove();
+        }
+        if (this.options.navigation & 2)
+        {
+            this.footer.remove();
+        }
+        this.element.remove("tbody").off(namespace).removeData(namespace);
 
         return this;
     };
@@ -792,13 +829,6 @@
         if (!this.options.ajax)
         {
             // todo: implement!
-            //for (var i = 0; i < rowIds.length; i++)
-            //{
-            //    this.rows = ;
-            //    this.current = 1;
-            //    this.total = 0;
-            //    loadData.call(this);
-            //}
         }
 
         return this;
@@ -968,6 +998,22 @@
         };
     }
 
+    if (!Array.prototype.contains)
+    {
+        Array.prototype.contains = function (condition)
+        {
+            for (var i = 0; i < this.length; i++)
+            {
+                var item = this[i];
+                if (condition(item))
+                {
+                    return true;
+                }
+            }
+            return false;
+        };
+    }
+
     if (!Array.prototype.page)
     {
         Array.prototype.page = function (page, size)
@@ -982,13 +1028,13 @@
 
     if (!Array.prototype.where)
     {
-        Array.prototype.where = function (predicate)
+        Array.prototype.where = function (condition)
         {
             var result = [];
             for (var i = 0; i < this.length; i++)
             {
                 var item = this[i];
-                if (predicate(item))
+                if (condition(item))
                 {
                     result.push(item);
                 }

@@ -6,15 +6,28 @@ var namespace = ".rs.jquery.bootgrid";
 // GRID INTERNAL FUNCTIONS
 // =====================
 
+function appendRow(row)
+{
+    var that = this;
+
+    function exists(item)
+    {
+        return that.identifier && item[that.identifier] === row[that.identifier];
+    }
+
+    if (!this.rows.contains(exists))
+    {
+        this.rows.push(row);
+    }
+}
+
 function getParams(context)
 {
-    var staticParams = {
-        tpl: this.options.templates,
-        lbl: this.options.labels,
-        css: this.options.css,
-        ctx: {}
-    };
-    return $.extend({}, staticParams, { ctx: context || {} });
+    if (context)
+    {
+        return $.extend({}, this.cachedParams, { ctx: context });
+    }
+    return this.cachedParams;
 }
 
 function getRequest()
@@ -66,23 +79,31 @@ function loadColumns()
         firstHeadRow = this.element.find("thead > tr").first(),
         sorted = false;
 
+    /*jshint -W018*/
     firstHeadRow.children().each(function()
     {
         var $this = $(this),
             data = $this.data(),
             column = {
                 id: data.columnId,
+                identifier: that.identifier == null && data.identifier,
                 type: that.options.converters[data.type] && data.type || "string",
                 text: $this.text(),
                 formatter: that.options.formatters[data.formatter],
                 order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
-                sortable: !(data.sortable === false || data.sortable === 0), // default: true
-                visible: !(data.visible === false || data.visible === 0) // default: true
+                sortable: !(data.sortable === false), // default: true
+                visible: !(data.visible === false) // default: true
             };
         that.columns.push(column);
         if (column.order != null)
         {
             that.sort[column.id] = column.order;
+        }
+
+        // Prevents multiple identifiers
+        if (column.identifier)
+        {
+            that.identifier = column.id;
         }
 
         // ensures that only the first order will be applied in case of multi sorting is disabled
@@ -91,6 +112,7 @@ function loadColumns()
             sorted = true;
         }
     });
+    /*jshint +W018*/
 }
 
 /*
@@ -173,7 +195,7 @@ function loadRows()
                 row[column.id] = that.options.converters[column.type].from(cells.eq(i).text());
             });
 
-            that.rows.push(row);
+            appendRow.call(that, row);
         });
 
         this.total = this.rows.length;
@@ -227,8 +249,9 @@ function renderActions()
             // Refresh Button
             if (this.options.ajax)
             {
-                var refresh = $(tpl.actionButton.resolve(getParams.call(this, 
-                    { iconCss: css.iconRefresh, text: this.options.labels.refresh })))
+                var refreshIcon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconRefresh })),
+                    refresh = $(tpl.actionButton.resolve(getParams.call(this, 
+                    { content: refreshIcon, text: this.options.labels.refresh })))
                         .on("click" + namespace, function (e)
                         {
                             // todo: prevent multiple fast clicks (fast click detection)

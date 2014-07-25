@@ -79,6 +79,22 @@ if (!String.prototype.resolve)
     };
 }
 
+if (!Array.prototype.contains)
+{
+    Array.prototype.contains = function (condition)
+    {
+        for (var i = 0; i < this.length; i++)
+        {
+            var item = this[i];
+            if (condition(item))
+            {
+                return true;
+            }
+        }
+        return false;
+    };
+}
+
 if (!Array.prototype.page)
 {
     Array.prototype.page = function (page, size)
@@ -93,13 +109,13 @@ if (!Array.prototype.page)
 
 if (!Array.prototype.where)
 {
-    Array.prototype.where = function (predicate)
+    Array.prototype.where = function (condition)
     {
         var result = [];
         for (var i = 0; i < this.length; i++)
         {
             var item = this[i];
-            if (predicate(item))
+            if (condition(item))
             {
                 result.push(item);
             }

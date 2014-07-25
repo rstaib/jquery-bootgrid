@@ -17,12 +17,20 @@ var Grid = function(element, options)
     // overrides rowCount explicitly because deep copy ($.extend) leads to strange behaviour
     var rowCount = this.options.rowCount = this.element.data().rowCount || options.rowCount || this.options.rowCount;
     this.columns = [];
+    this.identifier = null; // The first column ID that is marked as identifier
     this.current = 1;
-    this.rows = []; // cached rows
+    this.rows = [];
     this.rowCount = ($.isArray(rowCount)) ? rowCount[0] : rowCount;
     this.sort = {};
     this.total = 0;
     this.totalPages = 0;
+    this.cachedParams = {
+        lbl: this.options.labels,
+        css: this.options.css,
+        ctx: {}
+    };
+    this.header = null;
+    this.footer = null;
 };
 
 Grid.defaults = {
@@ -40,7 +48,7 @@ Grid.defaults = {
 
     // todo: implement cache
 
-    // note: The following properties are not available via data-api attributes
+    // note: The following properties should be used via data-api attributes
     converters: {
         numeric: {
             from: function (value) { return +value; },
@@ -83,9 +91,7 @@ Grid.defaults = {
         refresh: "Refresh"
     },
     templates: {
-        // note: Grenzen der template sprache sind: Templates duerfen nur einmal ineinander verschachtelt werden und 
-        //       es darf mittels des Kontexts kein weiteres HTML, dass wiederum Variablen enthalten kann, die auch ersetzt werden muessen, eingefuegt werden.
-        actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{tpl.icon}}</button>",
+        actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{ctx.content}}</button>",
         actionDropDown: "<div class=\"{{css.dropDownMenu}}\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\"><span class=\"{{css.dropDownMenuText}}\">{{ctx.content}}</span> <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenuItems}}\" role=\"menu\"></ul></div>",
         actionDropDownItem: "<li><a href=\"{{ctx.uri}}\" class=\"{{css.dropDownItemButton}}\">{{ctx.text}}</a></li>",
         actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItemCheckbox}}\"><input name=\"{{ctx.name}}\" type=\"checkbox\" value=\"1\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
@@ -112,7 +118,7 @@ Grid.prototype.append = function(rows)
     {
         for (var i = 0; i < rows.length; i++)
         {
-            this.rows.splice(this.rows.length - 1, 0, rows[i]);
+            appendRow.call(this, rows[i]);
         }
         this.total = this.rows.length;
         sortRows.call(this);
@@ -138,9 +144,17 @@ Grid.prototype.clear = function()
 
 Grid.prototype.destroy = function()
 {
+    // todo: this method has to be optimized (the complete initial state must be restored)
     $(window).off(namespace);
-    this.element.off(namespace).removeData(namespace);
-    // todo: empty body and remove surrounding elements
+    if (this.options.navigation & 1)
+    {
+        this.header.remove();
+    }
+    if (this.options.navigation & 2)
+    {
+        this.footer.remove();
+    }
+    this.element.remove("tbody").off(namespace).removeData(namespace);
 
     return this;
 };
@@ -159,13 +173,6 @@ Grid.prototype.remove = function(rowIds)
     if (!this.options.ajax)
     {
         // todo: implement!
-        //for (var i = 0; i < rowIds.length; i++)
-        //{
-        //    this.rows = ;
-        //    this.current = 1;
-        //    this.total = 0;
-        //    loadData.call(this);
-        //}
     }
 
     return this;

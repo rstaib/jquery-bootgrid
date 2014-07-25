@@ -44,7 +44,10 @@
                     </div>
                 </div>
                 <div class="col-md-9">
-					<button id="los" type="button" class="btn btn-default">Los</button>
+					<button id="append" type="button" class="btn btn-default">Append</button>
+					<button id="clear" type="button" class="btn btn-default">Clear</button>
+					<button id="destroy" type="button" class="btn btn-default">Destroy</button>
+					<button id="init" type="button" class="btn btn-default">Init</button>
                     <table id="grid" class="table table-condensed table-hover table-striped">
                         <thead>
                             <tr>
@@ -154,7 +157,7 @@
                     }
                 });
 				
-				$("#los").on("click", function ()
+				$("#append").on("click", function ()
 				{
 					$("#grid").bootgrid("append", [{
 							id: 0,
@@ -168,6 +171,36 @@
 							received: "Heute",
 							link: ""
 						}]);
+				});
+				
+				$("#clear").on("click", function ()
+				{
+					$("#grid").bootgrid("clear");
+				});
+				
+				$("#destroy").on("click", function ()
+				{
+					$("#grid").bootgrid("destroy");
+				});
+				
+				$("#init").on("click", function ()
+				{
+					$("#grid").bootgrid({
+						post: function ()
+						{
+							return {
+								mailboxItemId: "b0df282a-0d67-40e5-8558-c9e93b7befed"
+							};
+						},
+						url: "data.json",
+						pagination: 3,
+						formatters: {
+							"link": function(column, row)
+							{
+								return "<a href=\"#\">" + column.id + ": " + row.id + "</a>";
+							}
+						}
+					});
 				});
             });
         </script>
