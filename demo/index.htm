@@ -48,11 +48,11 @@
 					<button id="clear" type="button" class="btn btn-default">Clear</button>
 					<button id="destroy" type="button" class="btn btn-default">Destroy</button>
 					<button id="init" type="button" class="btn btn-default">Init</button>
-                    <table id="grid" class="table table-condensed table-hover table-striped">
+                    <table id="grid" class="table table-condensed table-hover table-striped" data-selection="true" data-multi-select="true">
                         <thead>
                             <tr>
-                                <th data-column-id="id" data-type="numeric">ID</th>
-                                <th data-column-id="sender" data-order="asc">Sender</th>
+                                <th data-column-id="id" data-identifier="true" data-type="numeric" data-align="right">ID</th>
+                                <th data-column-id="sender" data-order="asc" data-align="center">Sender</th>
                                 <th data-column-id="received">Received</th>
                                 <th data-column-id="link" data-formatter="link" data-sortable="false">Link</th>
                             </tr>

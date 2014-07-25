@@ -43,11 +43,11 @@
     function getRequest()
     {
         var request = {
-                current: this.current,
-                rowCount: this.rowCount,
-                sort: this.sort,
-                searchPhrase: this.searchPhrase
-            },
+            current: this.current,
+            rowCount: this.rowCount,
+            sort: this.sort,
+            searchPhrase: this.searchPhrase
+        },
             post = this.options.post;
 
         post = ($.isFunction(post)) ? post() : post;
@@ -92,7 +92,7 @@
             sorted = false;
 
         /*jshint -W018*/
-        firstHeadRow.children().each(function()
+        firstHeadRow.children().each(function ()
         {
             var $this = $(this),
                 data = $this.data(),
@@ -101,6 +101,7 @@
                     identifier: that.identifier == null && data.identifier || false,
                     type: that.options.converters[data.type] && data.type || "string",
                     text: $this.text(),
+                    align: data.align || "left",
                     formatter: that.options.formatters[data.formatter] || null,
                     order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
                     sortable: !(data.sortable === false), // default: true
@@ -194,7 +195,7 @@
                 that.current = response.current;
 
                 update(that.rows, response.total);
-            }).fail(function()
+            }).fail(function ()
             {
                 // overrides loading mask
                 renderNoResultsRow.call(that);
@@ -221,13 +222,13 @@
             var that = this,
                 rows = this.element.find("tbody > tr");
 
-            rows.each(function()
+            rows.each(function ()
             {
                 var $this = $(this),
                     cells = $this.children("td"),
                     row = {};
 
-                $.each(that.columns, function(i, column)
+                $.each(that.columns, function (i, column)
                 {
                     row[column.id] = that.options.converters[column.type].from(cells.eq(i).text());
                 });
@@ -236,7 +237,7 @@
             });
 
             this.total = this.rows.length;
-            this.totalPages = (this.rowCount === -1) ? 1 : 
+            this.totalPages = (this.rowCount === -1) ? 1 :
                 Math.ceil(this.total / this.rowCount);
 
             sortRows.call(this);
@@ -287,7 +288,7 @@
                 if (this.options.ajax)
                 {
                     var refreshIcon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconRefresh })),
-                        refresh = $(tpl.actionButton.resolve(getParams.call(this, 
+                        refresh = $(tpl.actionButton.resolve(getParams.call(this,
                         { content: refreshIcon, text: this.options.labels.refresh })))
                             .on("click" + namespace, function (e)
                             {
@@ -320,9 +321,9 @@
             dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: icon }))),
             selector = getCssSelector(css.dropDownItemCheckbox);
 
-        $.each(this.columns, function(i, column)
+        $.each(this.columns, function (i, column)
         {
-            var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that, 
+            var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
                 { name: column.id, label: column.text, checked: column.visible })))
                     .on("click" + namespace, selector, function (e)
                     {
@@ -348,9 +349,9 @@
             if ((headerInfos.length + footerInfos.length) > 0)
             {
                 var end = (this.current * this.rowCount),
-                    infos = $(this.options.templates.infos.resolve(getParams.call(this, { 
-                        end: (this.total === 0 || end === -1 || end > this.total) ? this.total : end, 
-                        start: (this.total === 0) ? 0 : (end - this.rowCount + 1), 
+                    infos = $(this.options.templates.infos.resolve(getParams.call(this, {
+                        end: (this.total === 0 || end === -1 || end > this.total) ? this.total : end,
+                        start: (this.total === 0) ? 0 : (end - this.rowCount + 1),
                         total: this.total
                     })));
 
@@ -363,9 +364,14 @@
     function renderNoResultsRow()
     {
         var tbody = this.element.children("tbody").first(),
-            tpl = this.options.templates;
+            tpl = this.options.templates,
+            count = this.columns.where(isVisible).length;
 
-        tbody.html(tpl.noResults.resolve(getParams.call(this, { columns: this.columns.where(isVisible).length })));
+        if (this.options.selection && this.identifier != null)
+        {
+            count = count + 1;
+        }
+        tbody.html(tpl.noResults.resolve(getParams.call(this, { columns: count })));
     }
 
     function renderPagination()
@@ -461,7 +467,8 @@
             return (value === -1) ? that.options.labels.all : value;
         }
 
-        if ($.isArray(rowCountList)) {
+        if ($.isArray(rowCountList))
+        {
             var css = this.options.css,
                 tpl = this.options.templates,
                 dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: this.rowCount }))),
@@ -470,9 +477,9 @@
                 menuItemsSelector = getCssSelector(css.dropDownMenuItems),
                 menuItemSelector = getCssSelector(css.dropDownItemButton);
 
-            $.each(rowCountList, function(index, value)
+            $.each(rowCountList, function (index, value)
             {
-                var item = $(tpl.actionDropDownItem.resolve(getParams.call(that, 
+                var item = $(tpl.actionDropDownItem.resolve(getParams.call(that,
                     { text: getText(value), uri: "#" + value })))
                         ._bgSelectAria(value === that.rowCount)
                         .on("click" + namespace, menuItemSelector, function (e)
@@ -486,7 +493,7 @@
                                 // todo: sophisticated solution needed for calculating which page is selected
                                 that.current = 1; // that.rowCount === -1 ---> All
                                 that.rowCount = newRowCount;
-                                $this.parents(menuItemsSelector).children().each(function()
+                                $this.parents(menuItemsSelector).children().each(function ()
                                 {
                                     var $item = $(this),
                                         currentRowCount = +$item.find(menuItemSelector).attr("href").substr(1);
@@ -507,24 +514,35 @@
         if (rows.length > 0)
         {
             var that = this,
+                css = this.options.css,
                 tpl = this.options.templates,
                 tbody = this.element.children("tbody").first(),
                 html = "",
                 cells = "";
 
-            $.each(rows, function(i, row)
+            $.each(rows, function (i, row)
             {
                 cells = "";
 
-                $.each(that.columns, function(j, column)
+                if (that.options.selection && that.identifier != null)
+                {
+                    var selectBox = tpl.select.resolve(getParams.call(that, 
+                        { type: "checkbox", value: row[that.identifier] }));
+                    cells += tpl.cell.resolve(getParams.call(that, { content: selectBox, 
+                        css: css.selectCell }));
+                }
+
+                $.each(that.columns, function (j, column)
                 {
                     if (column.visible)
                     {
-                        var value = ($.isFunction(column.formatter)) ? 
-                            column.formatter.call(that, column, row) : 
+                        var value = ($.isFunction(column.formatter)) ?
+                            column.formatter.call(that, column, row) :
                                 that.options.converters[column.type].to(row[column.id]);
-                        cells += tpl.cell.resolve(getParams.call(that, { content: 
-                            (value == null || value === "") ? "&nbsp;" : value }));
+                        cells += tpl.cell.resolve(getParams.call(that, {
+                            content: (value == null || value === "") ? "&nbsp;" : value,
+                            css: (column.align === "right") ? css.right : 
+                                (column.align === "center") ? css.center : css.left }));
                     }
                 });
 
@@ -556,22 +574,22 @@
                     currentValue = "",
                     searchFieldSelector = getCssSelector(css.searchField),
                     search = $(tpl.search.resolve(getParams.call(this))),
-                    searchField = (search.is(searchFieldSelector)) ? search : 
+                    searchField = (search.is(searchFieldSelector)) ? search :
                         search.find(searchFieldSelector);
 
                 searchField.on("keyup" + namespace, function (e)
                 {
                     e.stopPropagation();
-    				var newValue = $(this).val();
-    				if (currentValue !== newValue)
-    				{
-    					currentValue = newValue;
-    					window.clearTimeout(timer);
-    					timer = window.setTimeout(function ()
-    					{
-    						that.search(newValue);
-    					}, 250);
-    				}
+                    var newValue = $(this).val();
+                    if (currentValue !== newValue)
+                    {
+                        currentValue = newValue;
+                        window.clearTimeout(timer);
+                        timer = window.setTimeout(function ()
+                        {
+                            that.search(newValue);
+                        }, 250);
+                    }
                 });
 
                 replacePlaceHolder.call(this, headerSearch, search, 1);
@@ -589,15 +607,23 @@
             html = "",
             sorting = this.options.sorting;
 
-        $.each(this.columns, function(index, column)
+        if (this.options.selection && this.identifier != null)
+        {
+            var selectBox = (this.options.multiSelect) ? 
+                tpl.select.resolve(getParams.call(that, { type: "checkbox", value: "all" })) : "";
+            html += tpl.rawHeaderCell.resolve(getParams.call(that, { content: selectBox, 
+                css: css.selectCell }));
+        }
+
+        $.each(this.columns, function (index, column)
         {
             if (column.visible)
             {
                 var sortOrder = that.sort[column.id],
-                    iconCss = ((sorting && sortOrder && sortOrder === "asc") ? css.iconUp : 
+                    iconCss = ((sorting && sortOrder && sortOrder === "asc") ? css.iconUp :
                         (sorting && sortOrder && sortOrder === "desc") ? css.iconDown : ""),
                     icon = tpl.icon.resolve(getParams.call(that, { iconCss: iconCss }));
-                html += tpl.headerCell.resolve(getParams.call(that, 
+                html += tpl.headerCell.resolve(getParams.call(that,
                     { column: column, icon: icon, sortable: sorting && column.sortable && css.sortable || "" }));
             }
         });
@@ -606,7 +632,7 @@
         if (sorting)
         {
             headerRow.off("click" + namespace)
-                .on("click" + namespace, getCssSelector(css.sortable), function(e)
+                .on("click" + namespace, getCssSelector(css.sortable), function (e)
                 {
                     e.preventDefault();
                     var $this = $(this),
@@ -654,7 +680,7 @@
     {
         if (this.options.navigation & flag)
         {
-            placeholder.each(function(index, item)
+            placeholder.each(function (index, item)
             {
                 // todo: check how append is implemented. Perhaps cloning here is superfluous.
                 $(item).before(element.clone(true)).remove();
@@ -668,9 +694,14 @@
             thead = this.element.children("thead").first(),
             tbody = this.element.children("tbody").first(),
             firstCell = tbody.find("tr > td").first(),
-            padding = (this.element.height() - thead.height()) - (firstCell.height() + 20);
+            padding = (this.element.height() - thead.height()) - (firstCell.height() + 20),
+            count = this.columns.where(isVisible).length;
 
-        tbody.html(tpl.loading.resolve(getParams.call(this, { columns: this.columns.where(isVisible).length })));
+        if (this.options.selection && this.identifier != null)
+        {
+            count = count + 1;
+        }
+        tbody.html(tpl.loading.resolve(getParams.call(this, { columns: count })));
         if (this.rowCount !== -1 && padding > 0)
         {
             tbody.find("tr > td").css("padding", "20px 0 " + padding + "px");
@@ -692,8 +723,8 @@
                 return (item.order === "asc") ? value : value * -1;
             }
 
-            return (x[item.id] > y[item.id]) ? sortOrder(1) : 
-                (x[item.id] < y[item.id]) ? sortOrder(-1) : 
+            return (x[item.id] > y[item.id]) ? sortOrder(1) :
+                (x[item.id] < y[item.id]) ? sortOrder(-1) :
                     (sortArray.length > next) ? sort(next) : 0;
         }
 
@@ -784,6 +815,7 @@
         },
         css: {
             actions: "actions btn-group", // must be a unique class name or constellation of class names within the header and footer
+            center: "text-center",
             columnHeaderAnchor: "column-header-anchor", // must be a unique class name or constellation of class names within the column header cell
             columnHeaderText: "text",
             dropDownItemButton: "dropdown-item-button", // must be a unique class name or constellation of class names within the actionDropDown
@@ -799,10 +831,14 @@
             iconRefresh: "glyphicon-refresh",
             iconUp: "glyphicon-chevron-up",
             infos: "infos", // must be a unique class name or constellation of class names within the header and footer,
+            left: "text-left",
             pagination: "pagination", // must be a unique class name or constellation of class names within the header and footer
             paginationButton: "button", // must be a unique class name or constellation of class names within the pagination
+            right: "text-right",
             search: "search form-group", // must be a unique class name or constellation of class names within the header and footer
-            searchField: "searchField form-control",
+            selectCell: "select-cell", // must be a unique class name or constellation of class names within the entire table
+            selectBox: "select-box", // must be a unique class name or constellation of class names within the entire table
+            searchField: "search-field form-control",
             sortable: "sortable",
             table: "bootgrid-table table"
         },
@@ -822,7 +858,7 @@
             actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItemCheckbox}}\"><input name=\"{{ctx.name}}\" type=\"checkbox\" value=\"1\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
             actions: "<div class=\"{{css.actions}}\"></div>",
             body: "<tbody></tbody>",
-            cell: "<td>{{ctx.content}}</td>",
+            cell: "<td class=\"{{ctx.css}}\">{{ctx.content}}</td>",
             footer: "<div id=\"{{ctx.id}}\" class=\"{{css.footer}}\"><div class=\"row\"><div class=\"col-sm-6\"><p class=\"{{css.pagination}}\"></p></div><div class=\"col-sm-6 infoBar\"><p class=\"{{css.infos}}\"></p></div></div></div>",
             header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.search}}\"></p><p class=\"{{css.actions}}\"></p></div></div></div>",
             headerCell: "<th data-column-id=\"{{ctx.column.id}}\"><a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.column.text}}</span>{{ctx.icon}}</a></th>",
@@ -832,8 +868,10 @@
             noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{lbl.noResults}}</td></tr>",
             pagination: "<ul class=\"{{css.pagination}}\"></ul>",
             paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
+            rawHeaderCell: "<th class=\"{{ctx.css}}\">{{ctx.content}}</th>", // Used for the multi select box
             row: "<tr>{{ctx.cells}}</tr>",
-            search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon glyphicon-search\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>"
+            search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon glyphicon-search\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
+            select: "<input name=\"select\" type=\"{{ctx.type}}\" class=\"{{css.selectBox}}\" value=\"{{ctx.value}}\" />"
         }
     };
 
@@ -905,8 +943,12 @@
 
     Grid.prototype.search = function(phrase)
     {
-        this.searchPhrase = phrase;
-        loadData.call(this);
+        if (this.searchPhrase !== phrase)
+        {
+            this.current = 1;
+            this.searchPhrase = phrase;
+            loadData.call(this);
+        }
 
         return this;
     };

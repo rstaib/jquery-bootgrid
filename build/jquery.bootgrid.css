@@ -13,10 +13,10 @@
 .bootgrid-footer .search .glyphicon {
   top: 0;
 }
-.bootgrid-header .search.searchField::-ms-clear,
-.bootgrid-footer .search.searchField::-ms-clear,
-.bootgrid-header .search .searchField::-ms-clear,
-.bootgrid-footer .search .searchField::-ms-clear {
+.bootgrid-header .search.search-field::-ms-clear,
+.bootgrid-footer .search.search-field::-ms-clear,
+.bootgrid-header .search .search-field::-ms-clear,
+.bootgrid-footer .search .search-field::-ms-clear {
   display: none;
 }
 .bootgrid-header .pagination,
@@ -76,4 +76,8 @@
 .bootgrid-table td.no-results {
   background: #fff;
   text-align: center;
+}
+.bootgrid-table th.select-cell,
+.bootgrid-table td.select-cell {
+  width: 30px;
 }
