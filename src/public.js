@@ -41,6 +41,7 @@ var Grid = function(element, options)
 Grid.defaults = {
     navigation: 3, // it's a flag: 0 = none, 1 = top, 2 = bottom, 3 = both (top and bottom)
     padding: 2, // page padding (pagination)
+    columnSelection: true,
     rowCount: [10, 25, 50, -1], // rows per page int or array of int (-1 represents "All")
     selection: false,
     multiSelect: false,
@@ -141,13 +142,18 @@ Grid.prototype.append = function(rows)
     }
     else
     {
+        var appendedRows = [];
         for (var i = 0; i < rows.length; i++)
         {
-            appendRow.call(this, rows[i]);
+            if (appendRow.call(this, rows[i]))
+            {
+                appendedRows.push(rows[i]);
+            }
         }
         sortRows.call(this);
-        highlightAppendedRows.call(this, rows);
+        highlightAppendedRows.call(this, appendedRows);
         loadData.call(this);
+        this.element.trigger("appended" + namespace, appendedRows);
     }
 
     return this;
@@ -167,10 +173,12 @@ Grid.prototype.clear = function()
     }
     else
     {
+        var removedRows = $.extend([], this.rows);
         this.rows = [];
         this.current = 1;
         this.total = 0;
         loadData.call(this);
+        this.element.trigger("cleared" + namespace, removedRows);
     }
 
     return this;
@@ -233,7 +241,8 @@ Grid.prototype.remove = function(rowIds)
         else
         {
             rowIds = rowIds || this.selectedRows;
-            var id;
+            var id,
+                removedRows = [];
 
             for (var i = 0; i < rowIds.length; i++)
             {
@@ -243,6 +252,7 @@ Grid.prototype.remove = function(rowIds)
                 {
                     if (this.rows[j][this.identifier] === id)
                     {
+                        removedRows.push(this.rows[j]);
                         this.rows.splice(j, 1);
                         break;
                     }
@@ -251,6 +261,7 @@ Grid.prototype.remove = function(rowIds)
 
             this.current = 1; // reset
             loadData.call(this);
+            this.element.trigger("removed" + namespace, removedRows);
         }
     }
 

@@ -49,6 +49,7 @@
 
             .dropdown-item
             {
+                cursor: pointer;
                 display: block;
                 margin: 0;
                 padding: 3px 20px;
@@ -67,6 +68,11 @@
                     margin: 0 2px 4px 0;
                     vertical-align: middle;
                 }
+            }
+
+            .dropdown-item.disabled
+            {
+                cursor: not-allowed;
             }
         }
     }

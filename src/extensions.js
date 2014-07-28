@@ -19,6 +19,13 @@ $.fn.extend({
             this.addClass("disabled")._bgAria("disabled", "true");
     },
 
+    _bgEnableField: function (enable)
+    {
+        return (enable == null || enable) ? 
+            this.removeAttr("disabled") : 
+            this.attr("disabled", "disable");
+    },
+
     _bgShowAria: function (show)
     {
         return (show == null || show) ? 

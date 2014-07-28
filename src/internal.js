@@ -18,7 +18,10 @@ function appendRow(row)
     if (!this.rows.contains(exists))
     {
         this.rows.push(row);
+        return true;
     }
+
+    return false;
 }
 
 function getParams(context)
@@ -312,28 +315,43 @@ function renderActions()
 
 function renderColumnSelection(actions)
 {
-    var that = this,
-        css = this.options.css,
-        tpl = this.options.templates,
-        icon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconColumns })),
-        dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: icon }))),
-        selector = getCssSelector(css.dropDownItem);
-
-    $.each(this.columns, function (i, column)
+    if (this.options.columnSelection && this.columns.length > 1)
     {
-        var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
-            { name: column.id, label: column.text, checked: column.visible })))
-                .on("click" + namespace, selector, function (e)
-                {
-                    e.stopPropagation();
-                    column.visible = $(this).find("input").prop("checked");
-                    that.element.find("tbody").empty(); // Fixes an column visualization bug
-                    renderTableHeader.call(that);
-                    loadData.call(that);
-                });
-        dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
-    });
-    actions.append(dropDown);
+        var that = this,
+            css = this.options.css,
+            tpl = this.options.templates,
+            icon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconColumns })),
+            dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: icon }))),
+            selector = getCssSelector(css.dropDownItem),
+            checkboxSelector = getCssSelector(css.dropDownItemCheckbox),
+            itemsSelector = getCssSelector(css.dropDownMenuItems);
+
+        $.each(this.columns, function (i, column)
+        {
+            var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
+                { name: column.id, label: column.text, checked: column.visible })))
+                    .on("click" + namespace, selector, function (e)
+                    {
+                        e.stopPropagation();
+
+                        var $this = $(this),
+                            checkbox = $this.find(checkboxSelector);
+                        if (!checkbox.prop("disabled"))
+                        {
+                            column.visible = checkbox.prop("checked");
+                            var enable = that.columns.where(isVisible).length > 1;
+                            $this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
+                                ._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
+
+                            that.element.find("tbody").empty(); // Fixes an column visualization bug
+                            renderTableHeader.call(that);
+                            loadData.call(that);
+                        }
+                    });
+            dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
+        });
+        actions.append(dropDown);
+    }
 }
 
 function renderInfos()
@@ -561,7 +579,8 @@ function renderRows(rows)
                     var $this = $(this),
                         converter = that.options.converters[that.columns.first(function (column) { return column.id === that.identifier; }).type],
                         id = converter.from($this.val()),
-                        multiSelectBox = that.element.find("thead " + selectBoxSelector);
+                        multiSelectBox = that.element.find("thead " + selectBoxSelector),
+                        rows = that.currentRows.where(function (row) { return row[that.identifier] === id; });
 
                     if ($this.prop("checked"))
                     {
@@ -570,6 +589,7 @@ function renderRows(rows)
                         {
                             multiSelectBox.prop("checked", true);
                         }
+                        that.element.trigger("selected" + namespace, rows);
                     }
                     else
                     {
@@ -582,6 +602,7 @@ function renderRows(rows)
                             }
                         }
                         multiSelectBox.prop("checked", false);
+                        that.element.trigger("deselected" + namespace, rows);
                     }
                 });
         }
@@ -740,10 +761,12 @@ function renderTableHeader()
                         that.selectedRows.push(that.currentRows[i][that.identifier]);
                     }
                     rowSelectBoxes.prop("checked", true);
+                    that.element.trigger("selected" + namespace, that.currentRows);
                 }
                 else
                 {
                     rowSelectBoxes.prop("checked", false);
+                    that.element.trigger("deselected" + namespace, that.currentRows);
                 }
             });
     }

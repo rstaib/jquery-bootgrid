@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.0.0-rc1 - 07/28/2014
+ * jQuery Bootgrid v1.0.0-rc2 - 07/28/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -28,7 +28,10 @@
         if (!this.rows.contains(exists))
         {
             this.rows.push(row);
+            return true;
         }
+
+        return false;
     }
 
     function getParams(context)
@@ -322,28 +325,43 @@
 
     function renderColumnSelection(actions)
     {
-        var that = this,
-            css = this.options.css,
-            tpl = this.options.templates,
-            icon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconColumns })),
-            dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: icon }))),
-            selector = getCssSelector(css.dropDownItem);
-
-        $.each(this.columns, function (i, column)
+        if (this.options.columnSelection && this.columns.length > 1)
         {
-            var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
-                { name: column.id, label: column.text, checked: column.visible })))
-                    .on("click" + namespace, selector, function (e)
-                    {
-                        e.stopPropagation();
-                        column.visible = $(this).find("input").prop("checked");
-                        that.element.find("tbody").empty(); // Fixes an column visualization bug
-                        renderTableHeader.call(that);
-                        loadData.call(that);
-                    });
-            dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
-        });
-        actions.append(dropDown);
+            var that = this,
+                css = this.options.css,
+                tpl = this.options.templates,
+                icon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconColumns })),
+                dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: icon }))),
+                selector = getCssSelector(css.dropDownItem),
+                checkboxSelector = getCssSelector(css.dropDownItemCheckbox),
+                itemsSelector = getCssSelector(css.dropDownMenuItems);
+
+            $.each(this.columns, function (i, column)
+            {
+                var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
+                    { name: column.id, label: column.text, checked: column.visible })))
+                        .on("click" + namespace, selector, function (e)
+                        {
+                            e.stopPropagation();
+
+                            var $this = $(this),
+                                checkbox = $this.find(checkboxSelector);
+                            if (!checkbox.prop("disabled"))
+                            {
+                                column.visible = checkbox.prop("checked");
+                                var enable = that.columns.where(isVisible).length > 1;
+                                $this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
+                                    ._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
+
+                                that.element.find("tbody").empty(); // Fixes an column visualization bug
+                                renderTableHeader.call(that);
+                                loadData.call(that);
+                            }
+                        });
+                dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
+            });
+            actions.append(dropDown);
+        }
     }
 
     function renderInfos()
@@ -571,7 +589,8 @@
                         var $this = $(this),
                             converter = that.options.converters[that.columns.first(function (column) { return column.id === that.identifier; }).type],
                             id = converter.from($this.val()),
-                            multiSelectBox = that.element.find("thead " + selectBoxSelector);
+                            multiSelectBox = that.element.find("thead " + selectBoxSelector),
+                            rows = that.currentRows.where(function (row) { return row[that.identifier] === id; });
 
                         if ($this.prop("checked"))
                         {
@@ -580,6 +599,7 @@
                             {
                                 multiSelectBox.prop("checked", true);
                             }
+                            that.element.trigger("selected" + namespace, rows);
                         }
                         else
                         {
@@ -592,6 +612,7 @@
                                 }
                             }
                             multiSelectBox.prop("checked", false);
+                            that.element.trigger("deselected" + namespace, rows);
                         }
                     });
             }
@@ -750,10 +771,12 @@
                             that.selectedRows.push(that.currentRows[i][that.identifier]);
                         }
                         rowSelectBoxes.prop("checked", true);
+                        that.element.trigger("selected" + namespace, that.currentRows);
                     }
                     else
                     {
                         rowSelectBoxes.prop("checked", false);
+                        that.element.trigger("deselected" + namespace, that.currentRows);
                     }
                 });
         }
@@ -876,6 +899,7 @@
     Grid.defaults = {
         navigation: 3, // it's a flag: 0 = none, 1 = top, 2 = bottom, 3 = both (top and bottom)
         padding: 2, // page padding (pagination)
+        columnSelection: true,
         rowCount: [10, 25, 50, -1], // rows per page int or array of int (-1 represents "All")
         selection: false,
         multiSelect: false,
@@ -976,13 +1000,18 @@
         }
         else
         {
+            var appendedRows = [];
             for (var i = 0; i < rows.length; i++)
             {
-                appendRow.call(this, rows[i]);
+                if (appendRow.call(this, rows[i]))
+                {
+                    appendedRows.push(rows[i]);
+                }
             }
             sortRows.call(this);
-            highlightAppendedRows.call(this, rows);
+            highlightAppendedRows.call(this, appendedRows);
             loadData.call(this);
+            this.element.trigger("appended" + namespace, appendedRows);
         }
 
         return this;
@@ -1002,10 +1031,12 @@
         }
         else
         {
+            var removedRows = $.extend([], this.rows);
             this.rows = [];
             this.current = 1;
             this.total = 0;
             loadData.call(this);
+            this.element.trigger("cleared" + namespace, removedRows);
         }
 
         return this;
@@ -1068,7 +1099,8 @@
             else
             {
                 rowIds = rowIds || this.selectedRows;
-                var id;
+                var id,
+                    removedRows = [];
 
                 for (var i = 0; i < rowIds.length; i++)
                 {
@@ -1078,6 +1110,7 @@
                     {
                         if (this.rows[j][this.identifier] === id)
                         {
+                            removedRows.push(this.rows[j]);
                             this.rows.splice(j, 1);
                             break;
                         }
@@ -1086,6 +1119,7 @@
 
                 this.current = 1; // reset
                 loadData.call(this);
+                this.element.trigger("removed" + namespace, removedRows);
             }
         }
 
@@ -1206,6 +1240,13 @@
             return (enable == null || enable) ? 
                 this.removeClass("disabled")._bgAria("disabled", "false") : 
                 this.addClass("disabled")._bgAria("disabled", "true");
+        },
+
+        _bgEnableField: function (enable)
+        {
+            return (enable == null || enable) ? 
+                this.removeAttr("disabled") : 
+                this.attr("disabled", "disable");
         },
 
         _bgShowAria: function (show)

@@ -33,6 +33,7 @@
 }
 .bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item,
 .bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item {
+  cursor: pointer;
   display: block;
   margin: 0;
   padding: 3px 20px;
@@ -52,6 +53,10 @@
 .bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item .dropdown-item-checkbox {
   margin: 0 2px 4px 0;
   vertical-align: middle;
+}
+.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item.disabled,
+.bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item.disabled {
+  cursor: not-allowed;
 }
 .bootgrid-table {
   table-layout: fixed;
