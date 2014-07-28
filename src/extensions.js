@@ -82,6 +82,22 @@ if (!String.prototype.resolve)
     };
 }
 
+if (!Array.prototype.first)
+{
+    Array.prototype.first = function (condition)
+    {
+        for (var i = 0; i < this.length; i++)
+        {
+            var item = this[i];
+            if (condition(item))
+            {
+                return item;
+            }
+        }
+        return null;
+    };
+}
+
 if (!Array.prototype.contains)
 {
     Array.prototype.contains = function (condition)

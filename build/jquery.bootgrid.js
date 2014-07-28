@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.0.0-beta2 - 07/25/2014
+ * jQuery Bootgrid v1.0.0-rc1 - 07/28/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -33,21 +33,18 @@
 
     function getParams(context)
     {
-        if (context)
-        {
-            return $.extend({}, this.cachedParams, { ctx: context });
-        }
-        return this.cachedParams;
+        return (context) ? $.extend({}, this.cachedParams, { ctx: context }) : 
+            this.cachedParams;
     }
 
     function getRequest()
     {
         var request = {
-            current: this.current,
-            rowCount: this.rowCount,
-            sort: this.sort,
-            searchPhrase: this.searchPhrase
-        },
+                current: this.current,
+                rowCount: this.rowCount,
+                sort: this.sort,
+                searchPhrase: this.searchPhrase
+            },
             post = this.options.post;
 
         post = ($.isFunction(post)) ? post() : post;
@@ -78,6 +75,14 @@
         loadData.call(this);
 
         this.element.trigger("initialized" + namespace);
+    }
+
+    function highlightAppendedRows(rows)
+    {
+        if (this.options.highlightRows)
+        {
+            // todo: implement
+        }
     }
 
     function isVisible(column)
@@ -144,7 +149,7 @@
             request = getRequest.call(this),
             url = getUrl.call(this);
 
-        if (url == null || typeof url !== "string" || url.length === 0)
+        if (this.options.ajax && (url == null || typeof url !== "string" || url.length === 0))
         {
             throw new Error("Url setting must be a none empty string or a function that returns one.");
         }
@@ -172,8 +177,12 @@
 
         function update(rows, total)
         {
+            that.currentRows = rows;
             that.total = total;
             that.totalPages = Math.ceil(total / that.rowCount);
+
+            // clear multi selectbox state
+            that.element.find("thead " + getCssSelector(that.options.css.selectBox)).prop("checked", false);
 
             renderRows.call(that, rows);
             renderInfos.call(that);
@@ -191,10 +200,9 @@
                     response = $.parseJSON(response);
                 }
 
-                that.rows = response.rows;
                 that.current = response.current;
 
-                update(that.rows, response.total);
+                update(response.rows, response.total);
             }).fail(function ()
             {
                 // overrides loading mask
@@ -319,7 +327,7 @@
             tpl = this.options.templates,
             icon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconColumns })),
             dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: icon }))),
-            selector = getCssSelector(css.dropDownItemCheckbox);
+            selector = getCssSelector(css.dropDownItem);
 
         $.each(this.columns, function (i, column)
         {
@@ -517,6 +525,7 @@
                 css = this.options.css,
                 tpl = this.options.templates,
                 tbody = this.element.children("tbody").first(),
+                selection = that.options.selection && that.identifier != null,
                 html = "",
                 cells = "";
 
@@ -524,7 +533,7 @@
             {
                 cells = "";
 
-                if (that.options.selection && that.identifier != null)
+                if (selection)
                 {
                     var selectBox = tpl.select.resolve(getParams.call(that, 
                         { type: "checkbox", value: row[that.identifier] }));
@@ -550,6 +559,42 @@
             });
 
             tbody.html(html);
+
+            if (selection)
+            {
+                var selectBoxSelector = getCssSelector(css.selectBox);
+                tbody.off("click" + namespace, selectBoxSelector)
+                    .on("click" + namespace, selectBoxSelector, function(e)
+                    {
+                        e.stopPropagation();
+
+                        var $this = $(this),
+                            converter = that.options.converters[that.columns.first(function (column) { return column.id === that.identifier; }).type],
+                            id = converter.from($this.val()),
+                            multiSelectBox = that.element.find("thead " + selectBoxSelector);
+
+                        if ($this.prop("checked"))
+                        {
+                            that.selectedRows.push(id);
+                            if (that.selectedRows.length === that.currentRows.length)
+                            {
+                                multiSelectBox.prop("checked", true);
+                            }
+                        }
+                        else
+                        {
+                            for (var i = 0; i < that.selectedRows.length; i++)
+                            {
+                                if (that.selectedRows[i] === id)
+                                {
+                                    that.selectedRows.splice(i, 1);
+                                    break;
+                                }
+                            }
+                            multiSelectBox.prop("checked", false);
+                        }
+                    });
+            }
         }
         else
         {
@@ -605,9 +650,10 @@
             css = this.options.css,
             tpl = this.options.templates,
             html = "",
-            sorting = this.options.sorting;
+            sorting = this.options.sorting,
+            multiSelect = this.options.selection && this.identifier != null;
 
-        if (this.options.selection && this.identifier != null)
+        if (multiSelect)
         {
             var selectBox = (this.options.multiSelect) ? 
                 tpl.select.resolve(getParams.call(that, { type: "checkbox", value: "all" })) : "";
@@ -629,20 +675,23 @@
         });
 
         headerRow.html(html);
+
         if (sorting)
         {
-            headerRow.off("click" + namespace)
-                .on("click" + namespace, getCssSelector(css.sortable), function (e)
+            var sortingSelector = getCssSelector(css.sortable),
+                iconSelector = getCssSelector(css.icon);
+            headerRow.off("click" + namespace, sortingSelector)
+                .on("click" + namespace, sortingSelector, function (e)
                 {
                     e.preventDefault();
                     var $this = $(this),
                         columnId = $this.data("column-id") || $this.parents("th").first().data("column-id"),
                         sortOrder = that.sort[columnId],
-                        icon = $this.find(getCssSelector(css.icon));
+                        icon = $this.find(iconSelector);
 
                     if (!that.options.multiSort)
                     {
-                        $this.parents("tr").first().find(getCssSelector(css.icon)).removeClass(css.iconDown + " " + css.iconUp);
+                        $this.parents("tr").first().find(iconSelector).removeClass(css.iconDown + " " + css.iconUp);
                         that.sort = {};
                     }
 
@@ -655,7 +704,15 @@
                     {
                         if (that.options.multiSort)
                         {
-                            delete that.sort[columnId];
+                            var newSort = {};
+                            for (var key in that.sort)
+                            {
+                                if (key !== columnId)
+                                {
+                                    newSort[key] = that.sort[key];
+                                }
+                            }
+                            that.sort = newSort;
                             icon.removeClass(css.iconDown);
                         }
                         else
@@ -672,6 +729,32 @@
 
                     sortRows.call(that);
                     loadData.call(that);
+                });
+        }
+
+        if (multiSelect)
+        {
+            var selectBoxSelector = getCssSelector(css.selectBox);
+            headerRow.off("click" + namespace, selectBoxSelector)
+                .on("click" + namespace, selectBoxSelector, function(e)
+                {
+                    e.stopPropagation();
+
+                    var rowSelectBoxes = $(that.element.find("tbody " + selectBoxSelector));
+                    that.selectedRows = [];
+
+                    if ($(this).prop("checked"))
+                    {
+                        for (var i = 0; i < that.currentRows.length; i++)
+                        {
+                            that.selectedRows.push(that.currentRows[i][that.identifier]);
+                        }
+                        rowSelectBoxes.prop("checked", true);
+                    }
+                    else
+                    {
+                        rowSelectBoxes.prop("checked", false);
+                    }
                 });
         }
     }
@@ -725,7 +808,7 @@
 
             return (x[item.id] > y[item.id]) ? sortOrder(1) :
                 (x[item.id] < y[item.id]) ? sortOrder(-1) :
-                    (sortArray.length > next) ? sort(next) : 0;
+                    (sortArray.length > next) ? sort(x, y, next) : 0;
         }
 
         if (!this.options.ajax)
@@ -758,8 +841,8 @@
      *
      * @class Grid
      * @constructor
-     * @param [element] {Object} The corresponding DOM element.
-     * @param [options] {Object} The options to initialize the plugin.
+     * @param element {Object} The corresponding DOM element.
+     * @param options {Object} The options to override default settings.
      * @chainable
      **/
     var Grid = function(element, options)
@@ -769,12 +852,14 @@
         // overrides rowCount explicitly because deep copy ($.extend) leads to strange behaviour
         var rowCount = this.options.rowCount = this.element.data().rowCount || options.rowCount || this.options.rowCount;
         this.columns = [];
-        this.identifier = null; // The first column ID that is marked as identifier
         this.current = 1;
-        this.rows = [];
+        this.currentRows = [];
+        this.identifier = null; // The first column ID that is marked as identifier
         this.rowCount = ($.isArray(rowCount)) ? rowCount[0] : rowCount;
-        this.sort = {};
+        this.rows = [];
         this.searchPhrase = "";
+        this.selectedRows = [];
+        this.sort = {};
         this.total = 0;
         this.totalPages = 0;
         this.cachedParams = {
@@ -792,16 +877,16 @@
         navigation: 3, // it's a flag: 0 = none, 1 = top, 2 = bottom, 3 = both (top and bottom)
         padding: 2, // page padding (pagination)
         rowCount: [10, 25, 50, -1], // rows per page int or array of int (-1 represents "All")
-        selection: false, // todo: implement!
-        multiSelect: false, // todo: implement!
-        selectRows: false, // todo: implement and find a better name for this property [select new rows after adding]!
+        selection: false,
+        multiSelect: false,
+        highlightRows: false, // highlights new rows (find the page of the first new row)
         sorting: true,
         multiSort: false,
         ajax: false, // todo: find a better name for this property to differentiate between client-side and server-side data
         post: {}, // or use function () { return {}; } (reserved properties are "current", "rowCount", "sort" and "searchPhrase")
         url: "", // or use function () { return ""; }
 
-        // note: The following properties should be used via data-api attributes
+        // note: The following properties should not be used via data-api attributes
         converters: {
             numeric: {
                 from: function (value) { return +value; }, // converts from string to numeric
@@ -818,6 +903,7 @@
             center: "text-center",
             columnHeaderAnchor: "column-header-anchor", // must be a unique class name or constellation of class names within the column header cell
             columnHeaderText: "text",
+            dropDownItem: "dropdown-item", // must be a unique class name or constellation of class names within the actionDropDown,
             dropDownItemButton: "dropdown-item-button", // must be a unique class name or constellation of class names within the actionDropDown
             dropDownItemCheckbox: "dropdown-item-checkbox", // must be a unique class name or constellation of class names within the actionDropDown
             dropDownMenu: "dropdown btn-group", // must be a unique class name or constellation of class names within the actionDropDown
@@ -854,8 +940,8 @@
         templates: {
             actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{ctx.content}}</button>",
             actionDropDown: "<div class=\"{{css.dropDownMenu}}\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\"><span class=\"{{css.dropDownMenuText}}\">{{ctx.content}}</span> <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenuItems}}\" role=\"menu\"></ul></div>",
-            actionDropDownItem: "<li><a href=\"{{ctx.uri}}\" class=\"{{css.dropDownItemButton}}\">{{ctx.text}}</a></li>",
-            actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItemCheckbox}}\"><input name=\"{{ctx.name}}\" type=\"checkbox\" value=\"1\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
+            actionDropDownItem: "<li><a href=\"{{ctx.uri}}\" class=\"{{css.dropDownItem}} {{css.dropDownItemButton}}\">{{ctx.text}}</a></li>",
+            actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItem}}\"><input name=\"{{ctx.name}}\" type=\"checkbox\" value=\"1\" class=\"{{css.dropDownItemCheckbox}}\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
             actions: "<div class=\"{{css.actions}}\"></div>",
             body: "<tbody></tbody>",
             cell: "<td class=\"{{ctx.css}}\">{{ctx.content}}</td>",
@@ -875,26 +961,46 @@
         }
     };
 
+    /**
+     * Appends rows.
+     *
+     * @method append
+     * @param rows {Array} An array of rows to append
+     * @chainable
+     **/
     Grid.prototype.append = function(rows)
     {
-        // there is only support for client-side data
-        if (!this.options.ajax)
+        if (this.options.ajax)
+        {
+            // todo: implement ajax DELETE
+        }
+        else
         {
             for (var i = 0; i < rows.length; i++)
             {
                 appendRow.call(this, rows[i]);
             }
             sortRows.call(this);
+            highlightAppendedRows.call(this, rows);
             loadData.call(this);
         }
 
         return this;
     };
 
+    /**
+     * Removes all rows.
+     *
+     * @method clear
+     * @chainable
+     **/
     Grid.prototype.clear = function()
     {
-        // there is only support for client-side data
-        if (!this.options.ajax)
+        if (this.options.ajax)
+        {
+            // todo: implement ajax POST
+        }
+        else
         {
             this.rows = [];
             this.current = 1;
@@ -905,6 +1011,12 @@
         return this;
     };
 
+    /**
+     * Removes the control functionality completely and transforms the current state to the initial HTML structure.
+     *
+     * @method destroy
+     * @chainable
+     **/
     Grid.prototype.destroy = function()
     {
         // todo: this method has to be optimized (the complete initial state must be restored)
@@ -922,6 +1034,12 @@
         return this;
     };
 
+    /**
+     * Resets the state and reloads rows.
+     *
+     * @method reload
+     * @chainable
+     **/
     Grid.prototype.reload = function()
     {
         this.current = 1; // reset
@@ -930,17 +1048,57 @@
         return this;
     };
 
-    Grid.prototype.remove = function(id)
+    /**
+     * Removes rows by ids. Removes selected rows if no ids are provided.
+     *
+     * @method remove
+     * @param [rowsIds] {Array} An array of rows ids to remove
+     * @chainable
+     **/
+    Grid.prototype.remove = function(rowIds)
     {
-        // there is only support for client-side data
-        if (!this.options.ajax) // check also is identifier available
+        if (this.identifier != null)
         {
-            // todo: implement!
+            var that = this;
+
+            if (this.options.ajax)
+            {
+                // todo: implement ajax DELETE
+            }
+            else
+            {
+                rowIds = rowIds || this.selectedRows;
+                var id;
+
+                for (var i = 0; i < rowIds.length; i++)
+                {
+                    id = rowIds[i];
+
+                    for (var j = 0; j < this.rows.length; j++)
+                    {
+                        if (this.rows[j][this.identifier] === id)
+                        {
+                            this.rows.splice(j, 1);
+                            break;
+                        }
+                    }
+                }
+
+                this.current = 1; // reset
+                loadData.call(this);
+            }
         }
 
         return this;
     };
 
+    /**
+     * Searches in all rows for a specific phrase (but only in visible cells).
+     *
+     * @method search
+     * @param phrase {String} The phrase to search for
+     * @chainable
+     **/
     Grid.prototype.search = function(phrase)
     {
         if (this.searchPhrase !== phrase)
@@ -953,13 +1111,13 @@
         return this;
     };
 
-    Grid.prototype.select = function()
-    {
-        // todo: implement!
-
-        return this;
-    };
-
+    /**
+     * Sorts rows.
+     *
+     * @method sort
+     * @param dictionary {Object} A dictionary which contains the sort information
+     * @chainable
+     **/
     Grid.prototype.sort = function(dictionary)
     {
         var values = (dictionary) ? $.extend({}, dictionary) : {};
@@ -1110,6 +1268,22 @@
                 }
             });
             return result;
+        };
+    }
+
+    if (!Array.prototype.first)
+    {
+        Array.prototype.first = function (condition)
+        {
+            for (var i = 0; i < this.length; i++)
+            {
+                var item = this[i];
+                if (condition(item))
+                {
+                    return item;
+                }
+            }
+            return null;
         };
     }
 

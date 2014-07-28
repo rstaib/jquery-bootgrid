@@ -23,21 +23,18 @@ function appendRow(row)
 
 function getParams(context)
 {
-    if (context)
-    {
-        return $.extend({}, this.cachedParams, { ctx: context });
-    }
-    return this.cachedParams;
+    return (context) ? $.extend({}, this.cachedParams, { ctx: context }) : 
+        this.cachedParams;
 }
 
 function getRequest()
 {
     var request = {
-        current: this.current,
-        rowCount: this.rowCount,
-        sort: this.sort,
-        searchPhrase: this.searchPhrase
-    },
+            current: this.current,
+            rowCount: this.rowCount,
+            sort: this.sort,
+            searchPhrase: this.searchPhrase
+        },
         post = this.options.post;
 
     post = ($.isFunction(post)) ? post() : post;
@@ -68,6 +65,14 @@ function init()
     loadData.call(this);
 
     this.element.trigger("initialized" + namespace);
+}
+
+function highlightAppendedRows(rows)
+{
+    if (this.options.highlightRows)
+    {
+        // todo: implement
+    }
 }
 
 function isVisible(column)
@@ -134,7 +139,7 @@ function loadData()
         request = getRequest.call(this),
         url = getUrl.call(this);
 
-    if (url == null || typeof url !== "string" || url.length === 0)
+    if (this.options.ajax && (url == null || typeof url !== "string" || url.length === 0))
     {
         throw new Error("Url setting must be a none empty string or a function that returns one.");
     }
@@ -162,8 +167,12 @@ function loadData()
 
     function update(rows, total)
     {
+        that.currentRows = rows;
         that.total = total;
         that.totalPages = Math.ceil(total / that.rowCount);
+
+        // clear multi selectbox state
+        that.element.find("thead " + getCssSelector(that.options.css.selectBox)).prop("checked", false);
 
         renderRows.call(that, rows);
         renderInfos.call(that);
@@ -181,10 +190,9 @@ function loadData()
                 response = $.parseJSON(response);
             }
 
-            that.rows = response.rows;
             that.current = response.current;
 
-            update(that.rows, response.total);
+            update(response.rows, response.total);
         }).fail(function ()
         {
             // overrides loading mask
@@ -309,7 +317,7 @@ function renderColumnSelection(actions)
         tpl = this.options.templates,
         icon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconColumns })),
         dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: icon }))),
-        selector = getCssSelector(css.dropDownItemCheckbox);
+        selector = getCssSelector(css.dropDownItem);
 
     $.each(this.columns, function (i, column)
     {
@@ -507,6 +515,7 @@ function renderRows(rows)
             css = this.options.css,
             tpl = this.options.templates,
             tbody = this.element.children("tbody").first(),
+            selection = that.options.selection && that.identifier != null,
             html = "",
             cells = "";
 
@@ -514,7 +523,7 @@ function renderRows(rows)
         {
             cells = "";
 
-            if (that.options.selection && that.identifier != null)
+            if (selection)
             {
                 var selectBox = tpl.select.resolve(getParams.call(that, 
                     { type: "checkbox", value: row[that.identifier] }));
@@ -540,6 +549,42 @@ function renderRows(rows)
         });
 
         tbody.html(html);
+
+        if (selection)
+        {
+            var selectBoxSelector = getCssSelector(css.selectBox);
+            tbody.off("click" + namespace, selectBoxSelector)
+                .on("click" + namespace, selectBoxSelector, function(e)
+                {
+                    e.stopPropagation();
+
+                    var $this = $(this),
+                        converter = that.options.converters[that.columns.first(function (column) { return column.id === that.identifier; }).type],
+                        id = converter.from($this.val()),
+                        multiSelectBox = that.element.find("thead " + selectBoxSelector);
+
+                    if ($this.prop("checked"))
+                    {
+                        that.selectedRows.push(id);
+                        if (that.selectedRows.length === that.currentRows.length)
+                        {
+                            multiSelectBox.prop("checked", true);
+                        }
+                    }
+                    else
+                    {
+                        for (var i = 0; i < that.selectedRows.length; i++)
+                        {
+                            if (that.selectedRows[i] === id)
+                            {
+                                that.selectedRows.splice(i, 1);
+                                break;
+                            }
+                        }
+                        multiSelectBox.prop("checked", false);
+                    }
+                });
+        }
     }
     else
     {
@@ -595,9 +640,10 @@ function renderTableHeader()
         css = this.options.css,
         tpl = this.options.templates,
         html = "",
-        sorting = this.options.sorting;
+        sorting = this.options.sorting,
+        multiSelect = this.options.selection && this.identifier != null;
 
-    if (this.options.selection && this.identifier != null)
+    if (multiSelect)
     {
         var selectBox = (this.options.multiSelect) ? 
             tpl.select.resolve(getParams.call(that, { type: "checkbox", value: "all" })) : "";
@@ -619,20 +665,23 @@ function renderTableHeader()
     });
 
     headerRow.html(html);
+
     if (sorting)
     {
-        headerRow.off("click" + namespace)
-            .on("click" + namespace, getCssSelector(css.sortable), function (e)
+        var sortingSelector = getCssSelector(css.sortable),
+            iconSelector = getCssSelector(css.icon);
+        headerRow.off("click" + namespace, sortingSelector)
+            .on("click" + namespace, sortingSelector, function (e)
             {
                 e.preventDefault();
                 var $this = $(this),
                     columnId = $this.data("column-id") || $this.parents("th").first().data("column-id"),
                     sortOrder = that.sort[columnId],
-                    icon = $this.find(getCssSelector(css.icon));
+                    icon = $this.find(iconSelector);
 
                 if (!that.options.multiSort)
                 {
-                    $this.parents("tr").first().find(getCssSelector(css.icon)).removeClass(css.iconDown + " " + css.iconUp);
+                    $this.parents("tr").first().find(iconSelector).removeClass(css.iconDown + " " + css.iconUp);
                     that.sort = {};
                 }
 
@@ -645,7 +694,15 @@ function renderTableHeader()
                 {
                     if (that.options.multiSort)
                     {
-                        delete that.sort[columnId];
+                        var newSort = {};
+                        for (var key in that.sort)
+                        {
+                            if (key !== columnId)
+                            {
+                                newSort[key] = that.sort[key];
+                            }
+                        }
+                        that.sort = newSort;
                         icon.removeClass(css.iconDown);
                     }
                     else
@@ -662,6 +719,32 @@ function renderTableHeader()
 
                 sortRows.call(that);
                 loadData.call(that);
+            });
+    }
+
+    if (multiSelect)
+    {
+        var selectBoxSelector = getCssSelector(css.selectBox);
+        headerRow.off("click" + namespace, selectBoxSelector)
+            .on("click" + namespace, selectBoxSelector, function(e)
+            {
+                e.stopPropagation();
+
+                var rowSelectBoxes = $(that.element.find("tbody " + selectBoxSelector));
+                that.selectedRows = [];
+
+                if ($(this).prop("checked"))
+                {
+                    for (var i = 0; i < that.currentRows.length; i++)
+                    {
+                        that.selectedRows.push(that.currentRows[i][that.identifier]);
+                    }
+                    rowSelectBoxes.prop("checked", true);
+                }
+                else
+                {
+                    rowSelectBoxes.prop("checked", false);
+                }
             });
     }
 }
@@ -715,7 +798,7 @@ function sortRows()
 
         return (x[item.id] > y[item.id]) ? sortOrder(1) :
             (x[item.id] < y[item.id]) ? sortOrder(-1) :
-                (sortArray.length > next) ? sort(next) : 0;
+                (sortArray.length > next) ? sort(x, y, next) : 0;
     }
 
     if (!this.options.ajax)

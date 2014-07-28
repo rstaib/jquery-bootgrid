@@ -31,11 +31,27 @@
 .bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu {
   text-align: left;
 }
-.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item-checkbox,
-.bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item-checkbox {
+.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item,
+.bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item {
   display: block;
   margin: 0;
   padding: 3px 20px;
+  white-space: nowrap;
+}
+.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item:hover,
+.bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item:hover,
+.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item:focus,
+.bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item:focus {
+  color: #262626;
+  text-decoration: none;
+  background-color: #f5f5f5;
+}
+.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item.dropdown-item-checkbox,
+.bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item.dropdown-item-checkbox,
+.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item .dropdown-item-checkbox,
+.bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item .dropdown-item-checkbox {
+  margin: 0 2px 4px 0;
+  vertical-align: middle;
 }
 .bootgrid-table {
   table-layout: fixed;
@@ -79,5 +95,10 @@
 }
 .bootgrid-table th.select-cell,
 .bootgrid-table td.select-cell {
+  text-align: center;
   width: 30px;
+}
+.bootgrid-table th.select-cell .select-box,
+.bootgrid-table td.select-cell .select-box {
+  margin: 0;
 }

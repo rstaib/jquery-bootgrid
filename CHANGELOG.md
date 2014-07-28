@@ -7,6 +7,7 @@
 - Show/Hide column headers
 - Improved formatters (former know as `data-custom="true"`)
 - Added type converters per column (`data-converter="string|numeric|custom"`)
+- Fixed multi sorting issue
 
 ### Breaking Changes
 - `data-custom` is now `data-formatter` and instead of being a `bool` it is a event name
