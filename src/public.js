@@ -153,7 +153,7 @@ Grid.prototype.append = function(rows)
         sortRows.call(this);
         highlightAppendedRows.call(this, appendedRows);
         loadData.call(this);
-        this.element.trigger("appended" + namespace, appendedRows);
+        this.element.trigger("appended" + namespace, [appendedRows]);
     }
 
     return this;
@@ -178,7 +178,7 @@ Grid.prototype.clear = function()
         this.current = 1;
         this.total = 0;
         loadData.call(this);
-        this.element.trigger("cleared" + namespace, removedRows);
+        this.element.trigger("cleared" + namespace, [removedRows]);
     }
 
     return this;
@@ -261,7 +261,7 @@ Grid.prototype.remove = function(rowIds)
 
             this.current = 1; // reset
             loadData.call(this);
-            this.element.trigger("removed" + namespace, removedRows);
+            this.element.trigger("removed" + namespace, [removedRows]);
         }
     }
 

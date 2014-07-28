@@ -589,7 +589,7 @@ function renderRows(rows)
                         {
                             multiSelectBox.prop("checked", true);
                         }
-                        that.element.trigger("selected" + namespace, rows);
+                        that.element.trigger("selected" + namespace, [rows]);
                     }
                     else
                     {
@@ -602,7 +602,7 @@ function renderRows(rows)
                             }
                         }
                         multiSelectBox.prop("checked", false);
-                        that.element.trigger("deselected" + namespace, rows);
+                        that.element.trigger("deselected" + namespace, [rows]);
                     }
                 });
         }
@@ -761,12 +761,12 @@ function renderTableHeader()
                         that.selectedRows.push(that.currentRows[i][that.identifier]);
                     }
                     rowSelectBoxes.prop("checked", true);
-                    that.element.trigger("selected" + namespace, that.currentRows);
+                    that.element.trigger("selected" + namespace, [that.currentRows]);
                 }
                 else
                 {
                     rowSelectBoxes.prop("checked", false);
-                    that.element.trigger("deselected" + namespace, that.currentRows);
+                    that.element.trigger("deselected" + namespace, [that.currentRows]);
                 }
             });
     }

@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.0.0-rc2 - 07/28/2014
+ * jQuery Bootgrid v1.0.0-rc2 - 07/29/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -599,7 +599,7 @@
                             {
                                 multiSelectBox.prop("checked", true);
                             }
-                            that.element.trigger("selected" + namespace, rows);
+                            that.element.trigger("selected" + namespace, [rows]);
                         }
                         else
                         {
@@ -612,7 +612,7 @@
                                 }
                             }
                             multiSelectBox.prop("checked", false);
-                            that.element.trigger("deselected" + namespace, rows);
+                            that.element.trigger("deselected" + namespace, [rows]);
                         }
                     });
             }
@@ -771,12 +771,12 @@
                             that.selectedRows.push(that.currentRows[i][that.identifier]);
                         }
                         rowSelectBoxes.prop("checked", true);
-                        that.element.trigger("selected" + namespace, that.currentRows);
+                        that.element.trigger("selected" + namespace, [that.currentRows]);
                     }
                     else
                     {
                         rowSelectBoxes.prop("checked", false);
-                        that.element.trigger("deselected" + namespace, that.currentRows);
+                        that.element.trigger("deselected" + namespace, [that.currentRows]);
                     }
                 });
         }
@@ -1011,7 +1011,7 @@
             sortRows.call(this);
             highlightAppendedRows.call(this, appendedRows);
             loadData.call(this);
-            this.element.trigger("appended" + namespace, appendedRows);
+            this.element.trigger("appended" + namespace, [appendedRows]);
         }
 
         return this;
@@ -1036,7 +1036,7 @@
             this.current = 1;
             this.total = 0;
             loadData.call(this);
-            this.element.trigger("cleared" + namespace, removedRows);
+            this.element.trigger("cleared" + namespace, [removedRows]);
         }
 
         return this;
@@ -1119,7 +1119,7 @@
 
                 this.current = 1; // reset
                 loadData.call(this);
-                this.element.trigger("removed" + namespace, removedRows);
+                this.element.trigger("removed" + namespace, [removedRows]);
             }
         }
 
