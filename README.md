@@ -11,8 +11,8 @@ Everything you need to start quickly is:
 
 1. Include **jQuery**, **jQuery Bootgrid** and **Bootstrap** libraries in your HTML code.
 2. Define your table layout and your data columns by adding the `data-column-id` attribute.
-3. Then select the previously defined `table` element represents your data table and initialize the `bootgrid` plugin.
-4. Specify your data url used to fill your data table.
+3. Specify your data URL used to fill your data table and set ajax option to `true` directly on your table via data API.
+4. Then select the previously defined `table` element represents your data table and initialize the `bootgrid` plugin with one line.
 
 ```html
 <!DOCTYPE html>
@@ -20,31 +20,28 @@ Everything you need to start quickly is:
     <head>
         <title>Demo</title>
         <meta charset="utf-8">
-		<!-- Styles -->
-		<link href="bootstrap.css" rel="stylesheet">
+        <!-- Styles -->
+        <link href="bootstrap.css" rel="stylesheet">
         <link href="jquery.bootgrid.css" rel="stylesheet">
     </head>
     <body>
-        <script>
-		    $(function ()
-			{
-				$("#grid").bootgrid({
-    				url: "/api/data/basic"
-				});
-			});
-        </script>
-        <table id="grid" class="table table-condensed table-hover table-striped">
+        <table id="grid" class="table table-condensed table-hover table-striped" data-ajax="true" data-url="/api/data/basic">
             <thead>
                 <tr>
                     <th data-column-id="id">ID</th>
                     <th data-column-id="name">Sender</th>
                 </tr>
             </thead>
-            <tbody></tbody>
         </table>
-		<!-- Scripts -->
+        <!-- Scripts -->
         <script src="jquery.js"></script> 
         <script src="jquery.bootgrid.js"></script>
+        <script>
+            $(function ()
+            {
+                $("#grid").bootgrid();
+            });
+        </script>
     </body>
 </html>
 ```
