@@ -49,11 +49,11 @@ Everything you need to start quickly is:
 </html>
 ```
 
-> For more information [check the documentation](https://github.com/rstaib/jquery-bootgrid/wiki).
+> For more information [check the documentation](http://www.jquery-bootgrid.com/Documentation).
 
 ### Examples
 
-Examples you find [here](https://github.com/rstaib/jquery-bootgrid/wiki#demo).
+Examples you find [here](http://www.jquery-bootgrid.com/Examples).
 
 ## Reporting an Issue
 
