@@ -15,8 +15,7 @@ module("render functions", {
 function renderInfosTest(expected, message, current, rowCount, total)
 {
     // given
-    var 
-        instance = {
+    var instance = {
             element: $("#table").data(namespace, {
                 header: header,
                 footer: footer

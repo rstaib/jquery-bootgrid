@@ -150,8 +150,7 @@ module.exports = function (grunt)
                 version: '<%= pkg.version %>',
                 url: '<%= pkg.homepage %>',
                 options: {
-                    exclude: 'qunit-1.11.0.js',
-                    paths: '.',
+                    paths: '<%= pkg.folders.dist %>',
                     outdir: '<%= pkg.folders.docs %>/'
                 }
             }

@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.0.0-rc2 - 07/29/2014
+ * jQuery Bootgrid v1.0.0-rc2 - 07/31/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -672,9 +672,9 @@
             tpl = this.options.templates,
             html = "",
             sorting = this.options.sorting,
-            multiSelect = this.options.selection && this.identifier != null;
+            selection = this.options.selection && this.identifier != null;
 
-        if (multiSelect)
+        if (selection)
         {
             var selectBox = (this.options.multiSelect) ? 
                 tpl.select.resolve(getParams.call(that, { type: "checkbox", value: "all" })) : "";
@@ -697,6 +697,7 @@
 
         headerRow.html(html);
 
+        // todo: create a own function for that piece of code
         if (sorting)
         {
             var sortingSelector = getCssSelector(css.sortable),
@@ -753,7 +754,13 @@
                 });
         }
 
-        if (multiSelect)
+        function filterRows(rows, id)
+        {
+            return rows.where(function (row) { return row[that.identifier] !== id; });
+        }
+
+        // todo: create a own function for that piece of code
+        if (selection && this.options.multiSelect)
         {
             var selectBoxSelector = getCssSelector(css.selectBox);
             headerRow.off("click" + namespace, selectBoxSelector)
@@ -762,19 +769,29 @@
                     e.stopPropagation();
 
                     var rowSelectBoxes = $(that.element.find("tbody " + selectBoxSelector));
-                    that.selectedRows = [];
 
                     if ($(this).prop("checked"))
                     {
-                        for (var i = 0; i < that.currentRows.length; i++)
+                        var filteredRows = $.extend([], that.currentRows),
+                            id,
+                            i;
+
+                        for (i = 0; i < that.selectedRows.length; i++)
                         {
-                            that.selectedRows.push(that.currentRows[i][that.identifier]);
+                            filteredRows = filterRows(filteredRows, that.selectedRows[i]);
                         }
+                        
+                        for (i = 0; i < filteredRows.length; i++)
+                        {
+                            that.selectedRows.push(filteredRows[i][that.identifier]);
+                        }
+
                         rowSelectBoxes.prop("checked", true);
-                        that.element.trigger("selected" + namespace, [that.currentRows]);
+                        that.element.trigger("selected" + namespace, [filteredRows]);
                     }
                     else
                     {
+                        that.selectedRows = [];
                         rowSelectBoxes.prop("checked", false);
                         that.element.trigger("deselected" + namespace, [that.currentRows]);
                     }
@@ -1298,7 +1315,7 @@
                     }
                     else
                     {
-                        if ($.isFunction(formatter[key]))
+                        if (formatter && formatter[key] && typeof formatter[key] === "function")
                         {
                             value = formatter[key](value);
                         }

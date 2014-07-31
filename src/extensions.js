@@ -75,7 +75,7 @@ if (!String.prototype.resolve)
                 }
                 else
                 {
-                    if ($.isFunction(formatter[key]))
+                    if (formatter && formatter[key] && typeof formatter[key] === "function")
                     {
                         value = formatter[key](value);
                     }
