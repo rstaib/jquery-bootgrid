@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.0.0-rc2 - 07/31/2014
+ * jQuery Bootgrid v1.0.0-rc2 - 08/05/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -457,7 +457,7 @@
             tpl = this.options.templates,
             css = this.options.css,
             values = getParams.call(this, { css: markerCss, text: text, uri: "#" + uri }),
-            item = $(tpl.paginationItem.resolve(values)).addClass(css)
+            item = $(tpl.paginationItem.resolve(values))
                 .on("click" + namespace, getCssSelector(css.paginationButton), function (e)
                 {
                     e.stopPropagation();
@@ -1311,7 +1311,7 @@
                     {
                         var keys = (prefixes) ? $.extend([], prefixes) : [];
                         keys.push(key);
-                        result = result.resolve(value, keys);
+                        result = result.resolve(value, keys) + "";
                     }
                     else
                     {

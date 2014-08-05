@@ -447,7 +447,7 @@ function renderPaginationItem(list, uri, text, markerCss)
         tpl = this.options.templates,
         css = this.options.css,
         values = getParams.call(this, { css: markerCss, text: text, uri: "#" + uri }),
-        item = $(tpl.paginationItem.resolve(values)).addClass(css)
+        item = $(tpl.paginationItem.resolve(values))
             .on("click" + namespace, getCssSelector(css.paginationButton), function (e)
             {
                 e.stopPropagation();

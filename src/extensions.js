@@ -71,7 +71,7 @@ if (!String.prototype.resolve)
                 {
                     var keys = (prefixes) ? $.extend([], prefixes) : [];
                     keys.push(key);
-                    result = result.resolve(value, keys);
+                    result = result.resolve(value, keys) + "";
                 }
                 else
                 {
