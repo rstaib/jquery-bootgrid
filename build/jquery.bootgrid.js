@@ -203,7 +203,7 @@
                     response = $.parseJSON(response);
                 }
 
-                if (that.response)
+                if (that.options.reader)
                 {
                     response = that.options.reader.call(that, response);
                 }
