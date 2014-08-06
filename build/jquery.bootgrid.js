@@ -203,6 +203,11 @@
                     response = $.parseJSON(response);
                 }
 
+                if (that.options.reader)
+                {
+                    response = that.options.reader.call(that, response);
+                }
+
                 that.current = response.current;
 
                 update(response.rows, response.total);
