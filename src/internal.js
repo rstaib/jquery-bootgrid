@@ -103,7 +103,9 @@ function loadColumns()
                 formatter: that.options.formatters[data.formatter] || null,
                 order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
                 sortable: !(data.sortable === false), // default: true
-                visible: !(data.visible === false) // default: true
+                visible: !(data.visible === false), // default: true
+                hdrClass: data.hdrClass || "",
+                rowClass: data.rowClass || ""
             };
         that.columns.push(column);
         if (column.order != null)
@@ -546,7 +548,8 @@ function renderRows(rows)
                 var selectBox = tpl.select.resolve(getParams.call(that, 
                     { type: "checkbox", value: row[that.identifier] }));
                 cells += tpl.cell.resolve(getParams.call(that, { content: selectBox, 
-                    css: css.selectCell }));
+                    css: css.selectCell,
+                    class: "" }));
             }
 
             $.each(that.columns, function (j, column)
@@ -559,7 +562,8 @@ function renderRows(rows)
                     cells += tpl.cell.resolve(getParams.call(that, {
                         content: (value == null || value === "") ? "&nbsp;" : value,
                         css: (column.align === "right") ? css.right : 
-                            (column.align === "center") ? css.center : css.left }));
+                             (column.align === "center") ? css.center : css.left,
+                        class: column.rowClass }));
                 }
             });
 
