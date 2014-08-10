@@ -9,6 +9,7 @@
 - Added type converters per column (`data-converter="string|numeric|custom"`)
 - Fixed multi sorting issue
 - Added new events (selected, deselected, appended, removed, cleared, initialize, initialized)
+- Added column attribute `data-header-align` to set the alignment of the header cell independent from the body cells (solved issue #10)
 
 ### Breaking Changes
 - `data-custom` is now `data-formatter` and instead of being a `bool` it is a event name

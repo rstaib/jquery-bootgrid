@@ -100,6 +100,7 @@ function loadColumns()
                 type: that.options.converters[data.type] && data.type || "string",
                 text: $this.text(),
                 align: data.align || "left",
+                headerAlign: data.headerAlign || "left",
                 formatter: that.options.formatters[data.formatter] || null,
                 order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
                 sortable: !(data.sortable === false), // default: true
@@ -679,9 +680,11 @@ function renderTableHeader()
             var sortOrder = that.sort[column.id],
                 iconCss = ((sorting && sortOrder && sortOrder === "asc") ? css.iconUp :
                     (sorting && sortOrder && sortOrder === "desc") ? css.iconDown : ""),
-                icon = tpl.icon.resolve(getParams.call(that, { iconCss: iconCss }));
-            html += tpl.headerCell.resolve(getParams.call(that,
-                { column: column, icon: icon, sortable: sorting && column.sortable && css.sortable || "" }));
+                icon = tpl.icon.resolve(getParams.call(that, { iconCss: iconCss })),
+                align = column.headerAlign;
+            html += tpl.headerCell.resolve(getParams.call(that, {
+                column: column, icon: icon, sortable: sorting && column.sortable && css.sortable || "",
+                css: (align === "right") ? css.right : (align === "center") ? css.center : css.left }));
         }
     });
 
