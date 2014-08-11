@@ -97,7 +97,7 @@ function loadColumns()
             column = {
                 id: data.columnId,
                 identifier: that.identifier == null && data.identifier || false,
-                type: that.options.converters[data.type] && data.type || "string",
+                converter: that.options.converters[data.converter || data.type] || that.options.converters["string"],
                 text: $this.text(),
                 align: data.align || "left",
                 headerAlign: data.headerAlign || "left",
@@ -158,9 +158,7 @@ function loadData()
         for (var i = 0; i < that.columns.length; i++)
         {
             column = that.columns[i];
-
-            if (column.visible && that.options.converters[column.type]
-                .to(row[column.id]).indexOf(that.searchPhrase) > -1)
+            if (column.visible && column.converter.to(row[column.id]).indexOf(that.searchPhrase) > -1)
             {
                 return true;
             }
@@ -232,7 +230,7 @@ function loadRows()
 
             $.each(that.columns, function (i, column)
             {
-                row[column.id] = that.options.converters[column.type].from(cells.eq(i).text());
+                row[column.id] = column.converter.from(cells.eq(i).text());
             });
 
             appendRow.call(that, row);
@@ -556,7 +554,7 @@ function renderRows(rows)
                 {
                     var value = ($.isFunction(column.formatter)) ?
                         column.formatter.call(that, column, row) :
-                            that.options.converters[column.type].to(row[column.id]);
+                            column.converter.to(row[column.id]);
                     cells += tpl.cell.resolve(getParams.call(that, {
                         content: (value == null || value === "") ? "&nbsp;" : value,
                         css: (column.align === "right") ? css.right : 
@@ -578,7 +576,7 @@ function renderRows(rows)
                     e.stopPropagation();
 
                     var $this = $(this),
-                        converter = that.options.converters[that.columns.first(function (column) { return column.id === that.identifier; }).type],
+                        converter = that.columns.first(function (column) { return column.id === that.identifier; }).converter,
                         id = converter.from($this.val()),
                         multiSelectBox = that.element.find("thead " + selectBoxSelector),
                         rows = that.currentRows.where(function (row) { return row[that.identifier] === id; });
