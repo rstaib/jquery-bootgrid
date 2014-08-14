@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.0.0-rc2 - 08/11/2014
+ * jQuery Bootgrid v1.0.0-rc2 - 08/14/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -221,7 +221,8 @@
                 rows = rows.page(this.current, this.rowCount);
             }
 
-            update(rows, total);
+            // todo: comment why timeout is needed here (event loaded)
+            window.setTimeout(function () { update(rows, total); }, 10);
         }
     }
 

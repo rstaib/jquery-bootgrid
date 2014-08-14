@@ -211,7 +211,8 @@ function loadData()
             rows = rows.page(this.current, this.rowCount);
         }
 
-        update(rows, total);
+        // todo: comment why timeout is needed here (event loaded)
+        window.setTimeout(function () { update(rows, total); }, 10);
     }
 }
 
