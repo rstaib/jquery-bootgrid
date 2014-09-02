@@ -7,6 +7,13 @@ $.fn.extend({
         return this.attr("aria-" + name, value);
     },
 
+    _bgBusyAria: function(busy)
+    {
+        return (busy == null || busy) ? 
+            this._bgAria("busy", "true") : 
+            this._bgAria("busy", "false");
+    },
+
     _bgRemoveAria: function (name)
     {
         return this.removeAttr("aria-" + name);

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0
+- Added an option to define whether the search should be case sensitive or insensitive.
+- Custom header and body row class names (solved issue [#7](http://github.com/rstaib/jquery-bootgrid/issues/7))
+- Added `data-toggle` attribute
+- Added request and response converter (solved issue [#3](http://github.com/rstaib/jquery-bootgrid/issues/3))
+- Added WIA-ARIA busy attribute to indicate that the table is loading
+- Metadata for rows
+
 ## 1.0.0
 - Public functions for dynamic manipulation such as append and remove row(s)
 - Client-side data support (without ajax calls)
@@ -9,7 +17,7 @@
 - Added type converters per column (`data-converter="string|numeric|custom"`)
 - Fixed multi sorting issue
 - Added new events (selected, deselected, appended, removed, cleared, initialize, initialized)
-- Added column attribute `data-header-align` to set the alignment of the header cell independent from the body cells (solved issue #10)
+- Added column attribute `data-header-align` to set the alignment of the header cell independent from the body cells (solved issue [#10](http://github.com/rstaib/jquery-bootgrid/issues/10))
 
 ### Breaking Changes
 - `data-custom` is now `data-formatter` and instead of being a `bool` it is a event name

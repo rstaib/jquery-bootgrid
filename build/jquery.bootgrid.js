@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.0.0 - 09/01/2014
+ * jQuery Bootgrid v1.1.0-beta - 09/01/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -163,12 +163,13 @@
 
         function containsPhrase(row)
         {
-            var column;
+            var column,
+                searchPattern = new RegExp(that.searchPhrase, "gi");
 
             for (var i = 0; i < that.columns.length; i++)
             {
                 column = that.columns[i];
-                if (column.visible && column.converter.to(row[column.id]).indexOf(that.searchPhrase) > -1)
+                if (column.visible && column.converter.to(row[column.id]).search(searchPattern) > -1)
                 {
                     return true;
                 }
@@ -221,7 +222,8 @@
                 rows = rows.page(this.current, this.rowCount);
             }
 
-            // todo: comment why timeout is needed here (event loaded)
+            // todo: improve the following comment
+            // setTimeout decouples the initialization so that adding event handlers happens before
             window.setTimeout(function () { update(rows, total); }, 10);
         }
     }

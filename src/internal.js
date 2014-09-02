@@ -153,12 +153,13 @@ function loadData()
 
     function containsPhrase(row)
     {
-        var column;
+        var column,
+            searchPattern = new RegExp(that.searchPhrase, "gi");
 
         for (var i = 0; i < that.columns.length; i++)
         {
             column = that.columns[i];
-            if (column.visible && column.converter.to(row[column.id]).indexOf(that.searchPhrase) > -1)
+            if (column.visible && column.converter.to(row[column.id]).search(searchPattern) > -1)
             {
                 return true;
             }
@@ -211,7 +212,8 @@ function loadData()
             rows = rows.page(this.current, this.rowCount);
         }
 
-        // todo: comment why timeout is needed here (event loaded)
+        // todo: improve the following comment
+        // setTimeout decouples the initialization so that adding event handlers happens before
         window.setTimeout(function () { update(rows, total); }, 10);
     }
 }
