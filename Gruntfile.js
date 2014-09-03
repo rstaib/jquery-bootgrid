@@ -158,6 +158,12 @@ module.exports = function (grunt)
         clean: {
             api: ["<%= pkg.folders.docs %>"],
             build: ["<%= pkg.folders.dist %>"]
+        },
+        coveralls: {
+            options: {
+                src: "coverage-results/lcov.info",
+                force: true
+            },
         }
     });
 
@@ -171,6 +177,7 @@ module.exports = function (grunt)
     grunt.loadNpmTasks('grunt-contrib-compress');
     grunt.loadNpmTasks('grunt-regex-replace');
     grunt.loadNpmTasks('grunt-exec');
+    grunt.loadNpmTasks('grunt-coveralls');
 
     grunt.registerTask('default', ['build']);
     grunt.registerTask('api', ['clean:api', 'yuidoc']);
