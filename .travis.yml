@@ -4,3 +4,7 @@ node_js:
 install:
   - npm install grunt-cli -g
   - npm install
+after_script:
+  - npm run coveralls 
+git: 
+ depth: 10 
