@@ -42,7 +42,7 @@
         "bootgrid.jquery.json"
     ],
     "dependencies": {
-        "jquery": "1.10.2",
+        "jquery": ">=1.9.0",
         "bootstrap": "3.1.1"
     }
 }
