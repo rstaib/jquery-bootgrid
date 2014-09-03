@@ -42,7 +42,7 @@
         "grunt-contrib-compress": "~0.8.0",
         "grunt-regex-replace": "~0.2.6",
         "grunt-exec": "~0.4.5",
-        "grunt-coveralls": "~0.4.2"
+        "grunt-coveralls": "~1.0.0"
     },
     "readmeFilename": "README.md",
     "folders": {
