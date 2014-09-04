@@ -13,22 +13,25 @@ module.exports = function (grunt)
                 banner: '/*! <%= "\\r\\n * " + pkg.title %> v<%= pkg.version %> - <%= grunt.template.today("mm/dd/yyyy") + "\\r\\n" %>' +
                     ' * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %> <%= (pkg.homepage ? "(" + pkg.homepage + ")" : "") + "\\r\\n" %>' +
                     ' * Licensed under <%= pkg.licenses[0].type + " " + pkg.licenses[0].url + "\\r\\n */\\r\\n" %>' + 
-                    ';(function ($, window, undefined)\r\n{\r\n    /*jshint validthis: true */\r\n    "use strict";\r\n\r\n',
-                footer: '\r\n})(jQuery, window);',
+                    ';(function ($, window, document, undefined)\r\n{\r\n    /*jshint validthis: true */\r\n    "use strict";\r\n\r\n',
+                footer: '\r\n})(jQuery, window, document);',
                 process: function(src, filepath)
                 {
                     var result = src.trim().replace(/(.+?\r\n)/gm, '    $1'),
-                        end = [0, ""];
-                    switch (result[result.length - 1])
-                    {
-                        case ";":
-                            end = [2, "    };"];
-                            break;
+                        end = [0, ""],
+                        lastChar = result[result.length - 1];
 
-                        case "}":
-                            end = [1, "    }"];
-                            break;
+                    if (lastChar === ";")
+                    {
+                        end = (result[result.length - 2] === ")") ? 
+                            (result[result.length - 2] === "}") ? 
+                                [3, "    });"] : [2, ");"] : [2, "    };"];
                     }
+                    else if (lastChar === "}")
+                    {
+                        end = [1, "    }"];
+                    }
+
                     return result.substr(0, result.length - end[0]) + end[1];
                 }
             },
@@ -37,8 +40,8 @@ module.exports = function (grunt)
                     '<%= pkg.folders.dist %>/<%= pkg.namespace %>.js': [
                         '<%= pkg.folders.src %>/internal.js',
                         '<%= pkg.folders.src %>/public.js',
-                        '<%= pkg.folders.src %>/plugin.js',
-                        '<%= pkg.folders.src %>/extensions.js'
+                        '<%= pkg.folders.src %>/extensions.js',
+                        '<%= pkg.folders.src %>/plugin.js'
                     ]
                 }
             }

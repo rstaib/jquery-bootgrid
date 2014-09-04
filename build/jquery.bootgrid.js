@@ -1,9 +1,9 @@
 /*! 
- * jQuery Bootgrid v1.1.0-beta - 09/01/2014
+ * jQuery Bootgrid v1.1.0-beta - 09/04/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
-;(function ($, window, undefined)
+;(function ($, window, document, undefined)
 {
     /*jshint validthis: true */
     "use strict";
@@ -111,6 +111,8 @@
                     text: $this.text(),
                     align: data.align || "left",
                     headerAlign: data.headerAlign || "left",
+                    cssClass: data.cssClass || "",
+                    headerCssClass: data.headerCssClass || "",
                     formatter: that.options.formatters[data.formatter] || null,
                     order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
                     sortable: !(data.sortable === false), // default: true
@@ -164,7 +166,7 @@
         function containsPhrase(row)
         {
             var column,
-                searchPattern = new RegExp(that.searchPhrase, "gi");
+                searchPattern = new RegExp(that.searchPhrase, (that.options.caseSensitive) ? "g" : "gi");
 
             for (var i = 0; i < that.columns.length; i++)
             {
@@ -565,13 +567,14 @@
                 {
                     if (column.visible)
                     {
-                        var value = ($.isFunction(column.formatter)) ?
-                            column.formatter.call(that, column, row) :
-                                column.converter.to(row[column.id]);
+                        var value = ($.isFunction(column.formatter)) ? 
+                                column.formatter.call(that, column, row) : 
+                                    column.converter.to(row[column.id]),
+                            cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
                         cells += tpl.cell.resolve(getParams.call(that, {
                             content: (value == null || value === "") ? "&nbsp;" : value,
-                            css: (column.align === "right") ? css.right : 
-                                (column.align === "center") ? css.center : css.left }));
+                            css: ((column.align === "right") ? css.right : (column.align === "center") ? 
+                                css.center : css.left) + cssClass }));
                     }
                 });
 
@@ -692,10 +695,12 @@
                     iconCss = ((sorting && sortOrder && sortOrder === "asc") ? css.iconUp :
                         (sorting && sortOrder && sortOrder === "desc") ? css.iconDown : ""),
                     icon = tpl.icon.resolve(getParams.call(that, { iconCss: iconCss })),
-                    align = column.headerAlign;
+                    align = column.headerAlign,
+                    cssClass = (column.headerCssClass.length > 0) ? " " + column.headerCssClass : "";
                 html += tpl.headerCell.resolve(getParams.call(that, {
                     column: column, icon: icon, sortable: sorting && column.sortable && css.sortable || "",
-                    css: (align === "right") ? css.right : (align === "center") ? css.center : css.left }));
+                    css: ((align === "right") ? css.right : (align === "center") ? 
+                        css.center : css.left) + cssClass }));
             }
         });
 
@@ -930,6 +935,7 @@
         ajax: false, // todo: find a better name for this property to differentiate between client-side and server-side data
         post: {}, // or use function () { return {}; } (reserved properties are "current", "rowCount", "sort" and "searchPhrase")
         url: "", // or use function () { return ""; }
+        caseSensitive: true,
 
         // note: The following properties should not be used via data-api attributes
         converters: {
@@ -1190,58 +1196,6 @@
         return this;
     };
 
-    // GRID PLUGIN DEFINITION
-    // =====================
-
-    var old = $.fn.bootgrid;
-
-    $.fn.bootgrid = function (option)
-    {
-        var args = Array.prototype.slice.call(arguments, 1);
-        return this.each(function ()
-        {
-            var $this = $(this),
-                instance = $this.data(namespace),
-                options = typeof option === "object" && option;
-
-            if (!instance && option === "destroy")
-            {
-                return;
-            }
-            if (!instance)
-            {
-                $this.data(namespace, (instance = new Grid(this, options)));
-                init.call(instance);
-            }
-            if (typeof option === "string")
-            {
-                return instance[option].apply(instance, args);
-            }
-        });
-    };
-
-    $.fn.bootgrid.Constructor = Grid;
-
-    // GRID NO CONFLICT
-    // ===============
-
-    $.fn.bootgrid.noConflict = function ()
-    {
-        $.fn.bootgrid = old;
-        return this;
-    };
-
-    // GRID DATA-API
-    // ============
-
-    /*
-    $(document).on("click" + namespace + ".data-api", "[data-toggle=\"bootgrid\"]", function(e)
-    {
-        e.preventDefault();
-        $(this).bootgrid("show");
-    });
-*/
-
     // GRID COMMON TYPE EXTENSIONS
     // ============
 
@@ -1249,6 +1203,13 @@
         _bgAria: function (name, value)
         {
             return this.attr("aria-" + name, value);
+        },
+
+        _bgBusyAria: function(busy)
+        {
+            return (busy == null || busy) ? 
+                this._bgAria("busy", "true") : 
+                this._bgAria("busy", "false");
         },
 
         _bgRemoveAria: function (name)
@@ -1393,4 +1354,50 @@
             return result;
         };
     }
-})(jQuery, window);
+
+    // GRID PLUGIN DEFINITION
+    // =====================
+
+    var old = $.fn.bootgrid;
+
+    $.fn.bootgrid = function (option)
+    {
+        var args = Array.prototype.slice.call(arguments, 1);
+        return this.each(function ()
+        {
+            var $this = $(this),
+                instance = $this.data(namespace),
+                options = typeof option === "object" && option;
+
+            if (!instance && option === "destroy")
+            {
+                return;
+            }
+            if (!instance)
+            {
+                $this.data(namespace, (instance = new Grid(this, options)));
+                init.call(instance);
+            }
+            if (typeof option === "string")
+            {
+                return instance[option].apply(instance, args);
+            }
+        });
+    };
+
+    $.fn.bootgrid.Constructor = Grid;
+
+    // GRID NO CONFLICT
+    // ===============
+
+    $.fn.bootgrid.noConflict = function ()
+    {
+        $.fn.bootgrid = old;
+        return this;
+    };
+
+    // GRID DATA-API
+    // ============
+
+$("[data-toggle=\"bootgrid\"]").bootgrid();
+})(jQuery, window, document);

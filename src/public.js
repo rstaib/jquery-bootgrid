@@ -51,6 +51,7 @@ Grid.defaults = {
     ajax: false, // todo: find a better name for this property to differentiate between client-side and server-side data
     post: {}, // or use function () { return {}; } (reserved properties are "current", "rowCount", "sort" and "searchPhrase")
     url: "", // or use function () { return ""; }
+    caseSensitive: true,
 
     // note: The following properties should not be used via data-api attributes
     converters: {

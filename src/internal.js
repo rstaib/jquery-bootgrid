@@ -101,6 +101,8 @@ function loadColumns()
                 text: $this.text(),
                 align: data.align || "left",
                 headerAlign: data.headerAlign || "left",
+                cssClass: data.cssClass || "",
+                headerCssClass: data.headerCssClass || "",
                 formatter: that.options.formatters[data.formatter] || null,
                 order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
                 sortable: !(data.sortable === false), // default: true
@@ -154,7 +156,7 @@ function loadData()
     function containsPhrase(row)
     {
         var column,
-            searchPattern = new RegExp(that.searchPhrase, "gi");
+            searchPattern = new RegExp(that.searchPhrase, (that.options.caseSensitive) ? "g" : "gi");
 
         for (var i = 0; i < that.columns.length; i++)
         {
@@ -555,13 +557,14 @@ function renderRows(rows)
             {
                 if (column.visible)
                 {
-                    var value = ($.isFunction(column.formatter)) ?
-                        column.formatter.call(that, column, row) :
-                            column.converter.to(row[column.id]);
+                    var value = ($.isFunction(column.formatter)) ? 
+                            column.formatter.call(that, column, row) : 
+                                column.converter.to(row[column.id]),
+                        cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
                     cells += tpl.cell.resolve(getParams.call(that, {
                         content: (value == null || value === "") ? "&nbsp;" : value,
-                        css: (column.align === "right") ? css.right : 
-                            (column.align === "center") ? css.center : css.left }));
+                        css: ((column.align === "right") ? css.right : (column.align === "center") ? 
+                            css.center : css.left) + cssClass }));
                 }
             });
 
@@ -682,10 +685,12 @@ function renderTableHeader()
                 iconCss = ((sorting && sortOrder && sortOrder === "asc") ? css.iconUp :
                     (sorting && sortOrder && sortOrder === "desc") ? css.iconDown : ""),
                 icon = tpl.icon.resolve(getParams.call(that, { iconCss: iconCss })),
-                align = column.headerAlign;
+                align = column.headerAlign,
+                cssClass = (column.headerCssClass.length > 0) ? " " + column.headerCssClass : "";
             html += tpl.headerCell.resolve(getParams.call(that, {
                 column: column, icon: icon, sortable: sorting && column.sortable && css.sortable || "",
-                css: (align === "right") ? css.right : (align === "center") ? css.center : css.left }));
+                css: ((align === "right") ? css.right : (align === "center") ? 
+                    css.center : css.left) + cssClass }));
         }
     });
 

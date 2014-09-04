@@ -15,6 +15,9 @@
             @viewport { width: device-width; }
 
             body { padding-top: 70px; }
+			
+			.column .text { color: #f00 !important; }
+			.cell { font-weight: bold; }
         </style>
     </head>
     <body>
@@ -54,7 +57,7 @@
                             <tr>
                                 <th data-column-id="id" data-identifier="true" data-type="numeric" data-align="right">ID</th>
                                 <th data-column-id="sender" data-order="asc" data-align="center" data-header-align="center">Sender</th>
-                                <th data-column-id="received">Received</th>
+                                <th data-column-id="received" data-css-class="cell" data-header-css-class="column">Received</th>
                                 <th data-column-id="link" data-formatter="link" data-sortable="false">Link</th>
                             </tr>
                         </thead>

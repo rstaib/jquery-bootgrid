@@ -7,6 +7,7 @@
 - Added request and response converter (solved issue [#3](http://github.com/rstaib/jquery-bootgrid/issues/3))
 - Added WIA-ARIA busy attribute to indicate that the table is loading
 - Metadata for rows
+- Maintain row selection during filtering and sorting
 
 ## 1.0.0
 - Public functions for dynamic manipulation such as append and remove row(s)
