@@ -25,7 +25,7 @@ Everything you need to start quickly is:
         <link href="jquery.bootgrid.css" rel="stylesheet">
     </head>
     <body>
-        <table id="grid" class="table table-condensed table-hover table-striped" data-ajax="true" data-url="/api/data/basic">
+        <table id="grid" data-toggle="bootgrid" data-ajax="true" data-url="/api/data/basic" class="table table-condensed table-hover table-striped">
             <thead>
                 <tr>
                     <th data-column-id="id">ID</th>
@@ -36,12 +36,6 @@ Everything you need to start quickly is:
         <!-- Scripts -->
         <script src="jquery.js"></script> 
         <script src="jquery.bootgrid.js"></script>
-        <script>
-            $(function ()
-            {
-                $("#grid").bootgrid();
-            });
-        </script>
     </body>
 </html>
 ```

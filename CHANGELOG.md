@@ -3,7 +3,7 @@
 ## 1.1.0
 - Added an option to define whether the search should be case sensitive or insensitive.
 - Custom header and body row class names (solved issue [#7](http://github.com/rstaib/jquery-bootgrid/issues/7))
-- Added `data-toggle` attribute
+- Added `data-toggle` attribute like bootstrap controls support
 - Added request and response converter (solved issue [#3](http://github.com/rstaib/jquery-bootgrid/issues/3))
 - Added WIA-ARIA busy attribute to indicate that the table is loading
 - Metadata for rows
