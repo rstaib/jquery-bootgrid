@@ -34,6 +34,7 @@ var Grid = function(element, options)
     };
     this.header = null;
     this.footer = null;
+    this.xqr = null;
 
     // todo: implement cache
 };
@@ -49,11 +50,14 @@ Grid.defaults = {
     sorting: true,
     multiSort: false,
     ajax: false, // todo: find a better name for this property to differentiate between client-side and server-side data
+    // post is obsolete (use instead requestHandler)
     post: {}, // or use function () { return {}; } (reserved properties are "current", "rowCount", "sort" and "searchPhrase")
     url: "", // or use function () { return ""; }
     caseSensitive: true,
 
     // note: The following properties should not be used via data-api attributes
+    requestHandler: function (request) { return request; },
+    responseHandler: function (response) { return response; },
     converters: {
         numeric: {
             from: function (value) { return +value; }, // converts from string to numeric
@@ -87,6 +91,7 @@ Grid.defaults = {
         left: "text-left",
         pagination: "pagination", // must be a unique class name or constellation of class names within the header and footer
         paginationButton: "button", // must be a unique class name or constellation of class names within the pagination
+        responsiveTable: "table-responsive",
         right: "text-right",
         search: "search form-group", // must be a unique class name or constellation of class names within the header and footer
         selectCell: "select-cell", // must be a unique class name or constellation of class names within the entire table
@@ -122,7 +127,7 @@ Grid.defaults = {
         pagination: "<ul class=\"{{css.pagination}}\"></ul>",
         paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
         rawHeaderCell: "<th class=\"{{ctx.css}}\">{{ctx.content}}</th>", // Used for the multi select box
-        row: "<tr>{{ctx.cells}}</tr>",
+        row: "<tr {{ctx.attr}}>{{ctx.cells}}</tr>",
         search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon glyphicon-search\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
         select: "<input name=\"select\" type=\"{{ctx.type}}\" class=\"{{css.selectBox}}\" value=\"{{ctx.value}}\" />"
     }
@@ -287,6 +292,117 @@ Grid.prototype.search = function(phrase)
 
     return this;
 };
+
+/**
+ * Selects rows by ids. Selects all visible rows if no ids are provided.
+ * In server-side scenarios only visible rows are selectable.
+ *
+ * @method select
+ * @param [rowsIds] {Array} An array of rows ids to select
+ * @chainable
+ **/
+Grid.prototype.select = function(rowIds)
+{
+    if (this.identifier != null)
+    {
+        rowIds = rowIds || this.currentRows.propValues(this.identifier);
+
+        var id, i, 
+            selectedRows = [];
+
+        while (rowIds.length > 0)
+        {
+            id = rowIds.pop();
+            if ($.inArray(id, this.selectedRows) === -1)
+            {
+                for (i = 0; i < this.currentRows.length; i++)
+                {
+                    if (this.currentRows[i][this.identifier] === id)
+                    {
+                        selectedRows.push(this.currentRows[i]);
+                        this.selectedRows.push(id);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (selectedRows.length > 0)
+        {
+            var selectBoxSelector = getCssSelector(this.options.css.selectBox);
+
+            // todo: the "if" statement must be refactored for maintain selection feature
+            if (this.selectedRows.length === this.currentRows.length)
+            {
+                this.element.find("thead " + selectBoxSelector).prop("checked", true);
+            }
+
+            for (i = 0; i < this.selectedRows.length; i++)
+            {
+                this.element.find("tbody > tr[data-row-id=\"" + this.selectedRows[i] + "\"] " + 
+                    selectBoxSelector).prop("checked", true);
+            }
+
+            this.element.trigger("selected" + namespace, [selectedRows]);
+        }
+    }
+
+    return this;
+};
+
+/**
+ * Deselects rows by ids. Deselects all visible rows if no ids are provided.
+ * In server-side scenarios only visible rows are deselectable.
+ *
+ * @method deselect
+ * @param [rowsIds] {Array} An array of rows ids to deselect
+ * @chainable
+ **/
+Grid.prototype.deselect = function(rowIds)
+{
+    if (this.identifier != null)
+    {
+        rowIds = rowIds || this.currentRows.propValues(this.identifier);
+
+        var id, i, pos,
+            deselectedRows = [];
+
+        while (rowIds.length > 0)
+        {
+            id = rowIds.pop();
+            pos = $.inArray(id, this.selectedRows);
+            if (pos !== -1)
+            {
+                for (i = 0; i < this.currentRows.length; i++)
+                {
+                    if (this.currentRows[i][this.identifier] === id)
+                    {
+                        deselectedRows.push(this.currentRows[i]);
+                        this.selectedRows.splice(pos, 1);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (deselectedRows.length > 0)
+        {
+            var selectBoxSelector = getCssSelector(this.options.css.selectBox);
+
+            this.element.find("thead " + selectBoxSelector).prop("checked", false);
+            for (i = 0; i < deselectedRows.length; i++)
+            {
+                this.element.find("tbody > tr[data-row-id=\"" + deselectedRows[i][this.identifier] + "\"] " + 
+                    selectBoxSelector).prop("checked", false);
+            }
+            
+            this.element.trigger("deselected" + namespace, [deselectedRows]);
+        }
+    }
+
+    return this;
+};
+
 
 /**
  * Sorts rows.

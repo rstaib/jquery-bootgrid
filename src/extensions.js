@@ -156,3 +156,16 @@ if (!Array.prototype.where)
         return result;
     };
 }
+
+if (!Array.prototype.propValues)
+{
+    Array.prototype.propValues = function (propName)
+    {
+        var result = [];
+        for (var i = 0; i < this.length; i++)
+        {
+            result.push(this[i][propName]);
+        }
+        return result;
+    };
+}

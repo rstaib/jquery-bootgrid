@@ -107,3 +107,20 @@
 .bootgrid-table td.select-cell .select-box {
   margin: 0;
 }
+.table-responsive .bootgrid-table {
+  table-layout: inherit !important;
+}
+.table-responsive .bootgrid-table th > .column-header-anchor > .text {
+  overflow: inherit !important;
+  -ms-text-overflow: inherit !important;
+  -o-text-overflow: inherit !important;
+  text-overflow: inherit !important;
+  white-space: inherit !important;
+}
+.table-responsive .bootgrid-table td {
+  overflow: inherit !important;
+  -ms-text-overflow: inherit !important;
+  -o-text-overflow: inherit !important;
+  text-overflow: inherit !important;
+  white-space: inherit !important;
+}

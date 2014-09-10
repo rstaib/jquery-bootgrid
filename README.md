@@ -12,7 +12,6 @@ Everything you need to start quickly is:
 1. Include **jQuery**, **jQuery Bootgrid** and **Bootstrap** libraries in your HTML code.
 2. Define your table layout and your data columns by adding the `data-column-id` attribute.
 3. Specify your data URL used to fill your data table and set ajax option to `true` directly on your table via data API.
-4. Then select the previously defined `table` element represents your data table and initialize the `bootgrid` plugin with one line.
 
 ```html
 <!DOCTYPE html>

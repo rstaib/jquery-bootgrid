@@ -1,24 +1,38 @@
 # Changelog
 
 ## 1.1.0
-- Added an option to define whether the search should be case sensitive or insensitive.
-- Custom header and body row class names (solved issue [#7](http://github.com/rstaib/jquery-bootgrid/issues/7))
-- Added `data-toggle` attribute like bootstrap controls support
-- Added request and response converter (solved issue [#3](http://github.com/rstaib/jquery-bootgrid/issues/3))
-- Added WIA-ARIA busy attribute to indicate that the table is loading
+
+### Enhancements & Features
+- (Done) New option to switch the search behaviour from case sensitive to case insensitive.
+- Individual column filters
+- (Done) Custom CSS classes for header and body cells (solved issue [#7](http://github.com/rstaib/jquery-bootgrid/issues/7))
+- (Done) New data attribute `data-toggle` to initialize bootgrid without writing any line of code (like bootstrap controls support)
+- (Done) Request and response handler to support JSON object transformation (solved issue [#3](http://github.com/rstaib/jquery-bootgrid/issues/3))
+- (Done) WIA-ARIA busy attribute to indicate that the table is loading
 - Metadata for rows
-- Maintain row selection during filtering and sorting
+- New behaviour to maintain row selection during filtering and sorting
+- Entire row click selection
+- New events (`click`, `dblclick` and `rightclick`)
+- (Done) Responsive table support
+- New methods (`select` and `deselect`)
+
+### Bug Fixes
+- (Done) Fixed an AJAX issue where multiple fast clicks could lead to strange results
 
 ## 1.0.0
+
+### Enhancements & Features
 - Public functions for dynamic manipulation such as append and remove row(s)
 - Client-side data support (without ajax calls)
 - Row selecton (multi and single)
 - Show/Hide column headers
 - Improved formatters (former know as `data-custom="true"`)
 - Added type converters per column (`data-converter="string|numeric|custom"`)
-- Fixed multi sorting issue
 - Added new events (selected, deselected, appended, removed, cleared, initialize, initialized)
 - Added column attribute `data-header-align` to set the alignment of the header cell independent from the body cells (solved issue [#10](http://github.com/rstaib/jquery-bootgrid/issues/10))
+
+### Bug Fixes
+- Fixed multi sorting issue
 
 ### Breaking Changes
 - `data-custom` is now `data-formatter` and instead of being a `bool` it is a event name
