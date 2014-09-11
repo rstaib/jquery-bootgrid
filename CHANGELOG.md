@@ -17,6 +17,7 @@
 - (Done) New methods (`select` and `deselect`)
 - (Done) New `data-row-id` attribute for data rows (contains the row ID if `identifier` is enabled; otherwise an index of the visible rows)
 - (Done) New CSS class for data rows to indicate that the row is selected (`selected`)
+- (Done) New column option `data-searchable="true"` to exclude column from search (solved issue [#23](http://github.com/rstaib/jquery-bootgrid/issues/23))
 
 ### Bug Fixes
 - (Done) Fixed an AJAX issue where multiple fast clicks could lead to strange results

@@ -115,6 +115,7 @@
                     headerCssClass: data.headerCssClass || "",
                     formatter: that.options.formatters[data.formatter] || null,
                     order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
+                    searchable: !(data.searchable === false), // default: true
                     sortable: !(data.sortable === false), // default: true
                     visible: !(data.visible === false) // default: true
                 };
@@ -172,7 +173,8 @@
             for (var i = 0; i < that.columns.length; i++)
             {
                 column = that.columns[i];
-                if (column.visible && column.converter.to(row[column.id]).search(searchPattern) > -1)
+                if (column.searchable && column.visible && 
+                    column.converter.to(row[column.id]).search(searchPattern) > -1)
                 {
                     return true;
                 }
