@@ -52,13 +52,13 @@
                     <button id="removeSelected" type="button" class="btn btn-default">Remove Selected</button>
                     <button id="destroy" type="button" class="btn btn-default">Destroy</button>
                     <button id="init" type="button" class="btn btn-default">Init</button>
-                    <div class="table-responsive">
+                    <!--div class="table-responsive"-->
                         <table id="grid" class="table table-condensed table-hover table-striped" data-selection="true" data-multi-select="true" data-row-select="true" data-keep-selection="true">
                             <thead>
                                 <tr>
                                     <th data-column-id="id" data-identifier="true" data-type="numeric" data-align="right">ID</th>
                                     <th data-column-id="sender" data-order="asc" data-align="center" data-header-align="center">Sender</th>
-                                    <th data-column-id="received" data-css-class="cell" data-header-css-class="column">Received</th>
+                                    <th data-column-id="received" data-css-class="cell" data-header-css-class="column" data-filterable="true">Received</th>
                                     <th data-column-id="link" data-formatter="link" data-sortable="false">Link</th>
                                 </tr>
                             </thead>
@@ -131,7 +131,7 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
+                    <!--/div-->
                 </div>
             </div>
         </div>

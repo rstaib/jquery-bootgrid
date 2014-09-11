@@ -27,6 +27,8 @@
 {
     margin: 15px 0;
 
+    a { outline: 0; }
+
     .search
     {
         display: inline-block;
@@ -91,6 +93,8 @@
 {
     table-layout: fixed;
 
+    a { outline: 0; }
+
     th
     {
         & > .column-header-anchor
@@ -118,6 +122,8 @@
                 top: 2px;
             }
         }
+
+        &:hover, &:active { background: #fafafa; }
     }
 
     td
@@ -136,7 +142,7 @@
         text-align: center;
         width: 30px;
 
-        .select-box { margin: 0; }
+        .select-box { margin: 0; outline: 0; }
     }
 }
 

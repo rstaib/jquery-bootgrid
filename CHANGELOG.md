@@ -4,7 +4,7 @@
 
 ### Enhancements & Features
 - (Done) New option to switch the search behaviour from case sensitive to case insensitive.
-- Individual column filters
+- Individual basic column filters
 - (Done) Custom CSS classes for header and body cells (solved issue [#7](http://github.com/rstaib/jquery-bootgrid/issues/7))
 - (Done) New data attribute `data-toggle` to initialize bootgrid without writing any line of code (like bootstrap controls support)
 - (Done) Request and response handler to support JSON object transformation (solved issue [#3](http://github.com/rstaib/jquery-bootgrid/issues/3))
@@ -21,6 +21,9 @@
 ### Bug Fixes
 - (Done) Fixed an AJAX issue where multiple fast clicks could lead to strange results
 - (Done) Fixed multi select issue
+
+### Breaking Changes
+There are breaking changes but some HTML templates changed during development. In case you want to use the full new feature set be sure you did not override any affected templates.
 
 ## 1.0.0
 

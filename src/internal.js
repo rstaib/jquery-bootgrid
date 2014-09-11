@@ -105,6 +105,7 @@ function loadColumns()
                 headerCssClass: data.headerCssClass || "",
                 formatter: that.options.formatters[data.formatter] || null,
                 order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
+                filterable: (data.filterable === true), // default: false
                 searchable: !(data.searchable === false), // default: true
                 sortable: !(data.sortable === false), // default: true
                 visible: !(data.visible === false) // default: true

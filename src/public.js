@@ -169,6 +169,14 @@ Grid.defaults = {
      **/
     responseHandler: function (response) { return response; },
 
+    /**
+     * A list of converters.
+     *
+     * @property converters
+     * @type Object
+     * @for defaults
+     * @since 1.0.0
+     **/
     converters: {
         numeric: {
             from: function (value) { return +value; }, // converts from string to numeric
@@ -496,13 +504,15 @@ Grid.prototype.select = function(rowIds)
 
         if (selectedRows.length > 0)
         {
-            var selectBoxSelector = getCssSelector(this.options.css.selectBox);
+            var selectBoxSelector = getCssSelector(this.options.css.selectBox),
+                selectMultiSelectBox = this.selectedRows.length >= this.currentRows.length;
 
-            // todo: the "if" statement must be refactored for maintain selection feature
-            if (this.selectedRows.length === this.currentRows.length)
+            i = 0;
+            while (!this.options.keepSelection && selectMultiSelectBox && i < this.currentRows.length)
             {
-                this.element.find("thead " + selectBoxSelector).prop("checked", true);
+                selectMultiSelectBox = ($.inArray(this.currentRows[i++][this.identifier], this.selectedRows) !== -1);
             }
+            this.element.find("thead " + selectBoxSelector).prop("checked", selectMultiSelectBox);
 
             if (!this.options.multiSelect)
             {
