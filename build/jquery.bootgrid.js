@@ -187,8 +187,10 @@
             that.total = total;
             that.totalPages = Math.ceil(total / that.rowCount);
 
-            // clear multi selectbox state
-            that.element.find("thead " + getCssSelector(that.options.css.selectBox)).prop("checked", false);
+            if (!that.options.keepSelection)
+            {
+                that.selectedRows = [];
+            }
 
             renderRows.call(that, rows);
             renderInfos.call(that);
@@ -564,24 +566,30 @@
                 tpl = this.options.templates,
                 tbody = this.element.children("tbody").first(),
                 selection = this.options.selection && this.identifier != null,
+                allRowsSelected = true,
                 html = "",
                 cells = "",
-                id = "",
+                rowAttr = "",
                 rowCss = "";
 
             $.each(rows, function (i, row)
             {
                 cells = "";
-                id = " data-row-id=\"" + ((that.identifier == null) ? i : row[that.identifier]) + "\"";
-                rowCss = (selection && $.inArray(row[that.identifier], that.selectedRows) !== -1) ? 
-                    css.selected : "";
+                rowAttr = " data-row-id=\"" + ((that.identifier == null) ? i : row[that.identifier]) + "\"";
+                rowCss = "";
 
                 if (selection)
                 {
-                    var selectBox = tpl.select.resolve(getParams.call(that, 
-                        { type: "checkbox", value: row[that.identifier] }));
-                    cells += tpl.cell.resolve(getParams.call(that, { content: selectBox, 
-                        css: css.selectCell }));
+                    var selected = ($.inArray(row[that.identifier], that.selectedRows) !== -1),
+                        selectBox = tpl.select.resolve(getParams.call(that, 
+                            { type: "checkbox", value: row[that.identifier], checked: selected }));
+                    cells += tpl.cell.resolve(getParams.call(that, { content: selectBox, css: css.selectCell }));
+                    allRowsSelected = (allRowsSelected && selected);
+                    if (selected)
+                    {
+                        rowCss += css.selected;
+                        rowAttr += " aria-selected=\"true\"";
+                    }
                 }
 
                 $.each(that.columns, function (j, column)
@@ -599,8 +607,16 @@
                     }
                 });
 
-                html += tpl.row.resolve(getParams.call(that, { id: id, css: rowCss, cells: cells }));
+                if (rowCss.length > 0)
+                {
+                    rowAttr += " class=\"" + rowCss + "\"";
+                }
+                html += tpl.row.resolve(getParams.call(that, { attr: rowAttr, cells: cells }));
             });
+
+            // sets or clears multi selectbox state
+            that.element.find("thead " + getCssSelector(that.options.css.selectBox))
+                .prop("checked", allRowsSelected);
 
             tbody.html(html);
 
@@ -646,7 +662,8 @@
 
                 var $this = $(this),
                     id = that.converter.from($this.data("row-id")),
-                    row = that.currentRows.first(function (item) { return item[that.identifier] === id; });
+                    row = (this.identifier == null) ? that.currentRows[id] : 
+                        that.currentRows.first(function (item) { return item[that.identifier] === id; });
 
                 if (selection && that.options.rowSelect)
                 {
@@ -990,6 +1007,18 @@
          **/
         rowSelect: false,
 
+        /**
+         * Defines whether the row selection is saved internally on filtering, paging and sorting 
+         * (even if the selected rows are not visible).
+         *
+         * @property keepSelection
+         * @type Boolean
+         * @default false
+         * @for defaults
+         * @since 1.1.0
+         **/
+        keepSelection: false,
+
         highlightRows: false, // highlights new rows (find the page of the first new row)
         sorting: true,
         multiSort: false,
@@ -1018,6 +1047,15 @@
          **/
         url: "", // or use function () { return ""; }
 
+        /**
+         * Defines whether the search is case sensitive or insensitive.
+         *
+         * @property caseSensitive
+         * @type Boolean
+         * @default true
+         * @for defaults
+         * @since 1.1.0
+         **/
         caseSensitive: true,
 
         // note: The following properties should not be used via data-api attributes
@@ -1169,9 +1207,9 @@
             pagination: "<ul class=\"{{css.pagination}}\"></ul>",
             paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
             rawHeaderCell: "<th class=\"{{ctx.css}}\">{{ctx.content}}</th>", // Used for the multi select box
-            row: "<tr{{ctx.id}} class=\"{{ctx.css}}\">{{ctx.cells}}</tr>",
+            row: "<tr{{ctx.attr}}>{{ctx.cells}}</tr>",
             search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon glyphicon-search\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
-            select: "<input name=\"select\" type=\"{{ctx.type}}\" class=\"{{css.selectBox}}\" value=\"{{ctx.value}}\" />"
+            select: "<input name=\"select\" type=\"{{ctx.type}}\" class=\"{{css.selectBox}}\" value=\"{{ctx.value}}\" {{ctx.checked}} />"
         }
     };
 
@@ -1388,7 +1426,8 @@
                 for (i = 0; i < this.selectedRows.length; i++)
                 {
                     this.element.find("tbody > tr[data-row-id=\"" + this.selectedRows[i] + "\"]")
-                        .addClass(this.options.css.selected).find(selectBoxSelector).prop("checked", true);
+                        .addClass(this.options.css.selected)._bgAria("selected", "true")
+                        .find(selectBoxSelector).prop("checked", true);
                 }
 
                 this.element.trigger("selected" + namespace, [selectedRows]);
@@ -1441,7 +1480,8 @@
                 for (i = 0; i < deselectedRows.length; i++)
                 {
                     this.element.find("tbody > tr[data-row-id=\"" + deselectedRows[i][this.identifier] + "\"]")
-                        .removeClass(this.options.css.selected).find(selectBoxSelector).prop("checked", false);
+                        .removeClass(this.options.css.selected)._bgAria("selected", "false")
+                        .find(selectBoxSelector).prop("checked", false);
                 }
                 
                 this.element.trigger("deselected" + namespace, [deselectedRows]);
@@ -1540,7 +1580,6 @@
                 {
                     return (value) ? "checked=\"checked\"" : "";
                 }
-
                 return value;
             }
         };

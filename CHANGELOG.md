@@ -10,7 +10,7 @@
 - (Done) Request and response handler to support JSON object transformation (solved issue [#3](http://github.com/rstaib/jquery-bootgrid/issues/3))
 - (Done) WIA-ARIA busy attribute to indicate that the table is loading
 - Metadata for rows
-- New behaviour to maintain row selection during filtering and sorting
+- (Done) New behaviour to maintain row selection during filtering, paging and sorting
 - (Done) Entire row click selection
 - (Done) New event (`click`)
 - (Done) Responsive table support

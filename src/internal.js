@@ -177,8 +177,10 @@ function loadData()
         that.total = total;
         that.totalPages = Math.ceil(total / that.rowCount);
 
-        // clear multi selectbox state
-        that.element.find("thead " + getCssSelector(that.options.css.selectBox)).prop("checked", false);
+        if (!that.options.keepSelection)
+        {
+            that.selectedRows = [];
+        }
 
         renderRows.call(that, rows);
         renderInfos.call(that);
@@ -554,24 +556,30 @@ function renderRows(rows)
             tpl = this.options.templates,
             tbody = this.element.children("tbody").first(),
             selection = this.options.selection && this.identifier != null,
+            allRowsSelected = true,
             html = "",
             cells = "",
-            id = "",
+            rowAttr = "",
             rowCss = "";
 
         $.each(rows, function (i, row)
         {
             cells = "";
-            id = " data-row-id=\"" + ((that.identifier == null) ? i : row[that.identifier]) + "\"";
-            rowCss = (selection && $.inArray(row[that.identifier], that.selectedRows) !== -1) ? 
-                css.selected : "";
+            rowAttr = " data-row-id=\"" + ((that.identifier == null) ? i : row[that.identifier]) + "\"";
+            rowCss = "";
 
             if (selection)
             {
-                var selectBox = tpl.select.resolve(getParams.call(that, 
-                    { type: "checkbox", value: row[that.identifier] }));
-                cells += tpl.cell.resolve(getParams.call(that, { content: selectBox, 
-                    css: css.selectCell }));
+                var selected = ($.inArray(row[that.identifier], that.selectedRows) !== -1),
+                    selectBox = tpl.select.resolve(getParams.call(that, 
+                        { type: "checkbox", value: row[that.identifier], checked: selected }));
+                cells += tpl.cell.resolve(getParams.call(that, { content: selectBox, css: css.selectCell }));
+                allRowsSelected = (allRowsSelected && selected);
+                if (selected)
+                {
+                    rowCss += css.selected;
+                    rowAttr += " aria-selected=\"true\"";
+                }
             }
 
             $.each(that.columns, function (j, column)
@@ -589,8 +597,16 @@ function renderRows(rows)
                 }
             });
 
-            html += tpl.row.resolve(getParams.call(that, { id: id, css: rowCss, cells: cells }));
+            if (rowCss.length > 0)
+            {
+                rowAttr += " class=\"" + rowCss + "\"";
+            }
+            html += tpl.row.resolve(getParams.call(that, { attr: rowAttr, cells: cells }));
         });
+
+        // sets or clears multi selectbox state
+        that.element.find("thead " + getCssSelector(that.options.css.selectBox))
+            .prop("checked", allRowsSelected);
 
         tbody.html(html);
 
@@ -636,7 +652,8 @@ function registerRowEvents(tbody)
 
             var $this = $(this),
                 id = that.converter.from($this.data("row-id")),
-                row = that.currentRows.first(function (item) { return item[that.identifier] === id; });
+                row = (this.identifier == null) ? that.currentRows[id] : 
+                    that.currentRows.first(function (item) { return item[that.identifier] === id; });
 
             if (selection && that.options.rowSelect)
             {

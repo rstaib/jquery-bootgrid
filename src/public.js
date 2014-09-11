@@ -94,6 +94,18 @@ Grid.defaults = {
      **/
     rowSelect: false,
 
+    /**
+     * Defines whether the row selection is saved internally on filtering, paging and sorting 
+     * (even if the selected rows are not visible).
+     *
+     * @property keepSelection
+     * @type Boolean
+     * @default false
+     * @for defaults
+     * @since 1.1.0
+     **/
+    keepSelection: false,
+
     highlightRows: false, // highlights new rows (find the page of the first new row)
     sorting: true,
     multiSort: false,
@@ -122,6 +134,15 @@ Grid.defaults = {
      **/
     url: "", // or use function () { return ""; }
 
+    /**
+     * Defines whether the search is case sensitive or insensitive.
+     *
+     * @property caseSensitive
+     * @type Boolean
+     * @default true
+     * @for defaults
+     * @since 1.1.0
+     **/
     caseSensitive: true,
 
     // note: The following properties should not be used via data-api attributes
@@ -273,9 +294,9 @@ Grid.defaults = {
         pagination: "<ul class=\"{{css.pagination}}\"></ul>",
         paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
         rawHeaderCell: "<th class=\"{{ctx.css}}\">{{ctx.content}}</th>", // Used for the multi select box
-        row: "<tr{{ctx.id}} class=\"{{ctx.css}}\">{{ctx.cells}}</tr>",
+        row: "<tr{{ctx.attr}}>{{ctx.cells}}</tr>",
         search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon glyphicon-search\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
-        select: "<input name=\"select\" type=\"{{ctx.type}}\" class=\"{{css.selectBox}}\" value=\"{{ctx.value}}\" />"
+        select: "<input name=\"select\" type=\"{{ctx.type}}\" class=\"{{css.selectBox}}\" value=\"{{ctx.value}}\" {{ctx.checked}} />"
     }
 };
 
@@ -492,7 +513,8 @@ Grid.prototype.select = function(rowIds)
             for (i = 0; i < this.selectedRows.length; i++)
             {
                 this.element.find("tbody > tr[data-row-id=\"" + this.selectedRows[i] + "\"]")
-                    .addClass(this.options.css.selected).find(selectBoxSelector).prop("checked", true);
+                    .addClass(this.options.css.selected)._bgAria("selected", "true")
+                    .find(selectBoxSelector).prop("checked", true);
             }
 
             this.element.trigger("selected" + namespace, [selectedRows]);
@@ -545,7 +567,8 @@ Grid.prototype.deselect = function(rowIds)
             for (i = 0; i < deselectedRows.length; i++)
             {
                 this.element.find("tbody > tr[data-row-id=\"" + deselectedRows[i][this.identifier] + "\"]")
-                    .removeClass(this.options.css.selected).find(selectBoxSelector).prop("checked", false);
+                    .removeClass(this.options.css.selected)._bgAria("selected", "false")
+                    .find(selectBoxSelector).prop("checked", false);
             }
             
             this.element.trigger("deselected" + namespace, [deselectedRows]);

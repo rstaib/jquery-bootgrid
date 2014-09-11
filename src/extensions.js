@@ -62,7 +62,6 @@ if (!String.prototype.resolve)
             {
                 return (value) ? "checked=\"checked\"" : "";
             }
-
             return value;
         }
     };
