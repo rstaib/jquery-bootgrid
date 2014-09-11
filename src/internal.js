@@ -118,6 +118,7 @@ function loadColumns()
         if (column.identifier)
         {
             that.identifier = column.id;
+            that.converter = column.converter;
         }
 
         // ensures that only the first order will be applied in case of multi sorting is disabled
@@ -265,7 +266,7 @@ function loadRows()
 function prepareTable()
 {
     var tpl = this.options.templates,
-        ele = (this.element.parent().hasClass(this.options.css.responsiveTable)) ? 
+        wrapper = (this.element.parent().hasClass(this.options.css.responsiveTable)) ? 
             this.element.parent() : this.element;
 
     this.element.addClass(this.options.css.table);
@@ -279,13 +280,13 @@ function prepareTable()
     if (this.options.navigation & 1)
     {
         this.header = $(tpl.header.resolve(getParams.call(this, { id: this.element._bgId() + "-header" })));
-        ele.before(this.header);
+        wrapper.before(this.header);
     }
 
     if (this.options.navigation & 2)
     {
         this.footer = $(tpl.footer.resolve(getParams.call(this, { id: this.element._bgId() + "-footer" })));
-        ele.after(this.footer);
+        wrapper.after(this.footer);
     }
 }
 
@@ -552,15 +553,18 @@ function renderRows(rows)
             css = this.options.css,
             tpl = this.options.templates,
             tbody = this.element.children("tbody").first(),
-            selection = that.options.selection && that.identifier != null,
+            selection = this.options.selection && this.identifier != null,
             html = "",
             cells = "",
-            id = "";
+            id = "",
+            rowCss = "";
 
         $.each(rows, function (i, row)
         {
             cells = "";
             id = " data-row-id=\"" + ((that.identifier == null) ? i : row[that.identifier]) + "\"";
+            rowCss = (selection && $.inArray(row[that.identifier], that.selectedRows) !== -1) ? 
+                css.selected : "";
 
             if (selection)
             {
@@ -585,38 +589,69 @@ function renderRows(rows)
                 }
             });
 
-            html += tpl.row.resolve(getParams.call(that, { id: id, cells: cells }));
+            html += tpl.row.resolve(getParams.call(that, { id: id, css: rowCss, cells: cells }));
         });
 
         tbody.html(html);
 
-        if (selection)
-        {
-            var selectBoxSelector = getCssSelector(css.selectBox);
-            tbody.off("click" + namespace, selectBoxSelector)
-                .on("click" + namespace, selectBoxSelector, function(e)
-                {
-                    e.stopPropagation();
-
-                    var $this = $(this),
-                        converter = that.columns.first(function (column) { return column.id === that.identifier; }).converter,
-                        id = converter.from($this.val());
-
-                    if ($this.prop("checked"))
-                    {
-                        that.select([id]);
-                    }
-                    else
-                    {
-                        that.deselect([id]);
-                    }
-                });
-        }
+        registerRowEvents.call(this, tbody);
     }
     else
     {
         renderNoResultsRow.call(this);
     }
+}
+
+function registerRowEvents(tbody)
+{
+    var that = this,
+        selection = this.options.selection && this.identifier != null,
+        selectBoxSelector = getCssSelector(this.options.css.selectBox);
+
+    if (selection)
+    {
+        tbody.off("click" + namespace, selectBoxSelector)
+            .on("click" + namespace, selectBoxSelector, function(e)
+            {
+                e.stopPropagation();
+
+                var $this = $(this),
+                    id = that.converter.from($this.val());
+
+                if ($this.prop("checked"))
+                {
+                    that.select([id]);
+                }
+                else
+                {
+                    that.deselect([id]);
+                }
+            });
+    }
+
+    tbody.off("click" + namespace, "> tr")
+        .on("click" + namespace, "> tr", function(e)
+        {
+            e.stopPropagation();
+
+            var $this = $(this),
+                id = that.converter.from($this.data("row-id")),
+                row = that.currentRows.first(function (item) { return item[that.identifier] === id; });
+
+            if (selection && that.options.rowSelect)
+            {
+                if ($this.hasClass(that.options.css.selected))
+                {
+                    that.deselect([id]);
+                }
+                else
+                {
+                    that.select([id]);
+                }
+            }
+
+            that.element.trigger("click" + namespace, [that.columns, row]);
+        });
 }
 
 function renderSearchField()

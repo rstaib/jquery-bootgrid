@@ -11,10 +11,12 @@
 - (Done) WIA-ARIA busy attribute to indicate that the table is loading
 - Metadata for rows
 - New behaviour to maintain row selection during filtering and sorting
-- Entire row click selection
-- New events (`click`, `dblclick` and `rightclick`)
+- (Done) Entire row click selection
+- (Done) New event (`click`)
 - (Done) Responsive table support
 - (Done) New methods (`select` and `deselect`)
+- (Done) New `data-row-id` attribute for data rows (contains the row ID if `identifier` is enabled; otherwise an index of the visible rows)
+- (Done) New CSS class for data rows to indicate that the row is selected (`selected`)
 
 ### Bug Fixes
 - (Done) Fixed an AJAX issue where multiple fast clicks could lead to strange results
