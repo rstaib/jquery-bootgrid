@@ -14,10 +14,11 @@
 - Entire row click selection
 - New events (`click`, `dblclick` and `rightclick`)
 - (Done) Responsive table support
-- New methods (`select` and `deselect`)
+- (Done) New methods (`select` and `deselect`)
 
 ### Bug Fixes
 - (Done) Fixed an AJAX issue where multiple fast clicks could lead to strange results
+- (Done) Fixed multi select issue
 
 ## 1.0.0
 

@@ -555,16 +555,12 @@ function renderRows(rows)
             selection = that.options.selection && that.identifier != null,
             html = "",
             cells = "",
-            attr = "";
+            id = "";
 
         $.each(rows, function (i, row)
         {
             cells = "";
-
-            if (that.identifier != null)
-            {
-                attr = " data-row-id=\"" + row[that.identifier] + "\"";
-            }
+            id = " data-row-id=\"" + ((that.identifier == null) ? i : row[that.identifier]) + "\"";
 
             if (selection)
             {
@@ -589,7 +585,7 @@ function renderRows(rows)
                 }
             });
 
-            html += tpl.row.resolve(getParams.call(that, { attr: attr, cells: cells }));
+            html += tpl.row.resolve(getParams.call(that, { id: id, cells: cells }));
         });
 
         tbody.html(html);

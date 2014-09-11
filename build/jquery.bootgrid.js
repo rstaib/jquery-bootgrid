@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.1.0-beta - 09/10/2014
+ * jQuery Bootgrid v1.1.0-beta - 09/11/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -565,16 +565,12 @@
                 selection = that.options.selection && that.identifier != null,
                 html = "",
                 cells = "",
-                attr = "";
+                id = "";
 
             $.each(rows, function (i, row)
             {
                 cells = "";
-
-                if (that.identifier != null)
-                {
-                    attr = " data-row-id=\"" + row[that.identifier] + "\"";
-                }
+                id = " data-row-id=\"" + ((that.identifier == null) ? i : row[that.identifier]) + "\"";
 
                 if (selection)
                 {
@@ -599,7 +595,7 @@
                     }
                 });
 
-                html += tpl.row.resolve(getParams.call(that, { attr: attr, cells: cells }));
+                html += tpl.row.resolve(getParams.call(that, { id: id, cells: cells }));
             });
 
             tbody.html(html);
@@ -909,8 +905,29 @@
         padding: 2, // page padding (pagination)
         columnSelection: true,
         rowCount: [10, 25, 50, -1], // rows per page int or array of int (-1 represents "All")
+
+        /**
+         * Enables row selection (to enable multi selection see also `multiSelect`). Default value is `false`.
+         *
+         * @property selection
+         * @type Boolean
+         * @default false
+         * @for defaults
+         * @since 1.0.0
+         **/
         selection: false,
+
+        /**
+         * Enables multi selection (`selection` must be set to `true` as well). Default value is `false`.
+         *
+         * @property multiSelect
+         * @type Boolean
+         * @default false
+         * @for defaults
+         * @since 1.0.0
+         **/
         multiSelect: false,
+
         highlightRows: false, // highlights new rows (find the page of the first new row)
         sorting: true,
         multiSort: false,
@@ -992,7 +1009,7 @@
             pagination: "<ul class=\"{{css.pagination}}\"></ul>",
             paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
             rawHeaderCell: "<th class=\"{{ctx.css}}\">{{ctx.content}}</th>", // Used for the multi select box
-            row: "<tr {{ctx.attr}}>{{ctx.cells}}</tr>",
+            row: "<tr{{ctx.id}}>{{ctx.cells}}</tr>",
             search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon glyphicon-search\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
             select: "<input name=\"select\" type=\"{{ctx.type}}\" class=\"{{css.selectBox}}\" value=\"{{ctx.value}}\" />"
         }
@@ -1168,14 +1185,14 @@
      **/
     Grid.prototype.select = function(rowIds)
     {
-        if (this.identifier != null)
+        if (this.options.selection && this.identifier != null)
         {
             rowIds = rowIds || this.currentRows.propValues(this.identifier);
 
             var id, i, 
                 selectedRows = [];
 
-            while (rowIds.length > 0)
+            while (rowIds.length > 0 && !(!this.options.multiSelect && selectedRows.length === 1))
             {
                 id = rowIds.pop();
                 if ($.inArray(id, this.selectedRows) === -1)
@@ -1202,6 +1219,12 @@
                     this.element.find("thead " + selectBoxSelector).prop("checked", true);
                 }
 
+                if (!this.options.multiSelect)
+                {
+                    this.element.find("tbody > tr " + selectBoxSelector + ":checked")
+                        .trigger("click" + namespace);
+                }
+
                 for (i = 0; i < this.selectedRows.length; i++)
                 {
                     this.element.find("tbody > tr[data-row-id=\"" + this.selectedRows[i] + "\"] " + 
@@ -1225,7 +1248,7 @@
      **/
     Grid.prototype.deselect = function(rowIds)
     {
-        if (this.identifier != null)
+        if (this.options.selection && this.identifier != null)
         {
             rowIds = rowIds || this.currentRows.propValues(this.identifier);
 
