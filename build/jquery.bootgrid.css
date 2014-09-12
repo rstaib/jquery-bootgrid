@@ -2,6 +2,10 @@
 .bootgrid-footer {
   margin: 15px 0;
 }
+.bootgrid-header a,
+.bootgrid-footer a {
+  outline: 0;
+}
 .bootgrid-header .search,
 .bootgrid-footer .search {
   display: inline-block;
@@ -61,6 +65,9 @@
 .bootgrid-table {
   table-layout: fixed;
 }
+.bootgrid-table a {
+  outline: 0;
+}
 .bootgrid-table th > .column-header-anchor {
   color: #333;
   cursor: not-allowed;
@@ -86,6 +93,10 @@
   right: 0;
   top: 2px;
 }
+.bootgrid-table th:hover,
+.bootgrid-table th:active {
+  background: #fafafa;
+}
 .bootgrid-table td {
   overflow: hidden;
   -ms-text-overflow: ellipsis;
@@ -106,4 +117,22 @@
 .bootgrid-table th.select-cell .select-box,
 .bootgrid-table td.select-cell .select-box {
   margin: 0;
+  outline: 0;
+}
+.table-responsive .bootgrid-table {
+  table-layout: inherit !important;
+}
+.table-responsive .bootgrid-table th > .column-header-anchor > .text {
+  overflow: inherit !important;
+  -ms-text-overflow: inherit !important;
+  -o-text-overflow: inherit !important;
+  text-overflow: inherit !important;
+  white-space: inherit !important;
+}
+.table-responsive .bootgrid-table td {
+  overflow: inherit !important;
+  -ms-text-overflow: inherit !important;
+  -o-text-overflow: inherit !important;
+  text-overflow: inherit !important;
+  white-space: inherit !important;
 }

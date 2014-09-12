@@ -7,6 +7,13 @@ $.fn.extend({
         return this.attr("aria-" + name, value);
     },
 
+    _bgBusyAria: function(busy)
+    {
+        return (busy == null || busy) ? 
+            this._bgAria("busy", "true") : 
+            this._bgAria("busy", "false");
+    },
+
     _bgRemoveAria: function (name)
     {
         return this.removeAttr("aria-" + name);
@@ -55,7 +62,6 @@ if (!String.prototype.resolve)
             {
                 return (value) ? "checked=\"checked\"" : "";
             }
-
             return value;
         }
     };
@@ -145,6 +151,19 @@ if (!Array.prototype.where)
             {
                 result.push(item);
             }
+        }
+        return result;
+    };
+}
+
+if (!Array.prototype.propValues)
+{
+    Array.prototype.propValues = function (propName)
+    {
+        var result = [];
+        for (var i = 0; i < this.length; i++)
+        {
+            result.push(this[i][propName]);
         }
         return result;
     };

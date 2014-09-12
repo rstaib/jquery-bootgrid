@@ -22,7 +22,8 @@ test("getRequest post function test", 1, function ()
                     return {
                         id: "test"
                     };
-                }
+                },
+                requestHandler: function (request) { return request; }
             },
             current: 1,
             rowCount: 5,
@@ -50,7 +51,8 @@ test("getRequest post object test", 1, function() {
             options: {
                 post: {
                     id: "test"
-                }
+                },
+                requestHandler: function (request) { return request; }
             },
             current: 1,
             rowCount: 5,

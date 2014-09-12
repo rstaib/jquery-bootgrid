@@ -42,10 +42,4 @@ $.fn.bootgrid.noConflict = function ()
 // GRID DATA-API
 // ============
 
-/*
-$(document).on("click" + namespace + ".data-api", "[data-toggle=\"bootgrid\"]", function(e)
-{
-    e.preventDefault();
-    $(this).bootgrid("show");
-});
-*/
+$("[data-toggle=\"bootgrid\"]").bootgrid();

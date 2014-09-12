@@ -41,7 +41,7 @@ function getRequest()
         post = this.options.post;
 
     post = ($.isFunction(post)) ? post() : post;
-    return $.extend(true, request, post);
+    return this.options.requestHandler($.extend(true, request, post));
 }
 
 function getCssSelector(css)
@@ -101,8 +101,11 @@ function loadColumns()
                 text: $this.text(),
                 align: data.align || "left",
                 headerAlign: data.headerAlign || "left",
+                cssClass: data.cssClass || "",
+                headerCssClass: data.headerCssClass || "",
                 formatter: that.options.formatters[data.formatter] || null,
                 order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
+                searchable: !(data.searchable === false), // default: true
                 sortable: !(data.sortable === false), // default: true
                 visible: !(data.visible === false) // default: true
             };
@@ -116,6 +119,7 @@ function loadColumns()
         if (column.identifier)
         {
             that.identifier = column.id;
+            that.converter = column.converter;
         }
 
         // ensures that only the first order will be applied in case of multi sorting is disabled
@@ -148,17 +152,19 @@ function loadData()
         throw new Error("Url setting must be a none empty string or a function that returns one.");
     }
 
-    this.element.trigger("load" + namespace);
+    this.element._bgBusyAria(true).trigger("load" + namespace);
     showLoading.call(this);
 
     function containsPhrase(row)
     {
-        var column;
+        var column,
+            searchPattern = new RegExp(that.searchPhrase, (that.options.caseSensitive) ? "g" : "gi");
 
         for (var i = 0; i < that.columns.length; i++)
         {
             column = that.columns[i];
-            if (column.visible && column.converter.to(row[column.id]).indexOf(that.searchPhrase) > -1)
+            if (column.searchable && column.visible && 
+                column.converter.to(row[column.id]).search(searchPattern) > -1)
             {
                 return true;
             }
@@ -173,33 +179,48 @@ function loadData()
         that.total = total;
         that.totalPages = Math.ceil(total / that.rowCount);
 
-        // clear multi selectbox state
-        that.element.find("thead " + getCssSelector(that.options.css.selectBox)).prop("checked", false);
+        if (!that.options.keepSelection)
+        {
+            that.selectedRows = [];
+        }
 
         renderRows.call(that, rows);
         renderInfos.call(that);
         renderPagination.call(that);
 
-        that.element.trigger("loaded" + namespace);
+        that.element._bgBusyAria(false).trigger("loaded" + namespace);
     }
 
     if (this.options.ajax)
     {
-        $.post(url, request, function (response)
+        // aborts the previous ajax request if not already finished or failed
+        if (that.xqr)
         {
+            that.xqr.abort();
+        }
+
+        that.xqr = $.post(url, request, function (response)
+        {
+            that.xqr = null;
+
             if (typeof (response) === "string")
             {
                 response = $.parseJSON(response);
             }
 
-            that.current = response.current;
+            response = that.options.responseHandler(response);
 
+            that.current = response.current;
             update(response.rows, response.total);
-        }).fail(function ()
+        }).fail(function (jqXHR, textStatus, errorThrown)
         {
-            // overrides loading mask
-            renderNoResultsRow.call(that);
-            that.element.trigger("loaded" + namespace);
+            that.xqr = null;
+
+            if (textStatus !== "abort")
+            {
+                renderNoResultsRow.call(that); // overrides loading mask
+                that.element._bgBusyAria(false).trigger("loaded" + namespace);
+            }
         });
     }
     else
@@ -211,7 +232,8 @@ function loadData()
             rows = rows.page(this.current, this.rowCount);
         }
 
-        // todo: comment why timeout is needed here (event loaded)
+        // todo: improve the following comment
+        // setTimeout decouples the initialization so that adding event handlers happens before
         window.setTimeout(function () { update(rows, total); }, 10);
     }
 }
@@ -247,7 +269,9 @@ function loadRows()
 
 function prepareTable()
 {
-    var tpl = this.options.templates;
+    var tpl = this.options.templates,
+        wrapper = (this.element.parent().hasClass(this.options.css.responsiveTable)) ? 
+            this.element.parent() : this.element;
 
     this.element.addClass(this.options.css.table);
 
@@ -260,13 +284,13 @@ function prepareTable()
     if (this.options.navigation & 1)
     {
         this.header = $(tpl.header.resolve(getParams.call(this, { id: this.element._bgId() + "-header" })));
-        this.element.before(this.header);
+        wrapper.before(this.header);
     }
 
     if (this.options.navigation & 2)
     {
         this.footer = $(tpl.footer.resolve(getParams.call(this, { id: this.element._bgId() + "-footer" })));
-        this.element.after(this.footer);
+        wrapper.after(this.footer);
     }
 }
 
@@ -533,84 +557,120 @@ function renderRows(rows)
             css = this.options.css,
             tpl = this.options.templates,
             tbody = this.element.children("tbody").first(),
-            selection = that.options.selection && that.identifier != null,
+            selection = this.options.selection && this.identifier != null,
+            allRowsSelected = true,
             html = "",
-            cells = "";
+            cells = "",
+            rowAttr = "",
+            rowCss = "";
 
         $.each(rows, function (i, row)
         {
             cells = "";
+            rowAttr = " data-row-id=\"" + ((that.identifier == null) ? i : row[that.identifier]) + "\"";
+            rowCss = "";
 
             if (selection)
             {
-                var selectBox = tpl.select.resolve(getParams.call(that, 
-                    { type: "checkbox", value: row[that.identifier] }));
-                cells += tpl.cell.resolve(getParams.call(that, { content: selectBox, 
-                    css: css.selectCell }));
+                var selected = ($.inArray(row[that.identifier], that.selectedRows) !== -1),
+                    selectBox = tpl.select.resolve(getParams.call(that, 
+                        { type: "checkbox", value: row[that.identifier], checked: selected }));
+                cells += tpl.cell.resolve(getParams.call(that, { content: selectBox, css: css.selectCell }));
+                allRowsSelected = (allRowsSelected && selected);
+                if (selected)
+                {
+                    rowCss += css.selected;
+                    rowAttr += " aria-selected=\"true\"";
+                }
             }
 
             $.each(that.columns, function (j, column)
             {
                 if (column.visible)
                 {
-                    var value = ($.isFunction(column.formatter)) ?
-                        column.formatter.call(that, column, row) :
-                            column.converter.to(row[column.id]);
+                    var value = ($.isFunction(column.formatter)) ? 
+                            column.formatter.call(that, column, row) : 
+                                column.converter.to(row[column.id]),
+                        cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
                     cells += tpl.cell.resolve(getParams.call(that, {
                         content: (value == null || value === "") ? "&nbsp;" : value,
-                        css: (column.align === "right") ? css.right : 
-                            (column.align === "center") ? css.center : css.left }));
+                        css: ((column.align === "right") ? css.right : (column.align === "center") ? 
+                            css.center : css.left) + cssClass }));
                 }
             });
 
-            html += tpl.row.resolve(getParams.call(that, { cells: cells }));
+            if (rowCss.length > 0)
+            {
+                rowAttr += " class=\"" + rowCss + "\"";
+            }
+            html += tpl.row.resolve(getParams.call(that, { attr: rowAttr, cells: cells }));
         });
+
+        // sets or clears multi selectbox state
+        that.element.find("thead " + getCssSelector(that.options.css.selectBox))
+            .prop("checked", allRowsSelected);
 
         tbody.html(html);
 
-        if (selection)
-        {
-            var selectBoxSelector = getCssSelector(css.selectBox);
-            tbody.off("click" + namespace, selectBoxSelector)
-                .on("click" + namespace, selectBoxSelector, function(e)
-                {
-                    e.stopPropagation();
-
-                    var $this = $(this),
-                        converter = that.columns.first(function (column) { return column.id === that.identifier; }).converter,
-                        id = converter.from($this.val()),
-                        multiSelectBox = that.element.find("thead " + selectBoxSelector),
-                        rows = that.currentRows.where(function (row) { return row[that.identifier] === id; });
-
-                    if ($this.prop("checked"))
-                    {
-                        that.selectedRows.push(id);
-                        if (that.selectedRows.length === that.currentRows.length)
-                        {
-                            multiSelectBox.prop("checked", true);
-                        }
-                        that.element.trigger("selected" + namespace, [rows]);
-                    }
-                    else
-                    {
-                        for (var i = 0; i < that.selectedRows.length; i++)
-                        {
-                            if (that.selectedRows[i] === id)
-                            {
-                                that.selectedRows.splice(i, 1);
-                                break;
-                            }
-                        }
-                        multiSelectBox.prop("checked", false);
-                        that.element.trigger("deselected" + namespace, [rows]);
-                    }
-                });
-        }
+        registerRowEvents.call(this, tbody);
     }
     else
     {
         renderNoResultsRow.call(this);
     }
+}
+
+function registerRowEvents(tbody)
+{
+    var that = this,
+        selection = this.options.selection && this.identifier != null,
+        selectBoxSelector = getCssSelector(this.options.css.selectBox);
+
+    if (selection)
+    {
+        tbody.off("click" + namespace, selectBoxSelector)
+            .on("click" + namespace, selectBoxSelector, function(e)
+            {
+                e.stopPropagation();
+
+                var $this = $(this),
+                    id = that.converter.from($this.val());
+
+                if ($this.prop("checked"))
+                {
+                    that.select([id]);
+                }
+                else
+                {
+                    that.deselect([id]);
+                }
+            });
+    }
+
+    tbody.off("click" + namespace, "> tr")
+        .on("click" + namespace, "> tr", function(e)
+        {
+            e.stopPropagation();
+
+            var $this = $(this),
+                id = that.converter.from($this.data("row-id")),
+                row = (this.identifier == null) ? that.currentRows[id] : 
+                    that.currentRows.first(function (item) { return item[that.identifier] === id; });
+
+            if (selection && that.options.rowSelect)
+            {
+                if ($this.hasClass(that.options.css.selected))
+                {
+                    that.deselect([id]);
+                }
+                else
+                {
+                    that.select([id]);
+                }
+            }
+
+            that.element.trigger("click" + namespace, [that.columns, row]);
+        });
 }
 
 function renderSearchField()
@@ -680,10 +740,12 @@ function renderTableHeader()
                 iconCss = ((sorting && sortOrder && sortOrder === "asc") ? css.iconUp :
                     (sorting && sortOrder && sortOrder === "desc") ? css.iconDown : ""),
                 icon = tpl.icon.resolve(getParams.call(that, { iconCss: iconCss })),
-                align = column.headerAlign;
+                align = column.headerAlign,
+                cssClass = (column.headerCssClass.length > 0) ? " " + column.headerCssClass : "";
             html += tpl.headerCell.resolve(getParams.call(that, {
                 column: column, icon: icon, sortable: sorting && column.sortable && css.sortable || "",
-                css: (align === "right") ? css.right : (align === "center") ? css.center : css.left }));
+                css: ((align === "right") ? css.right : (align === "center") ? 
+                    css.center : css.left) + cssClass }));
         }
     });
 
@@ -746,11 +808,6 @@ function renderTableHeader()
             });
     }
 
-    function filterRows(rows, id)
-    {
-        return rows.where(function (row) { return row[that.identifier] !== id; });
-    }
-
     // todo: create a own function for that piece of code
     if (selection && this.options.multiSelect)
     {
@@ -760,32 +817,13 @@ function renderTableHeader()
             {
                 e.stopPropagation();
 
-                var rowSelectBoxes = $(that.element.find("tbody " + selectBoxSelector));
-
                 if ($(this).prop("checked"))
                 {
-                    var filteredRows = $.extend([], that.currentRows),
-                        id,
-                        i;
-
-                    for (i = 0; i < that.selectedRows.length; i++)
-                    {
-                        filteredRows = filterRows(filteredRows, that.selectedRows[i]);
-                    }
-                    
-                    for (i = 0; i < filteredRows.length; i++)
-                    {
-                        that.selectedRows.push(filteredRows[i][that.identifier]);
-                    }
-
-                    rowSelectBoxes.prop("checked", true);
-                    that.element.trigger("selected" + namespace, [filteredRows]);
+                    that.select();
                 }
                 else
                 {
-                    that.selectedRows = [];
-                    rowSelectBoxes.prop("checked", false);
-                    that.element.trigger("deselected" + namespace, [that.currentRows]);
+                    that.deselect();
                 }
             });
     }
