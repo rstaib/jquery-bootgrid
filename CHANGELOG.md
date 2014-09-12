@@ -3,24 +3,23 @@
 ## 1.1.0
 
 ### Enhancements & Features
-- (Done) New option to switch the search behaviour from case sensitive to case insensitive.
-- Individual basic column filters
-- (Done) Custom CSS classes for header and body cells (solved issue [#7](http://github.com/rstaib/jquery-bootgrid/issues/7))
-- (Done) New data attribute `data-toggle` to initialize bootgrid without writing any line of code (like bootstrap controls support)
-- (Done) Request and response handler to support JSON object transformation (solved issue [#3](http://github.com/rstaib/jquery-bootgrid/issues/3))
-- (Done) WIA-ARIA busy attribute to indicate that the table is loading
-- (Done) New behaviour to maintain row selection during filtering, paging and sorting
-- (Done) Entire row click selection
-- (Done) New event (`click`)
-- (Done) Responsive table support
-- (Done) New methods (`select` and `deselect`)
-- (Done) New `data-row-id` attribute for data rows (contains the row ID if `identifier` is enabled; otherwise an index of the visible rows)
-- (Done) New CSS class for data rows to indicate that the row is selected (`selected`)
-- (Done) New column option `data-searchable="true"` to exclude column from search (solved issue [#23](http://github.com/rstaib/jquery-bootgrid/issues/23))
+- New option to switch the search behaviour from case sensitive to case insensitive.
+- Custom CSS classes for header and body cells (solved issue [#7](http://github.com/rstaib/jquery-bootgrid/issues/7))
+- New data attribute `data-toggle` to initialize bootgrid without writing any line of code (like bootstrap controls support)
+- Request and response handler to support JSON object transformation (solved issue [#3](http://github.com/rstaib/jquery-bootgrid/issues/3))
+- WIA-ARIA busy attribute to indicate that the table is loading
+- New behaviour to maintain row selection during filtering, paging and sorting
+- Entire row click selection
+- New row event (`click`)
+- Responsive table support
+- New methods (`select` and `deselect`)
+- New `data-row-id` attribute for data rows (contains the row ID if `identifier` is enabled; otherwise an index of the visible rows)
+- New CSS class for data rows to indicate that the row is selected (`selected`)
+- New column option `data-searchable="true"` to exclude column from search (solved issue [#23](http://github.com/rstaib/jquery-bootgrid/issues/23))
 
 ### Bug Fixes
-- (Done) Fixed an AJAX issue where multiple fast clicks could lead to strange results
-- (Done) Fixed multi select issue
+- Fixed an AJAX issue where multiple fast clicks could lead to strange results
+- Fixed multi select issue
 
 ### Breaking Changes
 There are breaking changes but some HTML templates changed during development. In case you want to use the full new feature set be sure you did not override any affected templates.

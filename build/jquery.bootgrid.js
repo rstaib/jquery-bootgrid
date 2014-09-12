@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.1.0-beta - 09/11/2014
+ * jQuery Bootgrid v1.1.0 - 09/12/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -115,7 +115,6 @@
                     headerCssClass: data.headerCssClass || "",
                     formatter: that.options.formatters[data.formatter] || null,
                     order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
-                    filterable: (data.filterable === true), // default: false
                     searchable: !(data.searchable === false), // default: true
                     sortable: !(data.sortable === false), // default: true
                     visible: !(data.visible === false) // default: true
