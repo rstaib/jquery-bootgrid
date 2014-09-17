@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.0
+
+### Enhancements & Features
+- Fixed table headers
+- FIxed table column
+
+### Bug Fixes
+- ...
+
 ## 1.1.0
 
 ### Enhancements & Features
