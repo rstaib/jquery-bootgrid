@@ -22,7 +22,7 @@
 - Fixed multi select issue
 
 ### Breaking Changes
-There are breaking changes but some HTML templates changed during development. In case you want to use the full new feature set be sure you did not override any affected templates.
+There are no breaking changes but some HTML templates changed during development. In case you want to use the full new feature set be sure you did not override any affected templates.
 
 ## 1.0.0
 
