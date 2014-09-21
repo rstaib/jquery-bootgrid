@@ -4,7 +4,9 @@
 
 ### Enhancements & Features
 - Fixed table headers
-- FIxed table column
+- Fixed table column
+- Sorted header column CSS class
+- Improved destroy method
 
 ### Bug Fixes
 - ...

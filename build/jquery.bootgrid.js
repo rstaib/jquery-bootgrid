@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.1.0 - 09/12/2014
+ * jQuery Bootgrid v1.2.0 - 09/22/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -951,6 +951,7 @@
         this.header = null;
         this.footer = null;
         this.xqr = null;
+        this.original = this.element.clone();
 
         // todo: implement cache
     };
@@ -1298,7 +1299,8 @@
         {
             this.footer.remove();
         }
-        this.element.remove("tbody").off(namespace).removeData(namespace);
+        // todo: find a better and shorter way to remove events, data and the table itself!
+        this.element.before(this.original).off(namespace).removeData(namespace).remove();
 
         return this;
     };

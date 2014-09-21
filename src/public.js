@@ -36,6 +36,7 @@ var Grid = function(element, options)
     this.header = null;
     this.footer = null;
     this.xqr = null;
+    this.original = this.element.clone();
 
     // todo: implement cache
 };
@@ -383,7 +384,8 @@ Grid.prototype.destroy = function()
     {
         this.footer.remove();
     }
-    this.element.remove("tbody").off(namespace).removeData(namespace);
+    // todo: find a better and shorter way to remove events, data and the table itself!
+    this.element.before(this.original).off(namespace).removeData(namespace).remove();
 
     return this;
 };
