@@ -123,7 +123,7 @@ function loadColumns()
         }
 
         // ensures that only the first order will be applied in case of multi sorting is disabled
-        if (!that.options.multiSort && column.order !== null)
+        if (!that.options.multiSort && column.order != null)
         {
             sorted = true;
         }
@@ -741,7 +741,8 @@ function renderTableHeader()
                     (sorting && sortOrder && sortOrder === "desc") ? css.iconDown : ""),
                 icon = tpl.icon.resolve(getParams.call(that, { iconCss: iconCss })),
                 align = column.headerAlign,
-                cssClass = (column.headerCssClass.length > 0) ? " " + column.headerCssClass : "";
+                cssClass = ((column.headerCssClass.length > 0) ? " " + column.headerCssClass : "") + 
+                    ((that.options.highlightColumns && column.order != null) ? " " + that.options.css.active : "");
             html += tpl.headerCell.resolve(getParams.call(that, {
                 column: column, icon: icon, sortable: sorting && column.sortable && css.sortable || "",
                 css: ((align === "right") ? css.right : (align === "center") ? 
@@ -754,7 +755,8 @@ function renderTableHeader()
     // todo: create a own function for that piece of code
     if (sorting)
     {
-        var sortingSelector = getCssSelector(css.sortable),
+        var activeSelector = getCssSelector(css.active),
+            sortingSelector = getCssSelector(css.sortable),
             iconSelector = getCssSelector(css.icon);
         headerRow.off("click" + namespace, sortingSelector)
             .on("click" + namespace, sortingSelector, function (e)
@@ -762,19 +764,20 @@ function renderTableHeader()
                 e.preventDefault();
                 var $this = $(this),
                     columnId = $this.data("column-id") || $this.parents("th").first().data("column-id"),
-                    sortOrder = that.sort[columnId],
-                    icon = $this.find(iconSelector);
+                    sortOrder = that.sort[columnId];
 
                 if (!that.options.multiSort)
                 {
-                    $this.parents("tr").first().find(iconSelector).removeClass(css.iconDown + " " + css.iconUp);
+                    $this.parents("tr:first").find(iconSelector).removeClass(css.iconDown + " " + css.iconUp)
+                        .end().find(activeSelector).removeClass(css.active);
                     that.sort = {};
                 }
 
                 if (sortOrder && sortOrder === "asc")
                 {
                     that.sort[columnId] = "desc";
-                    icon.removeClass(css.iconUp).addClass(css.iconDown);
+                    $this.parent().addClass(css.active).find(iconSelector)
+                        .removeClass(css.iconUp).addClass(css.iconDown);
                 }
                 else if (sortOrder && sortOrder === "desc")
                 {
@@ -789,18 +792,21 @@ function renderTableHeader()
                             }
                         }
                         that.sort = newSort;
-                        icon.removeClass(css.iconDown);
+                        $this.parent().removeClass(css.active).find(iconSelector)
+                            .removeClass(css.iconDown);
                     }
                     else
                     {
                         that.sort[columnId] = "asc";
-                        icon.removeClass(css.iconDown).addClass(css.iconUp);
+                        $this.parent().addClass(css.active).find(iconSelector)
+                            .removeClass(css.iconDown).addClass(css.iconUp);
                     }
                 }
                 else
                 {
                     that.sort[columnId] = "asc";
-                    icon.addClass(css.iconUp);
+                    $this.parent().addClass(css.active).find(iconSelector)
+                        .addClass(css.iconUp);
                 }
 
                 sortRows.call(that);

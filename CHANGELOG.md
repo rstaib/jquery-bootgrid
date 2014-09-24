@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.0
+
+### Enhancements & Features
+- Fixed table headers
+- Fixed table column
+- Sorted header column CSS class
+- Improved destroy method
+- Improved ajax request settings [#27](http://github.com/rstaib/jquery-bootgrid/issues/27)
+
+### Bug Fixes
+- ...
+
 ## 1.1.1
 
 ### Bug Fixes

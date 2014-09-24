@@ -36,6 +36,7 @@ var Grid = function(element, options)
     this.header = null;
     this.footer = null;
     this.xqr = null;
+    this.original = this.element.clone();
 
     // todo: implement cache
 };
@@ -105,6 +106,17 @@ Grid.defaults = {
      * @since 1.1.0
      **/
     keepSelection: false,
+
+    /**
+     * Defines whether the columns which are filtered or sorted should be highlighted or not.
+     *
+     * @property highlightColumns
+     * @type Boolean
+     * @default false
+     * @for defaults
+     * @since 1.2.0
+     **/
+    highlightColumns: false,
 
     highlightRows: false, // highlights new rows (find the page of the first new row)
     sorting: true,
@@ -198,6 +210,18 @@ Grid.defaults = {
      **/
     css: {
         actions: "actions btn-group", // must be a unique class name or constellation of class names within the header and footer
+
+        /**
+         * CSS class to highlight active parts like sorted or filtered columns.
+         *
+         * @property active
+         * @type String
+         * @default "active"
+         * @for css
+         * @since 1.2.0
+         **/
+        active: "active",
+
         center: "text-center",
         columnHeaderAnchor: "column-header-anchor", // must be a unique class name or constellation of class names within the column header cell
         columnHeaderText: "text",
@@ -319,7 +343,7 @@ Grid.prototype.append = function(rows)
 {
     if (this.options.ajax)
     {
-        // todo: implement ajax DELETE
+        // todo: implement ajax POST
     }
     else
     {
@@ -383,7 +407,7 @@ Grid.prototype.destroy = function()
     {
         this.footer.remove();
     }
-    this.element.remove("tbody").off(namespace).removeData(namespace);
+    this.element.before(this.original).remove();
 
     return this;
 };
