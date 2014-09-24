@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1
+
+### Bug Fixes
+- Fixed issue [#25](http://github.com/rstaib/jquery-bootgrid/issues/25)
+
 ## 1.1.0
 
 ### Enhancements & Features

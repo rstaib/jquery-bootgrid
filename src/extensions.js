@@ -87,7 +87,7 @@ if (!String.prototype.resolve)
                     }
                     key = (prefixes) ? prefixes.join(".") + "." + key : key;
                     var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");
-                    result = result.replace(pattern, value);
+                    result = result.replace(pattern, (value.replace) ? value.replace(/\$/gi, "&#36;") : value);
                 }
             }
         });

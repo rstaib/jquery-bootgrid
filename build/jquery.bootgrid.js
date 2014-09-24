@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.1.0 - 09/12/2014
+ * jQuery Bootgrid v1.1.1 - 09/24/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -1617,7 +1617,7 @@
                         }
                         key = (prefixes) ? prefixes.join(".") + "." + key : key;
                         var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");
-                        result = result.replace(pattern, value);
+                        result = result.replace(pattern, (value.replace) ? value.replace(/\$/gi, "&#36;") : value);
                     }
                 }
             });
