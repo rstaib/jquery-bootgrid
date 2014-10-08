@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.1.1 - 09/24/2014
+ * jQuery Bootgrid v1.1.2 - 10/08/2014
  * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -574,10 +574,10 @@
                 rowAttr = "",
                 rowCss = "";
 
-            $.each(rows, function (i, row)
+            $.each(rows, function (index, row)
             {
                 cells = "";
-                rowAttr = " data-row-id=\"" + ((that.identifier == null) ? i : row[that.identifier]) + "\"";
+                rowAttr = " data-row-id=\"" + ((that.identifier == null) ? index : row[that.identifier]) + "\"";
                 rowCss = "";
 
                 if (selection)
@@ -663,8 +663,9 @@
                 e.stopPropagation();
 
                 var $this = $(this),
-                    id = that.converter.from($this.data("row-id")),
-                    row = (this.identifier == null) ? that.currentRows[id] : 
+                    id = (that.identifier == null) ? +$this.data("row-id") : 
+                        that.converter.from($this.data("row-id")),
+                    row = (that.identifier == null) ? that.currentRows[id] : 
                         that.currentRows.first(function (item) { return item[that.identifier] === id; });
 
                 if (selection && that.options.rowSelect)

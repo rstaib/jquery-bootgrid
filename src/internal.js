@@ -564,10 +564,10 @@ function renderRows(rows)
             rowAttr = "",
             rowCss = "";
 
-        $.each(rows, function (i, row)
+        $.each(rows, function (index, row)
         {
             cells = "";
-            rowAttr = " data-row-id=\"" + ((that.identifier == null) ? i : row[that.identifier]) + "\"";
+            rowAttr = " data-row-id=\"" + ((that.identifier == null) ? index : row[that.identifier]) + "\"";
             rowCss = "";
 
             if (selection)
@@ -653,8 +653,9 @@ function registerRowEvents(tbody)
             e.stopPropagation();
 
             var $this = $(this),
-                id = that.converter.from($this.data("row-id")),
-                row = (this.identifier == null) ? that.currentRows[id] : 
+                id = (that.identifier == null) ? +$this.data("row-id") : 
+                    that.converter.from($this.data("row-id")),
+                row = (that.identifier == null) ? that.currentRows[id] : 
                     that.currentRows.first(function (item) { return item[that.identifier] === id; });
 
             if (selection && that.options.rowSelect)
