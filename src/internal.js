@@ -634,7 +634,8 @@ function registerRowEvents(tbody)
                 e.stopPropagation();
 
                 var $this = $(this),
-                    id = that.converter.from($this.val());
+                    id = (that.identifier == null) ? +$this.parents("tr").data("row-id") : 
+                        that.converter.from($this.parents("tr").data("row-id"));
 
                 if ($this.prop("checked"))
                 {
