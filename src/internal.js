@@ -60,6 +60,7 @@ function init()
     this.element.trigger("initialize" + namespace);
 
     loadColumns.call(this); // Loads columns from HTML thead tag
+    this.selection = this.options.selection && this.identifier != null;
     loadRows.call(this); // Loads rows from HTML tbody tag if ajax is false
     prepareTable.call(this);
     renderTableHeader.call(this);
@@ -407,7 +408,7 @@ function renderNoResultsRow()
         tpl = this.options.templates,
         count = this.columns.where(isVisible).length;
 
-    if (this.options.selection && this.identifier != null)
+    if (this.selection)
     {
         count = count + 1;
     }
@@ -557,7 +558,6 @@ function renderRows(rows)
             css = this.options.css,
             tpl = this.options.templates,
             tbody = this.element.children("tbody").first(),
-            selection = this.options.selection && this.identifier != null,
             allRowsSelected = true,
             html = "",
             cells = "",
@@ -570,7 +570,7 @@ function renderRows(rows)
             rowAttr = " data-row-id=\"" + ((that.identifier == null) ? index : row[that.identifier]) + "\"";
             rowCss = "";
 
-            if (selection)
+            if (that.selection)
             {
                 var selected = ($.inArray(row[that.identifier], that.selectedRows) !== -1),
                     selectBox = tpl.select.resolve(getParams.call(that, 
@@ -623,10 +623,9 @@ function renderRows(rows)
 function registerRowEvents(tbody)
 {
     var that = this,
-        selection = this.options.selection && this.identifier != null,
         selectBoxSelector = getCssSelector(this.options.css.selectBox);
 
-    if (selection)
+    if (this.selection)
     {
         tbody.off("click" + namespace, selectBoxSelector)
             .on("click" + namespace, selectBoxSelector, function(e)
@@ -653,12 +652,12 @@ function registerRowEvents(tbody)
             e.stopPropagation();
 
             var $this = $(this),
-                id = (that.identifier == null) ? +$this.data("row-id") : 
-                    that.converter.from($this.data("row-id")),
+                id = (that.identifier == null) ? $this.data("row-id") : 
+                    that.converter.from($this.data("row-id") + ""),
                 row = (that.identifier == null) ? that.currentRows[id] : 
                     that.currentRows.first(function (item) { return item[that.identifier] === id; });
 
-            if (selection && that.options.rowSelect)
+            if (that.selection && that.options.rowSelect)
             {
                 if ($this.hasClass(that.options.css.selected))
                 {
@@ -722,10 +721,9 @@ function renderTableHeader()
         css = this.options.css,
         tpl = this.options.templates,
         html = "",
-        sorting = this.options.sorting,
-        selection = this.options.selection && this.identifier != null;
+        sorting = this.options.sorting;
 
-    if (selection)
+    if (this.selection)
     {
         var selectBox = (this.options.multiSelect) ? 
             tpl.select.resolve(getParams.call(that, { type: "checkbox", value: "all" })) : "";
@@ -810,7 +808,7 @@ function renderTableHeader()
     }
 
     // todo: create a own function for that piece of code
-    if (selection && this.options.multiSelect)
+    if (this.selection && this.options.multiSelect)
     {
         var selectBoxSelector = getCssSelector(css.selectBox);
         headerRow.off("click" + namespace, selectBoxSelector)
@@ -851,7 +849,7 @@ function showLoading()
         padding = (this.element.height() - thead.height()) - (firstCell.height() + 20),
         count = this.columns.where(isVisible).length;
 
-    if (this.options.selection && this.identifier != null)
+    if (this.selection)
     {
         count = count + 1;
     }

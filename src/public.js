@@ -13,6 +13,7 @@
 var Grid = function(element, options)
 {
     this.element = $(element);
+    this.origin = this.element.clone();
     this.options = $.extend(true, {}, Grid.defaults, this.element.data(), options);
     // overrides rowCount explicitly because deep copy ($.extend) leads to strange behaviour
     var rowCount = this.options.rowCount = this.element.data().rowCount || options.rowCount || this.options.rowCount;
@@ -20,6 +21,7 @@ var Grid = function(element, options)
     this.current = 1;
     this.currentRows = [];
     this.identifier = null; // The first column ID that is marked as identifier
+    this.selection = false;
     this.converter = null; // The converter for the column that is marked as identifier
     this.rowCount = ($.isArray(rowCount)) ? rowCount[0] : rowCount;
     this.rows = [];
@@ -383,7 +385,7 @@ Grid.prototype.destroy = function()
     {
         this.footer.remove();
     }
-    this.element.remove("tbody").off(namespace).removeData(namespace);
+    this.element.before(this.origin).remove();
 
     return this;
 };
@@ -478,7 +480,7 @@ Grid.prototype.search = function(phrase)
  **/
 Grid.prototype.select = function(rowIds)
 {
-    if (this.options.selection && this.identifier != null)
+    if (this.selection)
     {
         rowIds = rowIds || this.currentRows.propValues(this.identifier);
 
@@ -544,7 +546,7 @@ Grid.prototype.select = function(rowIds)
  **/
 Grid.prototype.deselect = function(rowIds)
 {
-    if (this.options.selection && this.identifier != null)
+    if (this.selection)
     {
         rowIds = rowIds || this.currentRows.propValues(this.identifier);
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.3
+
+### Enhancements & Features
+- Improved destroy method behaviour
+
+### Bug Fixes
+- Fixed bug [#40](http://github.com/rstaib/jquery-bootgrid/issues/40)
+
 ## 1.1.2
 
 ### Bug Fixes

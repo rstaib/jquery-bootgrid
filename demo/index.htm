@@ -146,14 +146,19 @@
         <script>
             $(function()
             {
-                $("#grid").bootgrid({
-                    formatters: {
-                        "link": function(column, row)
-                        {
-                            return "<a href=\"#\">" + column.id + ": " + row.id + "</a>";
+                function init()
+                {
+                    $("#grid").bootgrid({
+                        formatters: {
+                            "link": function(column, row)
+                            {
+                                return "<a href=\"#\">" + column.id + ": " + row.id + "</a>";
+                            }
                         }
-                    }
-                });
+                    });
+                }
+                
+                init();
                 
                 $("#append").on("click", function ()
                 {
@@ -186,17 +191,7 @@
                     $("#grid").bootgrid("destroy");
                 });
                 
-                $("#init").on("click", function ()
-                {
-                    $("#grid").bootgrid({
-                        formatters: {
-                            "link": function(column, row)
-                            {
-                                return "<a href=\"#\">" + column.id + ": " + row.id + "</a>";
-                            }
-                        }
-                    });
-                });
+                $("#init").on("click", init);
             });
         </script>
     </body>
