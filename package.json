@@ -19,16 +19,27 @@
         "url": "https://github.com/rstaib/jquery-bootgrid.git"
     },
     "keywords": [
+        "jquery-plugin",
         "jQuery",
+        "Bootstrap",
+        "Plugin",
+        "Component",
+        "Control",
+        "UI",
         "Grid",
         "Table",
         "Data",
-        "Bootstrap",
-        "Plugin"
+        "Sorting",
+        "Filtering",
+        "HTML5",
+        "Accessibility"
     ],
     "licenses": [
         { "type": "MIT", "url": "http://www.opensource.org/licenses/MIT" }
     ],
+    "dependencies": {
+        "jquery": ">=1.9.0"
+    },
     "devDependencies": {
         "grunt": "~0.4.5",
         "grunt-cli": "~0.1.13",
@@ -47,8 +58,6 @@
     "readmeFilename": "README.md",
     "folders": {
         "dist": "build",
-        "src": "src",
-        "docs": "docs",
-        "nuget": "nuget"
+        "docs": "docs"
     }
 }
