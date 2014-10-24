@@ -562,7 +562,7 @@
 
     function renderRows(rows)
     {
-        if (rows.length > 0)
+        if (rows != null && rows.length > 0)
         {
             var that = this,
                 css = this.options.css,
