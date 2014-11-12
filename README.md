@@ -1,4 +1,4 @@
-jQuery Bootgrid Plugin [![Build Status](https://travis-ci.org/rstaib/jquery-bootgrid.svg?branch=master)](https://travis-ci.org/rstaib/jquery-bootgrid) [![Bower version](https://badge.fury.io/bo/jquery.bootgrid.svg)](http://badge.fury.io/bo/jquery.bootgrid) [![NuGet version](https://badge.fury.io/nu/jquery.bootgrid.svg)](http://badge.fury.io/nu/jquery.bootgrid)
+jQuery Bootgrid Plugin [![Build Status](http://img.shields.io/travis/rstaib/jquery-bootgrid/master.svg?style=flat-square)](https://travis-ci.org/rstaib/jquery-bootgrid) ![Bower version](http://img.shields.io/bower/v/jquery.bootgrid.svg?style=flat-square) ![NuGet version](http://img.shields.io/nuget/v/jquery.bootgrid.svg?style=flat-square) ![NPM version](http://img.shields.io/npm/v/jquery-bootgrid.svg?style=flat-square)
 ============
 
 Nice, sleek and intuitive. A grid control especially designed for bootstrap.

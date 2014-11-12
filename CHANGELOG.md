@@ -6,8 +6,8 @@
 - Fixed table headers
 - Fixed table column
 - Sorted header column CSS class
-- Improved destroy method
 - Improved ajax request settings [#27](http://github.com/rstaib/jquery-bootgrid/issues/27)
+- Nested object support [#46](http://github.com/rstaib/jquery-bootgrid/issues/46)
 
 ### Bug Fixes
 - ...
