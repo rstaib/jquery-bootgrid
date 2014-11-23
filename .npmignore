@@ -4,7 +4,7 @@ dist/*.nupkg
 dist/*.zip
 docs
 lib
-nuget
+*.nuspec
 test
 .gitattributes
 .gitignore

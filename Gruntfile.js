@@ -13,13 +13,24 @@ module.exports = function (grunt)
         folders: {
             dist: "dist",
             docs: "docs",
-            nuget: "nuget",
             src: "src"
         },
 
         clean: {
             api: ["<%= folders.docs %>"],
             build: ["<%= folders.dist %>"]
+        },
+        yuidoc: {
+            compile: {
+                name: '<%= pkg.name %>',
+                description: '<%= pkg.description %>',
+                version: '<%= pkg.version %>',
+                url: '<%= pkg.homepage %>',
+                options: {
+                    paths: '<%= folders.dist %>',
+                    outdir: '<%= folders.docs %>/'
+                }
+            }
         },
 
         less: {
@@ -164,9 +175,13 @@ module.exports = function (grunt)
             }
         },
 
-        exec: {
-            createPkg: {
-                cmd: "<%= folders.nuget %>\\Nuget pack <%= folders.nuget %>\\<%= pkg.namespace %>.nuspec -OutputDirectory <%= folders.dist %> -Version <%= pkg.version %>"
+        nugetpack: {
+            default: {
+                src: '<%= pkg.namespace %>.nuspec',
+                dest: '<%= folders.dist %>',
+                options: {
+                    version: '<%= pkg.version %>'
+                }
             }
         },
         compress: {
@@ -188,16 +203,14 @@ module.exports = function (grunt)
             files: ['test/index.html']
         },
 
-        yuidoc: {
-            compile: {
-                name: '<%= pkg.name %>',
-                description: '<%= pkg.description %>',
-                version: '<%= pkg.version %>',
-                url: '<%= pkg.homepage %>',
-                options: {
-                    paths: '<%= folders.dist %>',
-                    outdir: '<%= folders.docs %>/'
-                }
+        exec: {
+            publish: {
+                cmd: 'npm publish .'
+            }
+        },
+        nugetpush: {
+            default: {
+                src: '<%= folders.dist %>/*.nupkg'
             }
         }
     });
@@ -212,11 +225,13 @@ module.exports = function (grunt)
     grunt.loadNpmTasks('grunt-contrib-yuidoc');
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-compress');
-    grunt.loadNpmTasks('grunt-regex-replace');
     grunt.loadNpmTasks('grunt-exec');
+    grunt.loadNpmTasks('grunt-nuget');
+    grunt.loadNpmTasks('grunt-regex-replace');
 
     grunt.registerTask('default', ['build']);
     grunt.registerTask('api', ['clean:api', 'yuidoc']);
     grunt.registerTask('build', ['clean:build', 'less', 'concat', 'csslint', 'jshint', 'qunit']);
-    grunt.registerTask('release', ['build', 'api', 'cssmin', 'uglify', 'compress', 'exec:createPkg']);
+    grunt.registerTask('release', ['build', 'api', 'cssmin', 'uglify', 'compress', 'nugetpack']);
+    grunt.registerTask('publish', ['nugetpush', 'exec:publish']);
 };
