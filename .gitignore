@@ -1,12 +1,9 @@
-dist
-jSteps
 docs
 downloads
+node_modules
+src/*.css
+src/*.map
 *~
 *.diff
 *.patch
 .DS_Store
-node_modules
-src/jquery.bootgrid.css
-src/jquery.bootgrid.css.map
-src/jquery.bootgrid.min.css

@@ -7,92 +7,87 @@ module.exports = function (grunt)
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
+        banner: '/*! <%= "\\r\\n * " + pkg.title %> v<%= pkg.version %> - <%= grunt.template.today("mm/dd/yyyy") + "\\r\\n" %>' +
+                ' * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %> <%= (pkg.homepage ? "(" + pkg.homepage + ")" : "") + "\\r\\n" %>' +
+                ' * Licensed under <%= pkg.licenses[0].type + " " + pkg.licenses[0].url + "\\r\\n */\\r\\n" %>',
+        folders: {
+            dist: "dist",
+            docs: "docs",
+            nuget: "nuget",
+            src: "src"
+        },
+
+        clean: {
+            api: ["<%= folders.docs %>"],
+            build: ["<%= folders.dist %>"]
+        },
+
+        less: {
+            default: {
+                files: {
+                    "<%= folders.dist %>/<%= pkg.namespace %>.css": "<%= folders.src %>/<%= pkg.namespace %>.less"
+                }
+            }
+        },
+
         concat: {
-            options: {
-                separator: '\r\n\r\n',
-                banner: '/*! <%= "\\r\\n * " + pkg.title %> v<%= pkg.version %> - <%= grunt.template.today("mm/dd/yyyy") + "\\r\\n" %>' +
-                    ' * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %> <%= (pkg.homepage ? "(" + pkg.homepage + ")" : "") + "\\r\\n" %>' +
-                    ' * Licensed under <%= pkg.licenses[0].type + " " + pkg.licenses[0].url + "\\r\\n */\\r\\n" %>' + 
-                    ';(function ($, window, undefined)\r\n{\r\n    /*jshint validthis: true */\r\n    "use strict";\r\n\r\n',
-                footer: '\r\n})(jQuery, window);',
-                process: function(src, filepath)
-                {
-                    var result = src.trim().replace(/(.+?\r\n)/gm, '    $1'),
-                        end = [0, ""],
-                        lastChar = result[result.length - 1];
-
-                    if (lastChar === ";")
+            scripts: {
+                options: {
+                    separator: '\r\n\r\n',
+                    banner: '<%= banner %>;(function ($, window, undefined)\r\n{\r\n    /*jshint validthis: true */\r\n    "use strict";\r\n\r\n',
+                    footer: '\r\n})(jQuery, window);',
+                    process: function(src, filepath)
                     {
-                        end = (result[result.length - 2] === ")") ? 
-                            (result[result.length - 2] === "}") ? 
-                                [3, "    });"] : [2, ");"] : [2, "    };"];
-                    }
-                    else if (lastChar === "}")
-                    {
-                        end = [1, "    }"];
-                    }
+                        var result = src.trim().replace(/(.+?\r\n)/gm, '    $1'),
+                            end = [0, ""],
+                            lastChar = result[result.length - 1];
 
-                    return result.substr(0, result.length - end[0]) + end[1];
+                        if (lastChar === ";")
+                        {
+                            end = (result[result.length - 2] === ")") ?
+                            (result[result.length - 2] === "}") ?
+                            [3, "    });"] : [2, ");"] : [2, "    };"];
+                        }
+                        else if (lastChar === "}")
+                        {
+                            end = [1, "    }"];
+                        }
+
+                        return result.substr(0, result.length - end[0]) + end[1];
+                    }
+                },
+                files: {
+                    '<%= folders.dist %>/<%= pkg.namespace %>.js': [
+                        '<%= folders.src %>/internal.js',
+                        '<%= folders.src %>/public.js',
+                        '<%= folders.src %>/extensions.js',
+                        '<%= folders.src %>/plugin.js'
+                    ]
                 }
             },
-            dist: {
+            styles: {
+                options: {
+                    separator: '\r\n\r\n',
+                    banner: '<%= banner %>'
+                },
                 files: {
-                    '<%= pkg.folders.dist %>/<%= pkg.namespace %>.js': [
-                        '<%= pkg.folders.src %>/internal.js',
-                        '<%= pkg.folders.src %>/public.js',
-                        '<%= pkg.folders.src %>/extensions.js',
-                        '<%= pkg.folders.src %>/plugin.js'
+                    '<%= folders.dist %>/<%= pkg.namespace %>.css': [
+                        '<%= folders.dist %>/<%= pkg.namespace %>.css'
                     ]
                 }
             }
         },
-        //"regex-replace": {
-        //    all: {
-        //        src: ['<%= pkg.folders.nuget %>/<%= pkg.namespace %>.nuspec'],
-        //        actions: [
-        //            {
-        //                name: 'versionNumber',
-        //                search: /<version>.*?<\/version>/gi,
-        //                replace: '<version><%= pkg.version %></version>'
-        //            }
-        //        ]
-        //    }
-        //},
-        exec: {
-            createPkg: {
-                cmd: "<%= pkg.folders.nuget %>\\Nuget pack <%= pkg.folders.nuget %>\\<%= pkg.namespace %>.nuspec -OutputDirectory <%= pkg.folders.dist %> -Version <%= pkg.version %>"
-            }
-        },
-        compress: {
-            main: {
+
+        csslint: {
+            default: {
                 options: {
-                    archive: '<%= pkg.folders.dist %>/<%= pkg.namespace %>-<%= pkg.version %>.zip'
+                    'adjoining-classes': false,
+                    'important': false,
+                    'outline-none': false,
+                    'overqualified-elements': false
                 },
-                files: [
-                  { flatten: true, expand: true, src: ['<%= pkg.folders.dist %>/*.js', '<%= pkg.folders.dist %>/*.css'], dest: '/' }
-                ]
+                src: '<%= folders.dist %>/<%= pkg.namespace %>.css'
             }
-        },
-        uglify: {
-            options: {
-                preserveComments: 'some',
-                report: 'gzip'
-            },
-            all: {
-                files: {
-                    '<%= pkg.folders.dist %>/<%= pkg.namespace %>.min.js': ['<%= pkg.folders.dist %>/<%= pkg.namespace %>.js']
-                }
-            }
-        },
-        less: {
-            development: {
-                files: {
-                    "<%= pkg.folders.dist %>/<%= pkg.namespace %>.css": "<%= pkg.folders.src %>/<%= pkg.namespace %>.less"
-                }
-            }
-        },
-        qunit: {
-            files: ['test/index.html']
         },
         jshint: {
             options: {
@@ -112,7 +107,7 @@ module.exports = function (grunt)
                     console: true
                 }
             },
-            files: ['<%= pkg.folders.dist %>/<%= pkg.namespace %>.js'],
+            files: ['<%= folders.dist %>/<%= pkg.namespace %>.js'],
             test: {
                 options: {
                     globals: {
@@ -146,6 +141,53 @@ module.exports = function (grunt)
                 }
             }
         },
+
+        cssmin: {
+            default: {
+                options: {
+                    report: 'gzip'
+                },
+                files: {
+                    '<%= folders.dist %>/<%= pkg.namespace %>.min.css': ['<%= folders.dist %>/<%= pkg.namespace %>.css']
+                }
+            }
+        },
+        uglify: {
+            default: {
+                options: {
+                    preserveComments: 'some',
+                    report: 'gzip'
+                },
+                files: {
+                    '<%= folders.dist %>/<%= pkg.namespace %>.min.js': ['<%= folders.dist %>/<%= pkg.namespace %>.js']
+                }
+            }
+        },
+
+        exec: {
+            createPkg: {
+                cmd: "<%= folders.nuget %>\\Nuget pack <%= folders.nuget %>\\<%= pkg.namespace %>.nuspec -OutputDirectory <%= folders.dist %> -Version <%= pkg.version %>"
+            }
+        },
+        compress: {
+            default: {
+                options: {
+                    archive: '<%= folders.dist %>/<%= pkg.namespace %>-<%= pkg.version %>.zip'
+                },
+                files: [
+                    {
+                        flatten: true,
+                        expand: true, 
+                        src: ['<%= folders.dist %>/*.js', '<%= folders.dist %>/*.css'], dest: '/'
+                    }
+                ]
+            }
+        },
+
+        qunit: {
+            files: ['test/index.html']
+        },
+
         yuidoc: {
             compile: {
                 name: '<%= pkg.name %>',
@@ -153,25 +195,17 @@ module.exports = function (grunt)
                 version: '<%= pkg.version %>',
                 url: '<%= pkg.homepage %>',
                 options: {
-                    paths: '<%= pkg.folders.dist %>',
-                    outdir: '<%= pkg.folders.docs %>/'
+                    paths: '<%= folders.dist %>',
+                    outdir: '<%= folders.docs %>/'
                 }
             }
-        },
-        clean: {
-            api: ["<%= pkg.folders.docs %>"],
-            build: ["<%= pkg.folders.dist %>"]
-        },
-        coveralls: {
-            options: {
-                src: "coverage-results/lcov.info",
-                force: true
-            },
         }
     });
 
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-less');
+    grunt.loadNpmTasks('grunt-contrib-csslint');
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-concat');
@@ -180,10 +214,9 @@ module.exports = function (grunt)
     grunt.loadNpmTasks('grunt-contrib-compress');
     grunt.loadNpmTasks('grunt-regex-replace');
     grunt.loadNpmTasks('grunt-exec');
-    grunt.loadNpmTasks('grunt-coveralls');
 
     grunt.registerTask('default', ['build']);
     grunt.registerTask('api', ['clean:api', 'yuidoc']);
-    grunt.registerTask('build', ['clean:build', 'concat', 'jshint', 'qunit', 'less']);
-    grunt.registerTask('release', ['build', 'api', 'uglify', 'compress', 'exec:createPkg']);
+    grunt.registerTask('build', ['clean:build', 'less', 'concat', 'csslint', 'jshint', 'qunit']);
+    grunt.registerTask('release', ['build', 'api', 'cssmin', 'uglify', 'compress', 'exec:createPkg']);
 };

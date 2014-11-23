@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.4
+
+### Enhancements & Features
+- Improved Bower and NPM packages
+- Added minified version for CSS file
+
 ## 1.1.3
 
 ### Enhancements & Features

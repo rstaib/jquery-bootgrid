@@ -14,11 +14,11 @@
         <copyright>� Copyright 2014, Rafael Staib</copyright>
         <tags>jQuery, Grid, Table, Bootstrap, Accessibility, HTML5, Sorting, Filtering, UI</tags>
         <dependencies>
-            <dependency id="jQuery" version="1.10.2" />
+            <dependency id="jQuery" version="1.11.1" />
         </dependencies>
     </metadata>
     <files>
-        <file src="..\build\*.js" target="Content\Scripts" />
-        <file src="..\build\*.css" target="Content\Content" />
+        <file src="..\dist\*.js" target="Content\Scripts" />
+        <file src="..\dist\*.css" target="Content\Content" />
     </files>
 </package>
