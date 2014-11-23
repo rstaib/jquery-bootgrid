@@ -24,8 +24,8 @@
     },
     "license": "MIT",
     "main": [
-        "build/jquery.bootgrid.js",
-        "demo/css/jquery.bootgrid.css"
+        "dist/jquery.bootgrid.js",
+        "dist/jquery.bootgrid.css"
     ],
     "ignore": [
         "build",
