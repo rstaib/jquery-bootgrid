@@ -108,7 +108,8 @@ function loadColumns()
                 order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
                 searchable: !(data.searchable === false), // default: true
                 sortable: !(data.sortable === false), // default: true
-                visible: !(data.visible === false) // default: true
+                visible: !(data.visible === false), // default: true
+                html: !(data.html === true) // default: false, recomended to use in conjunction with data-sortable="false"
             };
         that.columns.push(column);
         if (column.order != null)
@@ -254,7 +255,14 @@ function loadRows()
 
             $.each(that.columns, function (i, column)
             {
-                row[column.id] = column.converter.from(cells.eq(i).text());
+                if (column.html === true) 
+                {
+                    row[column.id] = column.converter.from(cells.eq(i).text());
+                } 
+                else 
+                {
+                    row[column.id] = column.converter.from(cells.eq(i).html());
+                }
             });
 
             appendRow.call(that, row);
