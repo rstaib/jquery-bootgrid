@@ -8,6 +8,7 @@
         <owners>r_staib</owners>
         <licenseUrl>https://github.com/rstaib/jquery-bootgrid/blob/master/LICENSE.txt</licenseUrl>
         <projectUrl>http://www.jquery-bootgrid.com</projectUrl>
+		<iconUrl>http://www.jquery-bootgrid.com/icon.png</iconUrl>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
         <description>Nice, sleek and intuitive. A grid control especially designed for bootstrap.</description>
         <summary>Nice, sleek and intuitive. A grid control especially designed for bootstrap.</summary>
