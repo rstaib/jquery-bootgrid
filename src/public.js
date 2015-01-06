@@ -112,6 +112,8 @@ Grid.defaults = {
     sorting: true,
     multiSort: false,
     ajax: false, // todo: find a better name for this property to differentiate between client-side and server-side data
+    method: "GET",  //todo: user control over url- /rest/like/paths instead of query string for instance.
+                    //      'url' and 'request' passed together to requestHandler perhaps. 
 
     /**
      * Enriches the request object with additional properties. Either a `PlainObject` or a `Function` 

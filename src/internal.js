@@ -200,7 +200,7 @@ function loadData()
             that.xqr.abort();
         }
 
-        that.xqr = $.post(url, request, function (response)
+        that.xqr = $.ajax({ url:url, data:request, type:this.options.method, success:function (response)
         {
             that.xqr = null;
 
@@ -213,7 +213,7 @@ function loadData()
 
             that.current = response.current;
             update(response.rows, response.total);
-        }).fail(function (jqXHR, textStatus, errorThrown)
+        }}).fail(function (jqXHR, textStatus, errorThrown)
         {
             that.xqr = null;
 
