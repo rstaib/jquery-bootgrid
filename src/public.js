@@ -27,7 +27,7 @@ var Grid = function(element, options)
     this.rows = [];
     this.searchPhrase = "";
     this.selectedRows = [];
-    this.sort = {};
+    this.sortDictionary = {};
     this.total = 0;
     this.totalPages = 0;
     this.cachedParams = {
@@ -97,7 +97,7 @@ Grid.defaults = {
     rowSelect: false,
 
     /**
-     * Defines whether the row selection is saved internally on filtering, paging and sorting 
+     * Defines whether the row selection is saved internally on filtering, paging and sorting
      * (even if the selected rows are not visible).
      *
      * @property keepSelection
@@ -114,7 +114,7 @@ Grid.defaults = {
     ajax: false, // todo: find a better name for this property to differentiate between client-side and server-side data
 
     /**
-     * Enriches the request object with additional properties. Either a `PlainObject` or a `Function` 
+     * Enriches the request object with additional properties. Either a `PlainObject` or a `Function`
      * that returns a `PlainObject` can be passed. Default value is `{}`.
      *
      * @property post
@@ -126,7 +126,7 @@ Grid.defaults = {
     post: {}, // or use function () { return {}; } (reserved properties are "current", "rowCount", "sort" and "searchPhrase")
 
     /**
-     * Sets the data URL to a data service (e.g. a REST service). Either a `String` or a `Function` 
+     * Sets the data URL to a data service (e.g. a REST service). Either a `String` or a `Function`
      * that returns a `String` can be passed. Default value is `""`.
      *
      * @property url
@@ -484,7 +484,7 @@ Grid.prototype.select = function(rowIds)
     {
         rowIds = rowIds || this.currentRows.propValues(this.identifier);
 
-        var id, i, 
+        var id, i,
             selectedRows = [];
 
         while (rowIds.length > 0 && !(!this.options.multiSelect && selectedRows.length === 1))
@@ -582,7 +582,7 @@ Grid.prototype.deselect = function(rowIds)
                     .removeClass(this.options.css.selected)._bgAria("selected", "false")
                     .find(selectBoxSelector).prop("checked", false);
             }
-            
+
             this.element.trigger("deselected" + namespace, [deselectedRows]);
         }
     }
@@ -600,15 +600,24 @@ Grid.prototype.deselect = function(rowIds)
  **/
 Grid.prototype.sort = function(dictionary)
 {
-    var values = (dictionary) ? $.extend({}, dictionary) : {};
-    if (values === this.sort)
+    var values = (dictionary) ? $.extend({}, dictionary) : {},
+        columnHeader;
+
+    if (values === this.sortDictionary)
     {
         return this;
     }
 
-    this.sort = values;
+    $.each(values, $.proxy(function (key, value) {
+      // Have to flip these values, because the setTableHeaderSortDirection assumes we're
+      // flipping the direction of whatever the current sort order is, and flips it itself
+      values[key] = (value === 'asc' ? 'desc' : 'asc');
+      columnHeader = columnHeader || this.element.find('[data-column-id="' + key + '"]');
+    }, this));
 
-    renderTableHeader.call(this);
+    this.sortDictionary = values;
+
+    setTableHeaderSortDirection.call(columnHeader[0], this);
     sortRows.call(this);
     loadData.call(this);
 
