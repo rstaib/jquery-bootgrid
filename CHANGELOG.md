@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0
+
+### Enhancements & Features
+- 
+
+### Bug Fixes
+- Fixed an bug regarding `navigation` property (failed when property was set to `1` or `2`)
+
 ## 1.1.4
 
 ### Enhancements & Features

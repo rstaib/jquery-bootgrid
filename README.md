@@ -59,4 +59,4 @@ Instructions will follow soon!
 
 ## License
 
-Copyright (c) 2013 Rafael J. Staib Licensed under the [MIT license](https://github.com/rstaib/jquery-bootgrid/blob/master/LICENSE.txt).
+Copyright (c) 2013-2015 Rafael J. Staib Licensed under the [MIT license](https://github.com/rstaib/jquery-bootgrid/blob/master/LICENSE.txt).

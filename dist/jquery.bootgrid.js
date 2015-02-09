@@ -1,6 +1,6 @@
 /*! 
- * jQuery Bootgrid v1.1.4 - 11/23/2014
- * Copyright (c) 2014 Rafael Staib (http://www.jquery-bootgrid.com)
+ * jQuery Bootgrid v1.2.0 - 02/09/2015
+ * Copyright (c) 2015 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
 ;(function ($, window, undefined)
@@ -32,6 +32,16 @@
         }
 
         return false;
+    }
+
+    function findFooterItem(selector)
+    {
+        return (this.footer) ? this.footer.find(selector) : $([]);
+    }
+
+    function findHeaderItem(selector)
+    {
+        return (this.header) ? this.header.find(selector) : $([]);
     }
 
     function getParams(context)
@@ -311,8 +321,8 @@
         {
             var css = this.options.css,
                 selector = getCssSelector(css.actions),
-                headerActions = this.header.find(selector),
-                footerActions = this.footer.find(selector);
+                headerActions = findHeaderItem.call(this, selector),
+                footerActions = findFooterItem.call(this, selector);
 
             if ((headerActions.length + footerActions.length) > 0)
             {
@@ -394,8 +404,8 @@
         if (this.options.navigation !== 0)
         {
             var selector = getCssSelector(this.options.css.infos),
-                headerInfos = this.header.find(selector),
-                footerInfos = this.footer.find(selector);
+                headerInfos = findHeaderItem.call(this, selector),
+                footerInfos = findFooterItem.call(this, selector);
 
             if ((headerInfos.length + footerInfos.length) > 0)
             {
@@ -430,8 +440,8 @@
         if (this.options.navigation !== 0)
         {
             var selector = getCssSelector(this.options.css.pagination),
-                headerPagination = this.header.find(selector)._bgShowAria(this.rowCount !== -1),
-                footerPagination = this.footer.find(selector)._bgShowAria(this.rowCount !== -1);
+                headerPagination = findHeaderItem.call(this, selector)._bgShowAria(this.rowCount !== -1),
+                footerPagination = findFooterItem.call(this, selector)._bgShowAria(this.rowCount !== -1);
 
             if (this.rowCount !== -1 && (headerPagination.length + footerPagination.length) > 0)
             {
@@ -689,8 +699,8 @@
         {
             var css = this.options.css,
                 selector = getCssSelector(css.search),
-                headerSearch = this.header.find(selector),
-                footerSearch = this.footer.find(selector);
+                headerSearch = findHeaderItem.call(this, selector),
+                footerSearch = findFooterItem.call(this, selector);
 
             if ((headerSearch.length + footerSearch.length) > 0)
             {
