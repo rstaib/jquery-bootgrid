@@ -15,7 +15,11 @@
     ],
     "version": "1.2.0",
     "authors": [
-        { "name": "Rafael Staib", "email": "me@rafaelstaib.com", "url": "http://www.rafaelstaib.com" }
+        {
+            "name": "Rafael Staib",
+            "email": "me@rafaelstaib.com",
+            "url": "http://www.rafaelstaib.com"
+        }
     ],
     "homepage": "http://www.jquery-bootgrid.com",
     "repository": {
