@@ -522,7 +522,7 @@ function renderRowCountSelection(actions)
     {
         var css = this.options.css,
             tpl = this.options.templates,
-            dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: this.rowCount }))),
+            dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: getText(this.rowCount) }))),
             menuSelector = getCssSelector(css.dropDownMenu),
             menuTextSelector = getCssSelector(css.dropDownMenuText),
             menuItemsSelector = getCssSelector(css.dropDownMenuItems),

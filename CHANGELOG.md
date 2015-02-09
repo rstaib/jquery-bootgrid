@@ -3,10 +3,14 @@
 ## 1.2.0
 
 ### Enhancements & Features
-- 
+- Added iconset overload for *FontAwesome*
 
 ### Bug Fixes
 - Fixed an bug regarding `navigation` property (failed when property was set to `1` or `2`)
+- Fixed bug [#58](http://github.com/rstaib/jquery-bootgrid/issues/58)
+
+### Breaking Changes
+There are no breaking changes but the `search` template changed during development. In case you want to use the overloaded iconset for *FontAwesome* keep in mind to replace the hard-coded `glyphicon-search` by `{{css.iconSearch}}`.
 
 ## 1.1.4
 

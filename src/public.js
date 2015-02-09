@@ -44,8 +44,6 @@ var Grid = function(element, options)
 
 /**
  * An object that represents the default settings.
- * There are two ways to override the sub-properties.
- * Either by doing it generally (global) or on initialization.
  *
  * @static
  * @class defaults
@@ -215,6 +213,7 @@ Grid.defaults = {
         iconColumns: "glyphicon-th-list",
         iconDown: "glyphicon-chevron-down",
         iconRefresh: "glyphicon-refresh",
+        iconSearch: "glyphicon-search",
         iconUp: "glyphicon-chevron-up",
         infos: "infos", // must be a unique class name or constellation of class names within the header and footer,
         left: "text-left",
@@ -305,7 +304,7 @@ Grid.defaults = {
         paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
         rawHeaderCell: "<th class=\"{{ctx.css}}\">{{ctx.content}}</th>", // Used for the multi select box
         row: "<tr{{ctx.attr}}>{{ctx.cells}}</tr>",
-        search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon glyphicon-search\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
+        search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon {{css.iconSearch}}\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
         select: "<input name=\"select\" type=\"{{ctx.type}}\" class=\"{{css.selectBox}}\" value=\"{{ctx.value}}\" {{ctx.checked}} />"
     }
 };

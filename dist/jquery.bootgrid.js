@@ -1,6 +1,6 @@
 /*! 
  * jQuery Bootgrid v1.2.0 - 02/09/2015
- * Copyright (c) 2015 Rafael Staib (http://www.jquery-bootgrid.com)
+ * Copyright (c) 2014-2015 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
 ;(function ($, window, undefined)
@@ -532,7 +532,7 @@
         {
             var css = this.options.css,
                 tpl = this.options.templates,
-                dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: this.rowCount }))),
+                dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: getText(this.rowCount) }))),
                 menuSelector = getCssSelector(css.dropDownMenu),
                 menuTextSelector = getCssSelector(css.dropDownMenuText),
                 menuItemsSelector = getCssSelector(css.dropDownMenuItems),
@@ -968,8 +968,6 @@
 
     /**
      * An object that represents the default settings.
-     * There are two ways to override the sub-properties.
-     * Either by doing it generally (global) or on initialization.
      *
      * @static
      * @class defaults
@@ -1139,6 +1137,7 @@
             iconColumns: "glyphicon-th-list",
             iconDown: "glyphicon-chevron-down",
             iconRefresh: "glyphicon-refresh",
+            iconSearch: "glyphicon-search",
             iconUp: "glyphicon-chevron-up",
             infos: "infos", // must be a unique class name or constellation of class names within the header and footer,
             left: "text-left",
@@ -1229,7 +1228,7 @@
             paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
             rawHeaderCell: "<th class=\"{{ctx.css}}\">{{ctx.content}}</th>", // Used for the multi select box
             row: "<tr{{ctx.attr}}>{{ctx.cells}}</tr>",
-            search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon glyphicon-search\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
+            search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon {{css.iconSearch}}\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
             select: "<input name=\"select\" type=\"{{ctx.type}}\" class=\"{{css.selectBox}}\" value=\"{{ctx.value}}\" {{ctx.checked}} />"
         }
     };

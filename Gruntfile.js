@@ -7,8 +7,9 @@ module.exports = function (grunt)
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
+        fontawesome: 'fa',
         banner: '/*! <%= "\\r\\n * " + pkg.title %> v<%= pkg.version %> - <%= grunt.template.today("mm/dd/yyyy") + "\\r\\n" %>' +
-                ' * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %> <%= (pkg.homepage ? "(" + pkg.homepage + ")" : "") + "\\r\\n" %>' +
+                ' * Copyright (c) 2014-<%= grunt.template.today("yyyy") %> <%= pkg.author.name %> <%= (pkg.homepage ? "(" + pkg.homepage + ")" : "") + "\\r\\n" %>' +
                 ' * Licensed under <%= pkg.licenses[0].type + " " + pkg.licenses[0].url + "\\r\\n */\\r\\n" %>',
         folders: {
             dist: "dist",
@@ -73,6 +74,9 @@ module.exports = function (grunt)
                         '<%= folders.src %>/public.js',
                         '<%= folders.src %>/extensions.js',
                         '<%= folders.src %>/plugin.js'
+                    ],
+                    '<%= folders.dist %>/<%= pkg.namespace %>.<%= fontawesome %>.js': [
+                        '<%= folders.src %>/fontawesome.js'
                     ]
                 }
             },
@@ -170,7 +174,12 @@ module.exports = function (grunt)
                     report: 'gzip'
                 },
                 files: {
-                    '<%= folders.dist %>/<%= pkg.namespace %>.min.js': ['<%= folders.dist %>/<%= pkg.namespace %>.js']
+                    '<%= folders.dist %>/<%= pkg.namespace %>.min.js': [
+                        '<%= folders.dist %>/<%= pkg.namespace %>.js'
+                    ],
+                    '<%= folders.dist %>/<%= pkg.namespace %>.<%= fontawesome %>.min.js': [
+                        '<%= folders.dist %>/<%= pkg.namespace %>.<%= fontawesome %>.js'
+                    ]
                 }
             }
         },
