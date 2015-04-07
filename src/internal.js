@@ -26,12 +26,12 @@ function appendRow(row)
 
 function findFooterItem(selector)
 {
-    return (this.footer) ? this.footer.find(selector) : $([]);
+    return (this.footer) ? this.footer.find(selector) : $();
 }
 
 function findHeaderItem(selector)
 {
-    return (this.header) ? this.header.find(selector) : $([]);
+    return (this.header) ? this.header.find(selector) : $();
 }
 
 function getParams(context)
@@ -118,7 +118,9 @@ function loadColumns()
                 order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
                 searchable: !(data.searchable === false), // default: true
                 sortable: !(data.sortable === false), // default: true
-                visible: !(data.visible === false) // default: true
+                visible: !(data.visible === false), // default: true
+                width: ($.isNumeric(data.width)) ? data.width + "px" : 
+                    (typeof(data.width) === "string") ? data.width : null
             };
         that.columns.push(column);
         if (column.order != null)
@@ -605,7 +607,8 @@ function renderRows(rows)
                     cells += tpl.cell.resolve(getParams.call(that, {
                         content: (value == null || value === "") ? "&nbsp;" : value,
                         css: ((column.align === "right") ? css.right : (column.align === "center") ? 
-                            css.center : css.left) + cssClass }));
+                            css.center : css.left) + cssClass,
+                        style: (column.width == null) ? "" : "width:" + column.width + ";" }));
                 }
             });
 
@@ -754,7 +757,8 @@ function renderTableHeader()
             html += tpl.headerCell.resolve(getParams.call(that, {
                 column: column, icon: icon, sortable: sorting && column.sortable && css.sortable || "",
                 css: ((align === "right") ? css.right : (align === "center") ? 
-                    css.center : css.left) + cssClass }));
+                    css.center : css.left) + cssClass,
+                style: (column.width == null) ? "" : "width:" + column.width + ";" }));
         }
     });
 

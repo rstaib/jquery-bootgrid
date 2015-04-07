@@ -3,14 +3,15 @@
 ## 1.2.0
 
 ### Enhancements & Features
-- Added iconset overload for *FontAwesome*
+- Iconset overload for *FontAwesome*
+- Configurable column width; see question [#22](http://github.com/rstaib/jquery-bootgrid/issues/22) for more details
 
 ### Bug Fixes
-- Fixed an bug regarding `navigation` property (failed when property was set to `1` or `2`)
+- Fixed bug [#120](http://github.com/rstaib/jquery-bootgrid/issues/120)
 - Fixed bug [#58](http://github.com/rstaib/jquery-bootgrid/issues/58)
 
 ### Breaking Changes
-There are no breaking changes but the `search` template changed during development. In case you want to use the overloaded iconset for *FontAwesome* keep in mind to replace the hard-coded `glyphicon-search` by `{{css.iconSearch}}`.
+There are no breaking changes but some HTML templates changed during development. In case you want to use the full new feature set be sure you did not override any affected templates.
 
 ## 1.1.4
 
