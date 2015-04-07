@@ -279,6 +279,52 @@ Grid.defaults = {
     },
 
     /**
+     * Specifies the mapping between status and contextual classes to color rows.
+     *
+     * @property statusMapping
+     * @type Object
+     * @for defaults
+     * @since 1.2.0
+     **/
+    statusMapping: {
+        /**
+         * Specifies a successful or positive action.
+         *
+         * @property 0
+         * @type String
+         * @for statusMapping
+         **/
+        0: "success",
+
+        /**
+         * Specifies a neutral informative change or action.
+         *
+         * @property 1
+         * @type String
+         * @for statusMapping
+         **/
+        1: "info",
+
+        /**
+         * Specifies a warning that might need attention.
+         *
+         * @property 2
+         * @type String
+         * @for statusMapping
+         **/
+        2: "warning",
+        
+        /**
+         * Specifies a dangerous or potentially negative action.
+         *
+         * @property 3
+         * @type String
+         * @for statusMapping
+         **/
+        3: "danger"
+    },
+
+    /**
      * Contains all templates.
      *
      * @property templates

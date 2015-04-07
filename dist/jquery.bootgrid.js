@@ -581,16 +581,13 @@
                 tpl = this.options.templates,
                 tbody = this.element.children("tbody").first(),
                 allRowsSelected = true,
-                html = "",
-                cells = "",
-                rowAttr = "",
-                rowCss = "";
+                html = "";
 
             $.each(rows, function (index, row)
             {
-                cells = "";
-                rowAttr = " data-row-id=\"" + ((that.identifier == null) ? index : row[that.identifier]) + "\"";
-                rowCss = "";
+                var cells = "",
+                    rowAttr = " data-row-id=\"" + ((that.identifier == null) ? index : row[that.identifier]) + "\"",
+                    rowCss = "";
 
                 if (that.selection)
                 {
@@ -604,6 +601,12 @@
                         rowCss += css.selected;
                         rowAttr += " aria-selected=\"true\"";
                     }
+                }
+
+                var status = row.status != null && that.options.statusMapping[row.status];
+                if (status)
+                {
+                    rowCss += status;
                 }
 
                 $.each(that.columns, function (j, column)
@@ -1204,6 +1207,52 @@
             noResults: "No results found!",
             refresh: "Refresh",
             search: "Search"
+        },
+
+        /**
+         * Specifies the mapping between status and contextual classes to color rows.
+         *
+         * @property statusMapping
+         * @type Object
+         * @for defaults
+         * @since 1.2.0
+         **/
+        statusMapping: {
+            /**
+             * Specifies a successful or positive action.
+             *
+             * @property 0
+             * @type String
+             * @for statusMapping
+             **/
+            0: "success",
+
+            /**
+             * Specifies a neutral informative change or action.
+             *
+             * @property 1
+             * @type String
+             * @for statusMapping
+             **/
+            1: "info",
+
+            /**
+             * Specifies a warning that might need attention.
+             *
+             * @property 2
+             * @type String
+             * @for statusMapping
+             **/
+            2: "warning",
+            
+            /**
+             * Specifies a dangerous or potentially negative action.
+             *
+             * @property 3
+             * @type String
+             * @for statusMapping
+             **/
+            3: "danger"
         },
 
         /**

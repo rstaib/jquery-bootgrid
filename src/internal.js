@@ -571,16 +571,13 @@ function renderRows(rows)
             tpl = this.options.templates,
             tbody = this.element.children("tbody").first(),
             allRowsSelected = true,
-            html = "",
-            cells = "",
-            rowAttr = "",
-            rowCss = "";
+            html = "";
 
         $.each(rows, function (index, row)
         {
-            cells = "";
-            rowAttr = " data-row-id=\"" + ((that.identifier == null) ? index : row[that.identifier]) + "\"";
-            rowCss = "";
+            var cells = "",
+                rowAttr = " data-row-id=\"" + ((that.identifier == null) ? index : row[that.identifier]) + "\"",
+                rowCss = "";
 
             if (that.selection)
             {
@@ -594,6 +591,12 @@ function renderRows(rows)
                     rowCss += css.selected;
                     rowAttr += " aria-selected=\"true\"";
                 }
+            }
+
+            var status = row.status != null && that.options.statusMapping[row.status];
+            if (status)
+            {
+                rowCss += status;
             }
 
             $.each(that.columns, function (j, column)

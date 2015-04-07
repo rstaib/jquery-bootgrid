@@ -3,8 +3,9 @@
 ## 1.2.0
 
 ### Enhancements & Features
-- Iconset overload for *FontAwesome*
-- Configurable column width; see question [#22](http://github.com/rstaib/jquery-bootgrid/issues/22) for more details
+- Configurable column width; see request [#22](http://github.com/rstaib/jquery-bootgrid/issues/22) for more details
+- Contextual classes to color rows; see request [#72](http://github.com/rstaib/jquery-bootgrid/issues/72) for more details
+- *FontAwesome* iconset overload
 
 ### Bug Fixes
 - Fixed bug [#120](http://github.com/rstaib/jquery-bootgrid/issues/120)
