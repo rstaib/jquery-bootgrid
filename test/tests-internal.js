@@ -4,7 +4,7 @@
 module("internal functions", {
     setup: function ()
     {
-        $("#qunit-fixture").html("<table id=\"test\"><thead><th><td data-column-id=\"id\"></td></th></thead></table>");
+        $("#qunit-fixture").html("<table id=\"test\"><thead><tr><th data-column-id=\"id\"></th></tr></thead><tfoot><tr><td></td></tr></tfoot></table>");
     },
     teardown: function ()
     {
@@ -12,97 +12,85 @@ module("internal functions", {
     }
 });
 
-test("findFooterItem test", 1, function ()
+test("findFooterAndHeaderItems test", 1, function ()
 {
     // given
     var instance = {
-        footer: $("#test")
+        footer: $("#test > tfoot"),
+        header: $("#test > thead")
     };
-    var selector = "thead";
+    var selector = "tr";
 
     // when
-    var result = findFooterItem.call(instance, selector);
+    var result = findFooterAndHeaderItems.call(instance, selector);
 
     // then
-    equal(result.length, 1, "Found as expected one element");
+    equal(result.length, 2, "Found two elements as expected");
 });
 
-test("findFooterItem test (header is null)", 2, function ()
+test("findFooterAndHeaderItems test (footer is null)", 1, function ()
 {
     // given
     var instance = {
-        footer: null
+        footer: null,
+        header: $("#test > thead")
     };
-    var selector = "b";
+    var selector = "tr";
 
     // when
-    var result = findFooterItem.call(instance, selector);
+    var result = findFooterAndHeaderItems.call(instance, selector);
 
     // then
-    equal(result.length, 0, "Found as expected one element");
-    ok(result.find, "Got an empty jQuery array as expected");
+    equal(result.length, 1, "Found one element as expected");
 });
 
-test("findFooterItem test (header is string empty)", 2, function ()
+test("findFooterAndHeaderItems test (header is null)", 1, function ()
 {
     // given
     var instance = {
-        footer: ""
-    };
-    var selector = "b";
-
-    // when
-    var result = findFooterItem.call(instance, selector);
-
-    // then
-    equal(result.length, 0, "Found as expected one element");
-    ok(result.find, "Got an empty jQuery array as expected");
-});
-
-test("findHeaderItem test", 1, function ()
-{
-    // given
-    var instance = {
-        header: $("#test")
-    };
-    var selector = "thead";
-
-    // when
-    var result = findHeaderItem.call(instance, selector);
-
-    // then
-    equal(result.length, 1, "Found as expected one element");
-});
-
-test("findHeaderItem test (header is null)", 2, function ()
-{
-    // given
-    var instance = {
+        footer: $("#test > tfoot"),
         header: null
     };
-    var selector = "b";
+    var selector = "tr";
 
     // when
-    var result = findHeaderItem.call(instance, selector);
+    var result = findFooterAndHeaderItems.call(instance, selector);
 
     // then
-    equal(result.length, 0, "Found as expected one element");
-    ok(result.find, "Got an empty jQuery array as expected");
+    equal(result.length, 1, "Found one element as expected");
 });
 
-test("findHeaderItem test (header is string empty)", 2, function ()
+test("findFooterAndHeaderItems test (footer and header is string empty)", 2, function ()
 {
     // given
     var instance = {
+        footer: "",
         header: ""
     };
-    var selector = "b";
+    var selector = "tr";
 
     // when
-    var result = findHeaderItem.call(instance, selector);
+    var result = findFooterAndHeaderItems.call(instance, selector);
 
     // then
-    equal(result.length, 0, "Found as expected one element");
+    equal(result.length, 0, "Foundd one element as expecte");
+    ok(result.find, "Got an empty jQuery array as expected");
+});
+
+test("findFooterAndHeaderItems test (footer and header is null)", 2, function ()
+{
+    // given
+    var instance = {
+        footer: null,
+        header: null
+    };
+    var selector = "tr";
+
+    // when
+    var result = findFooterAndHeaderItems.call(instance, selector);
+
+    // then
+    equal(result.length, 0, "Found no elements as expected");
     ok(result.find, "Got an empty jQuery array as expected");
 });
 

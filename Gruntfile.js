@@ -255,7 +255,8 @@ module.exports = function (grunt)
     });
     grunt.registerTask('default', ['build']);
     grunt.registerTask('api', ['clean:api', 'yuidoc']);
-    grunt.registerTask('build', ['clean:build', 'version', 'less', 'concat', 'csslint', 'jshint', 'qunit']);
+    grunt.registerTask('test', ['qunit']);
+    grunt.registerTask('build', ['clean:build', 'version', 'less', 'concat', 'csslint', 'jshint', 'test']);
     grunt.registerTask('release', ['build', 'api', 'cssmin', 'uglify', 'compress', 'nugetpack']);
     grunt.registerTask('publish', ['nugetpush', 'exec:publish']);
 };

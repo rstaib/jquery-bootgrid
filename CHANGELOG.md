@@ -6,10 +6,14 @@
 - Configurable column width; see request [#22](http://github.com/rstaib/jquery-bootgrid/issues/22) for more details
 - Contextual classes to color rows; see request [#72](http://github.com/rstaib/jquery-bootgrid/issues/72) for more details
 - *FontAwesome* iconset overload
+- Clear search filter method [#89](http://github.com/rstaib/jquery-bootgrid/issues/89)
+- Overridable ajax request settings; see request [#27](http://github.com/rstaib/jquery-bootgrid/issues/27) for more details
+- Adjusting search input field to perform search not on every key #109  -> todo
 
 ### Bug Fixes
 - Fixed bug [#120](http://github.com/rstaib/jquery-bootgrid/issues/120)
-- Fixed bug [#58](http://github.com/rstaib/jquery-bootgrid/issues/58)
+- Fixed bug [#58](http://github.com/rstaib/jquery-bootgrid/issues/58)   -> use getText when resolving actionDropDown #65
+- Fixing sort method for jQuery plugin #84 (pull request)               -> todo
 
 ### Breaking Changes
 There are no breaking changes but some HTML templates changed during development. In case you want to use the full new feature set be sure you did not override any affected templates.

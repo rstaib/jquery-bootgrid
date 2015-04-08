@@ -24,14 +24,11 @@ function appendRow(row)
     return false;
 }
 
-function findFooterItem(selector)
+function findFooterAndHeaderItems(selector)
 {
-    return (this.footer) ? this.footer.find(selector) : $();
-}
-
-function findHeaderItem(selector)
-{
-    return (this.header) ? this.header.find(selector) : $();
+    var footer = (this.footer) ? this.footer.find(selector) : $(),
+        header = (this.header) ? this.header.find(selector) : $();
+    return $.merge(footer, header);
 }
 
 function getParams(context)
@@ -156,14 +153,7 @@ response = {
 
 function loadData()
 {
-    var that = this,
-        request = getRequest.call(this),
-        url = getUrl.call(this);
-
-    if (this.options.ajax && (url == null || typeof url !== "string" || url.length === 0))
-    {
-        throw new Error("Url setting must be a none empty string or a function that returns one.");
-    }
+    var that = this;
 
     this.element._bgBusyAria(true).trigger("load" + namespace);
     showLoading.call(this);
@@ -206,35 +196,51 @@ function loadData()
 
     if (this.options.ajax)
     {
-        // aborts the previous ajax request if not already finished or failed
-        if (that.xqr)
+        var request = getRequest.call(this),
+            url = getUrl.call(this);
+
+        if (url == null || typeof url !== "string" || url.length === 0)
         {
-            that.xqr.abort();
+            throw new Error("Url setting must be a none empty string or a function that returns one.");
         }
 
-        that.xqr = $.post(url, request, function (response)
+        // aborts the previous ajax request if not already finished or failed
+        if (this.xqr)
         {
-            that.xqr = null;
+            this.xqr.abort();
+        }
 
-            if (typeof (response) === "string")
+        var settings = {
+            url: url,
+            data: request,
+            success: function(response)
             {
-                response = $.parseJSON(response);
-            }
+                that.xqr = null;
 
-            response = that.options.responseHandler(response);
+                if (typeof (response) === "string")
+                {
+                    response = $.parseJSON(response);
+                }
 
-            that.current = response.current;
-            update(response.rows, response.total);
-        }).fail(function (jqXHR, textStatus, errorThrown)
-        {
-            that.xqr = null;
+                response = that.options.responseHandler(response);
 
-            if (textStatus !== "abort")
+                that.current = response.current;
+                update(response.rows, response.total);
+            },
+            error: function (jqXHR, textStatus, errorThrown)
             {
-                renderNoResultsRow.call(that); // overrides loading mask
-                that.element._bgBusyAria(false).trigger("loaded" + namespace);
+                that.xqr = null;
+
+                if (textStatus !== "abort")
+                {
+                    renderNoResultsRow.call(that); // overrides loading mask
+                    that.element._bgBusyAria(false).trigger("loaded" + namespace);
+                }
             }
-        });
+        };
+        settings = $.extend(this.options.ajaxSettings, settings);
+
+        this.xqr = $.ajax(settings);
     }
     else
     {
@@ -313,10 +319,9 @@ function renderActions()
     {
         var css = this.options.css,
             selector = getCssSelector(css.actions),
-            headerActions = findHeaderItem.call(this, selector),
-            footerActions = findFooterItem.call(this, selector);
+            actionItems = findFooterAndHeaderItems.call(this, selector);
 
-        if ((headerActions.length + footerActions.length) > 0)
+        if (actionItems.length > 0)
         {
             var that = this,
                 tpl = this.options.templates,
@@ -344,8 +349,7 @@ function renderActions()
             // Column selection
             renderColumnSelection.call(this, actions);
 
-            replacePlaceHolder.call(this, headerActions, actions, 1);
-            replacePlaceHolder.call(this, footerActions, actions, 2);
+            replacePlaceHolder.call(this, actionItems, actions);
         }
     }
 }
@@ -396,10 +400,9 @@ function renderInfos()
     if (this.options.navigation !== 0)
     {
         var selector = getCssSelector(this.options.css.infos),
-            headerInfos = findHeaderItem.call(this, selector),
-            footerInfos = findFooterItem.call(this, selector);
+            infoItems = findFooterAndHeaderItems.call(this, selector);
 
-        if ((headerInfos.length + footerInfos.length) > 0)
+        if (infoItems.length > 0)
         {
             var end = (this.current * this.rowCount),
                 infos = $(this.options.templates.infos.resolve(getParams.call(this, {
@@ -408,8 +411,7 @@ function renderInfos()
                     total: this.total
                 })));
 
-            replacePlaceHolder.call(this, headerInfos, infos, 1);
-            replacePlaceHolder.call(this, footerInfos, infos, 2);
+            replacePlaceHolder.call(this, infoItems, infos);
         }
     }
 }
@@ -432,10 +434,9 @@ function renderPagination()
     if (this.options.navigation !== 0)
     {
         var selector = getCssSelector(this.options.css.pagination),
-            headerPagination = findHeaderItem.call(this, selector)._bgShowAria(this.rowCount !== -1),
-            footerPagination = findFooterItem.call(this, selector)._bgShowAria(this.rowCount !== -1);
+            paginationItems = findFooterAndHeaderItems.call(this, selector)._bgShowAria(this.rowCount !== -1);
 
-        if (this.rowCount !== -1 && (headerPagination.length + footerPagination.length) > 0)
+        if (this.rowCount !== -1 && paginationItems.length > 0)
         {
             var tpl = this.options.templates,
                 current = this.current,
@@ -472,8 +473,7 @@ function renderPagination()
             renderPaginationItem.call(this, pagination, "last", "&raquo;", "last")
                 ._bgEnableAria(totalPages > current);
 
-            replacePlaceHolder.call(this, headerPagination, pagination, 1);
-            replacePlaceHolder.call(this, footerPagination, pagination, 2);
+            replacePlaceHolder.call(this, paginationItems, pagination);
         }
     }
 }
@@ -695,10 +695,9 @@ function renderSearchField()
     {
         var css = this.options.css,
             selector = getCssSelector(css.search),
-            headerSearch = findHeaderItem.call(this, selector),
-            footerSearch = findFooterItem.call(this, selector);
+            searchItems = findFooterAndHeaderItems.call(this, selector);
 
-        if ((headerSearch.length + footerSearch.length) > 0)
+        if (searchItems.length > 0)
         {
             var that = this,
                 tpl = this.options.templates,
@@ -719,14 +718,23 @@ function renderSearchField()
                     window.clearTimeout(timer);
                     timer = window.setTimeout(function ()
                     {
-                        that.search(newValue);
+                        executeSearch.call(that, newValue);
                     }, 250);
                 }
             });
 
-            replacePlaceHolder.call(this, headerSearch, search, 1);
-            replacePlaceHolder.call(this, footerSearch, search, 2);
+            replacePlaceHolder.call(this, searchItems, search);
         }
+    }
+}
+
+function executeSearch(phrase)
+{
+    if (this.searchPhrase !== phrase)
+    {
+        this.current = 1;
+        this.searchPhrase = phrase;
+        loadData.call(this);
     }
 }
 
@@ -845,16 +853,13 @@ function renderTableHeader()
     }
 }
 
-function replacePlaceHolder(placeholder, element, flag)
+function replacePlaceHolder(placeholder, element)
 {
-    if (this.options.navigation & flag)
+    placeholder.each(function (index, item)
     {
-        placeholder.each(function (index, item)
-        {
-            // todo: check how append is implemented. Perhaps cloning here is superfluous.
-            $(item).before(element.clone(true)).remove();
-        });
-    }
+        // todo: check how append is implemented. Perhaps cloning here is superfluous.
+        $(item).before(element.clone(true)).remove();
+    });
 }
 
 function showLoading()

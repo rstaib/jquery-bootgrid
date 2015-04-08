@@ -109,7 +109,40 @@ Grid.defaults = {
     highlightRows: false, // highlights new rows (find the page of the first new row)
     sorting: true,
     multiSort: false,
-    ajax: false, // todo: find a better name for this property to differentiate between client-side and server-side data
+
+    /**
+     * Defines whether the data shall be loaded via an asynchronous HTTP (Ajax) request.
+     *
+     * @property ajax
+     * @type Boolean
+     * @default false
+     * @for defaults
+     **/
+    ajax: false,
+
+    /**
+     * Ajax request settings that shall be used for server-side communication.
+     * All setting can be overridden except data, error, success and url.
+     * For the full list of settings go to http://api.jquery.com/jQuery.ajax/.
+     *
+     * @property ajaxSettings
+     * @type Object
+     * @for defaults
+     * @since 1.2.0
+     **/
+    ajaxSettings: {
+        /**
+         * Specifies the HTTP method which shall be used when sending data to the server.
+         * Go to http://api.jquery.com/jQuery.ajax/ for more details.
+         * This setting is overriden for backward compatibility.
+         *
+         * @property method
+         * @type String
+         * @default "POST"
+         * @for ajaxSettings
+         **/
+        method: "POST"
+    },
 
     /**
      * Enriches the request object with additional properties. Either a `PlainObject` or a `Function` 
@@ -497,20 +530,26 @@ Grid.prototype.remove = function(rowIds)
 };
 
 /**
- * Searches in all rows for a specific phrase (but only in visible cells).
+ * Searches in all rows for a specific phrase (but only in visible cells). 
+ * The search filter will be reseted, if no argument is provided.
  *
  * @method search
- * @param phrase {String} The phrase to search for
+ * @param [phrase] {String} The phrase to search for
  * @chainable
  **/
 Grid.prototype.search = function(phrase)
 {
+    phrase = phrase || "";
+
     if (this.searchPhrase !== phrase)
     {
-        this.current = 1;
-        this.searchPhrase = phrase;
-        loadData.call(this);
+        var selector = getCssSelector(this.options.css.searchField),
+            searchFields = findFooterAndHeaderItems.call(this, selector);
+        searchFields.val(phrase);
     }
+
+    executeSearch.call(this, phrase);
+
 
     return this;
 };
@@ -637,10 +676,11 @@ Grid.prototype.deselect = function(rowIds)
 
 
 /**
- * Sorts rows.
+ * Sorts the rows by a given sort descriptor dictionary. 
+ * The sort filter will be reseted, if no argument is provided.
  *
  * @method sort
- * @param dictionary {Object} A dictionary which contains the sort information
+ * @param [dictionary] {Object} A sort descriptor dictionary that contains the sort information
  * @chainable
  **/
 Grid.prototype.sort = function(dictionary)

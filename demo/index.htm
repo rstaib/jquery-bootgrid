@@ -52,6 +52,8 @@
                     <button id="removeSelected" type="button" class="btn btn-default">Remove Selected</button>
                     <button id="destroy" type="button" class="btn btn-default">Destroy</button>
                     <button id="init" type="button" class="btn btn-default">Init</button>
+                    <button id="clearSearch" type="button" class="btn btn-default">Clear Search</button>
+                    <button id="clearSort" type="button" class="btn btn-default">Clear Sort</button>
                     <!--div class="table-responsive"-->
                         <table id="grid" class="table table-condensed table-hover table-striped" data-selection="true" data-multi-select="true" data-row-select="true" data-keep-selection="true">
                             <thead>
@@ -205,6 +207,16 @@
                 });
                 
                 $("#init").on("click", init);
+                
+                $("#clearSearch").on("click", function ()
+                {
+                    $("#grid").bootgrid("search");
+                });
+                
+                $("#clearSort").on("click", function ()
+                {
+                    $("#grid").bootgrid("sort");
+                });
             });
         </script>
     </body>
