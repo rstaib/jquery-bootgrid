@@ -674,7 +674,6 @@ Grid.prototype.deselect = function(rowIds)
     return this;
 };
 
-
 /**
  * Sorts the rows by a given sort descriptor dictionary. 
  * The sort filter will be reseted, if no argument is provided.
@@ -698,4 +697,121 @@ Grid.prototype.sort = function(dictionary)
     loadData.call(this);
 
     return this;
+};
+
+/**
+ * Gets a list of the column settings.
+ * This method returns only for the first grid instance a value.
+ * Therefore be sure that only one grid instance is catched by your selector.
+ *
+ * @method getColumnSettings
+ * @return {Array} Returns a list of the column settings.
+ **/
+Grid.prototype.getColumnSettings = function()
+{
+    return $.merge([], this.columns);
+};
+
+/**
+ * Gets the current page index.
+ * This method returns only for the first grid instance a value.
+ * Therefore be sure that only one grid instance is catched by your selector.
+ *
+ * @method getCurrentPage
+ * @return {Number} Returns the current page index.
+ **/
+Grid.prototype.getCurrentPage = function()
+{
+    return this.current;
+};
+
+/**
+ * Gets the current rows.
+ * This method returns only for the first grid instance a value.
+ * Therefore be sure that only one grid instance is catched by your selector.
+ *
+ * @method getCurrentPage
+ * @return {Array} Returns the current rows.
+ **/
+Grid.prototype.getCurrentRows = function()
+{
+    return $.merge([], this.currentRows);
+};
+
+/**
+ * Gets a number represents the row count per page.
+ * This method returns only for the first grid instance a value.
+ * Therefore be sure that only one grid instance is catched by your selector.
+ *
+ * @method getRowCount
+ * @return {Number} Returns the row count per page.
+ **/
+Grid.prototype.getRowCount = function()
+{
+    return this.rowCount;
+};
+
+/**
+ * Gets the actual search phrase.
+ * This method returns only for the first grid instance a value.
+ * Therefore be sure that only one grid instance is catched by your selector.
+ *
+ * @method getSearchPhrase
+ * @return {String} Returns the actual search phrase.
+ **/
+Grid.prototype.getSearchPhrase = function()
+{
+    return this.searchPhrase;
+};
+
+/**
+ * Gets the complete list of currently selected rows.
+ * This method returns only for the first grid instance a value.
+ * Therefore be sure that only one grid instance is catched by your selector.
+ *
+ * @method getSelectedRows
+ * @return {Array} Returns all selected rows.
+ **/
+Grid.prototype.getSelectedRows = function()
+{
+    return $.merge([], this.selectedRows);
+};
+
+/**
+ * Gets the sort dictionary which represents the state of column sorting.
+ * This method returns only for the first grid instance a value.
+ * Therefore be sure that only one grid instance is catched by your selector.
+ *
+ * @method getSortDictionary
+ * @return {Object} Returns the sort dictionary.
+ **/
+Grid.prototype.getSortDictionary = function()
+{
+    return $.extend({}, this.sortDictionary);
+};
+
+/**
+ * Gets a number represents the total page count.
+ * This method returns only for the first grid instance a value.
+ * Therefore be sure that only one grid instance is catched by your selector.
+ *
+ * @method getTotalPageCount
+ * @return {Number} Returns the total page count.
+ **/
+Grid.prototype.getTotalPageCount = function()
+{
+    return this.totalPages;
+};
+
+/**
+ * Gets a number represents the total row count.
+ * This method returns only for the first grid instance a value.
+ * Therefore be sure that only one grid instance is catched by your selector.
+ *
+ * @method getTotalRowCount
+ * @return {Number} Returns the total row count.
+ **/
+Grid.prototype.getTotalRowCount = function()
+{
+    return this.total;
 };

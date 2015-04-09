@@ -54,6 +54,12 @@
                     <button id="init" type="button" class="btn btn-default">Init</button>
                     <button id="clearSearch" type="button" class="btn btn-default">Clear Search</button>
                     <button id="clearSort" type="button" class="btn btn-default">Clear Sort</button>
+                    <button id="getCurrentPage" type="button" class="btn btn-default">Current Page Index</button>
+                    <button id="getRowCount" type="button" class="btn btn-default">Row Count</button>
+                    <button id="getTotalRowCount" type="button" class="btn btn-default">Total Row Count</button>
+                    <button id="getTotalPageCount" type="button" class="btn btn-default">Total Page Count</button>
+                    <button id="getSearchPhrase" type="button" class="btn btn-default">Search Phrase</button>
+                    <button id="getSortDictionary" type="button" class="btn btn-default">Sort Dictionary</button>
                     <!--div class="table-responsive"-->
                         <table id="grid" class="table table-condensed table-hover table-striped" data-selection="true" data-multi-select="true" data-row-select="true" data-keep-selection="true">
                             <thead>
@@ -216,6 +222,36 @@
                 $("#clearSort").on("click", function ()
                 {
                     $("#grid").bootgrid("sort");
+                });
+                
+                $("#getCurrentPage").on("click", function ()
+                {
+                    alert($("#grid").bootgrid("getCurrentPage"));
+                });
+                
+                $("#getRowCount").on("click", function ()
+                {
+                    alert($("#grid").bootgrid("getRowCount"));
+                });
+                
+                $("#getTotalPageCount").on("click", function ()
+                {
+                    alert($("#grid").bootgrid("getTotalPageCount"));
+                });
+                
+                $("#getTotalRowCount").on("click", function ()
+                {
+                    alert($("#grid").bootgrid("getTotalRowCount"));
+                });
+                
+                $("#getSearchPhrase").on("click", function ()
+                {
+                    alert($("#grid").bootgrid("getSearchPhrase"));
+                });
+                
+                $("#getSortDictionary").on("click", function ()
+                {
+                    alert($("#grid").bootgrid("getSortDictionary"));
                 });
             });
         </script>

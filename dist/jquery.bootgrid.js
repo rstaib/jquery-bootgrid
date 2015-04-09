@@ -189,8 +189,7 @@
         function update(rows, total)
         {
             that.currentRows = rows;
-            that.total = total;
-            that.totalPages = Math.ceil(total / that.rowCount);
+            setTotals.call(that, total);
 
             if (!that.options.keepSelection)
             {
@@ -288,12 +287,16 @@
                 appendRow.call(that, row);
             });
 
-            this.total = this.rows.length;
-            this.totalPages = (this.rowCount === -1) ? 1 :
-                Math.ceil(this.total / this.rowCount);
-
+            setTotals.call(this, this.rows.length);
             sortRows.call(this);
         }
+    }
+
+    function setTotals(total)
+    {
+        this.total = total;
+        this.totalPages = (this.rowCount === -1) ? 1 :
+            Math.ceil(this.total / this.rowCount);
     }
 
     function prepareTable()
@@ -1614,7 +1617,6 @@
         return this;
     };
 
-
     /**
      * Sorts the rows by a given sort descriptor dictionary. 
      * The sort filter will be reseted, if no argument is provided.
@@ -1638,6 +1640,123 @@
         loadData.call(this);
 
         return this;
+    };
+
+    /**
+     * Gets a list of the column settings.
+     * This method returns only for the first grid instance a value.
+     * Therefore be sure that only one grid instance is catched by your selector.
+     *
+     * @method getColumnSettings
+     * @return {Array} Returns a list of the column settings.
+     **/
+    Grid.prototype.getColumnSettings = function()
+    {
+        return $.merge([], this.columns);
+    };
+
+    /**
+     * Gets the current page index.
+     * This method returns only for the first grid instance a value.
+     * Therefore be sure that only one grid instance is catched by your selector.
+     *
+     * @method getCurrentPage
+     * @return {Number} Returns the current page index.
+     **/
+    Grid.prototype.getCurrentPage = function()
+    {
+        return this.current;
+    };
+
+    /**
+     * Gets the current rows.
+     * This method returns only for the first grid instance a value.
+     * Therefore be sure that only one grid instance is catched by your selector.
+     *
+     * @method getCurrentPage
+     * @return {Array} Returns the current rows.
+     **/
+    Grid.prototype.getCurrentRows = function()
+    {
+        return $.merge([], this.currentRows);
+    };
+
+    /**
+     * Gets a number represents the row count per page.
+     * This method returns only for the first grid instance a value.
+     * Therefore be sure that only one grid instance is catched by your selector.
+     *
+     * @method getRowCount
+     * @return {Number} Returns the row count per page.
+     **/
+    Grid.prototype.getRowCount = function()
+    {
+        return this.rowCount;
+    };
+
+    /**
+     * Gets the actual search phrase.
+     * This method returns only for the first grid instance a value.
+     * Therefore be sure that only one grid instance is catched by your selector.
+     *
+     * @method getSearchPhrase
+     * @return {String} Returns the actual search phrase.
+     **/
+    Grid.prototype.getSearchPhrase = function()
+    {
+        return this.searchPhrase;
+    };
+
+    /**
+     * Gets the complete list of currently selected rows.
+     * This method returns only for the first grid instance a value.
+     * Therefore be sure that only one grid instance is catched by your selector.
+     *
+     * @method getSelectedRows
+     * @return {Array} Returns all selected rows.
+     **/
+    Grid.prototype.getSelectedRows = function()
+    {
+        return $.merge([], this.selectedRows);
+    };
+
+    /**
+     * Gets the sort dictionary which represents the state of column sorting.
+     * This method returns only for the first grid instance a value.
+     * Therefore be sure that only one grid instance is catched by your selector.
+     *
+     * @method getSortDictionary
+     * @return {Object} Returns the sort dictionary.
+     **/
+    Grid.prototype.getSortDictionary = function()
+    {
+        return $.extend({}, this.sortDictionary);
+    };
+
+    /**
+     * Gets a number represents the total page count.
+     * This method returns only for the first grid instance a value.
+     * Therefore be sure that only one grid instance is catched by your selector.
+     *
+     * @method getTotalPageCount
+     * @return {Number} Returns the total page count.
+     **/
+    Grid.prototype.getTotalPageCount = function()
+    {
+        return this.totalPages;
+    };
+
+    /**
+     * Gets a number represents the total row count.
+     * This method returns only for the first grid instance a value.
+     * Therefore be sure that only one grid instance is catched by your selector.
+     *
+     * @method getTotalRowCount
+     * @return {Number} Returns the total row count.
+     **/
+    Grid.prototype.getTotalRowCount = function()
+    {
+        return this.total;
     };
 
     // GRID COMMON TYPE EXTENSIONS
@@ -1818,27 +1937,36 @@
 
     $.fn.bootgrid = function (option)
     {
-        var args = Array.prototype.slice.call(arguments, 1);
-        return this.each(function ()
-        {
-            var $this = $(this),
-                instance = $this.data(namespace),
-                options = typeof option === "object" && option;
+        var args = Array.prototype.slice.call(arguments, 1),
+            returnValue = null,
+            elements = this.each(function (index)
+            {
+                var $this = $(this),
+                    instance = $this.data(namespace),
+                    options = typeof option === "object" && option;
 
-            if (!instance && option === "destroy")
-            {
-                return;
-            }
-            if (!instance)
-            {
-                $this.data(namespace, (instance = new Grid(this, options)));
-                init.call(instance);
-            }
-            if (typeof option === "string")
-            {
-                return instance[option].apply(instance, args);
-            }
-        });
+                if (!instance && option === "destroy")
+                {
+                    return;
+                }
+                if (!instance)
+                {
+                    $this.data(namespace, (instance = new Grid(this, options)));
+                    init.call(instance);
+                }
+                if (typeof option === "string")
+                {
+                    if (option.indexOf("get") === 0 && index === 0)
+                    {
+                        returnValue = instance[option].apply(instance, args);
+                    }
+                    else if (option.indexOf("get") !== 0)
+                    {
+                        return instance[option].apply(instance, args);
+                    }
+                }
+            });
+        return (typeof option === "string" && option.indexOf("get") === 0) ? returnValue : elements;
     };
 
     $.fn.bootgrid.Constructor = Grid;

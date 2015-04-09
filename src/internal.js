@@ -179,8 +179,7 @@ function loadData()
     function update(rows, total)
     {
         that.currentRows = rows;
-        that.total = total;
-        that.totalPages = Math.ceil(total / that.rowCount);
+        setTotals.call(that, total);
 
         if (!that.options.keepSelection)
         {
@@ -278,12 +277,16 @@ function loadRows()
             appendRow.call(that, row);
         });
 
-        this.total = this.rows.length;
-        this.totalPages = (this.rowCount === -1) ? 1 :
-            Math.ceil(this.total / this.rowCount);
-
+        setTotals.call(this, this.rows.length);
         sortRows.call(this);
     }
+}
+
+function setTotals(total)
+{
+    this.total = total;
+    this.totalPages = (this.rowCount === -1) ? 1 :
+        Math.ceil(this.total / this.rowCount);
 }
 
 function prepareTable()

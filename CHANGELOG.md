@@ -9,12 +9,12 @@
 - Clear search filter method [#89](http://github.com/rstaib/jquery-bootgrid/issues/89)
 - Overridable ajax request settings; see issue [#27](http://github.com/rstaib/jquery-bootgrid/issues/27) for more details
 - Adjusting search input field to perform search not on every key #109  -> todo
-- Public getter for internal variables                                  -> todo
+- Public getters for internal variables; see issues [#121](http://github.com/rstaib/jquery-bootgrid/issues/121) and [#116](http://github.com/rstaib/jquery-bootgrid/issues/116) for more details
 
 ### Bug Fixes
 - Fixed bug [#120](http://github.com/rstaib/jquery-bootgrid/issues/120)
-- Fixed bug [#58](http://github.com/rstaib/jquery-bootgrid/issues/58)   -> use getText when resolving actionDropDown #65
-- Fixing sort method for jQuery plugin #84 (pull request)               -> todo
+- Fixed bug [#58](http://github.com/rstaib/jquery-bootgrid/issues/58) by using the pull request [#65](http://github.com/rstaib/jquery-bootgrid/issues/65)
+- Fixing sort method for jQuery plugin [#84](http://github.com/rstaib/jquery-bootgrid/issues/84)
 
 ### Breaking Changes
 There are no breaking changes but some HTML templates changed during development. In case you want to use the full new feature set be sure you did not override any affected templates.
