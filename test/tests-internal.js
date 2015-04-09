@@ -109,7 +109,7 @@ test("getRequest post function test", 1, function ()
             },
             current: 1,
             rowCount: 5,
-            sort: [],
+            sortDictionary: [],
             searchPhrase: ""
         },
         expected = {
@@ -138,7 +138,7 @@ test("getRequest post object test", 1, function() {
             },
             current: 1,
             rowCount: 5,
-            sort: [],
+            sortDictionary: [],
             searchPhrase: ""
         },
         expected = {

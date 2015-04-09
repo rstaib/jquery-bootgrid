@@ -43,7 +43,7 @@
 
     function getParams(context)
     {
-        return (context) ? $.extend({}, this.cachedParams, { ctx: context }) : 
+        return (context) ? $.extend({}, this.cachedParams, { ctx: context }) :
             this.cachedParams;
     }
 
@@ -52,7 +52,7 @@
         var request = {
                 current: this.current,
                 rowCount: this.rowCount,
-                sort: this.sort,
+                sort: this.sortDictionary,
                 searchPhrase: this.searchPhrase
             },
             post = this.options.post;
@@ -132,7 +132,7 @@
             that.columns.push(column);
             if (column.order != null)
             {
-                that.sort[column.id] = column.order;
+                that.sortDictionary[column.id] = column.order;
             }
 
             // Prevents multiple identifiers
@@ -176,7 +176,7 @@
             for (var i = 0; i < that.columns.length; i++)
             {
                 column = that.columns[i];
-                if (column.searchable && column.visible && 
+                if (column.searchable && column.visible &&
                     column.converter.to(row[column.id]).search(searchPattern) > -1)
                 {
                     return true;
@@ -299,7 +299,7 @@
     function prepareTable()
     {
         var tpl = this.options.templates,
-            wrapper = (this.element.parent().hasClass(this.options.css.responsiveTable)) ? 
+            wrapper = (this.element.parent().hasClass(this.options.css.responsiveTable)) ?
                 this.element.parent() : this.element;
 
         this.element.addClass(this.options.css.table);
@@ -592,7 +592,7 @@
                 if (that.selection)
                 {
                     var selected = ($.inArray(row[that.identifier], that.selectedRows) !== -1),
-                        selectBox = tpl.select.resolve(getParams.call(that, 
+                        selectBox = tpl.select.resolve(getParams.call(that,
                             { type: "checkbox", value: row[that.identifier], checked: selected }));
                     cells += tpl.cell.resolve(getParams.call(that, { content: selectBox, css: css.selectCell }));
                     allRowsSelected = (allRowsSelected && selected);
@@ -613,13 +613,13 @@
                 {
                     if (column.visible)
                     {
-                        var value = ($.isFunction(column.formatter)) ? 
-                                column.formatter.call(that, column, row) : 
+                        var value = ($.isFunction(column.formatter)) ?
+                                column.formatter.call(that, column, row) :
                                     column.converter.to(row[column.id]),
                             cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
                         cells += tpl.cell.resolve(getParams.call(that, {
                             content: (value == null || value === "") ? "&nbsp;" : value,
-                            css: ((column.align === "right") ? css.right : (column.align === "center") ? 
+                            css: ((column.align === "right") ? css.right : (column.align === "center") ?
                                 css.center : css.left) + cssClass,
                             style: (column.width == null) ? "" : "width:" + column.width + ";" }));
                     }
@@ -678,9 +678,9 @@
                 e.stopPropagation();
 
                 var $this = $(this),
-                    id = (that.identifier == null) ? $this.data("row-id") : 
+                    id = (that.identifier == null) ? $this.data("row-id") :
                         that.converter.from($this.data("row-id") + ""),
-                    row = (that.identifier == null) ? that.currentRows[id] : 
+                    row = (that.identifier == null) ? that.currentRows[id] :
                         that.currentRows.first(function (item) { return item[that.identifier] === id; });
 
                 if (that.selection && that.options.rowSelect)
@@ -759,9 +759,9 @@
 
         if (this.selection)
         {
-            var selectBox = (this.options.multiSelect) ? 
+            var selectBox = (this.options.multiSelect) ?
                 tpl.select.resolve(getParams.call(that, { type: "checkbox", value: "all" })) : "";
-            html += tpl.rawHeaderCell.resolve(getParams.call(that, { content: selectBox, 
+            html += tpl.rawHeaderCell.resolve(getParams.call(that, { content: selectBox,
                 css: css.selectCell }));
         }
 
@@ -769,7 +769,7 @@
         {
             if (column.visible)
             {
-                var sortOrder = that.sort[column.id],
+                var sortOrder = that.sortDictionary[column.id],
                     iconCss = ((sorting && sortOrder && sortOrder === "asc") ? css.iconUp :
                         (sorting && sortOrder && sortOrder === "desc") ? css.iconDown : ""),
                     icon = tpl.icon.resolve(getParams.call(that, { iconCss: iconCss })),
@@ -777,7 +777,7 @@
                     cssClass = (column.headerCssClass.length > 0) ? " " + column.headerCssClass : "";
                 html += tpl.headerCell.resolve(getParams.call(that, {
                     column: column, icon: icon, sortable: sorting && column.sortable && css.sortable || "",
-                    css: ((align === "right") ? css.right : (align === "center") ? 
+                    css: ((align === "right") ? css.right : (align === "center") ?
                         css.center : css.left) + cssClass,
                     style: (column.width == null) ? "" : "width:" + column.width + ";" }));
             }
@@ -785,58 +785,15 @@
 
         headerRow.html(html);
 
-        // todo: create a own function for that piece of code
         if (sorting)
         {
-            var sortingSelector = getCssSelector(css.sortable),
-                iconSelector = getCssSelector(css.icon);
+            var sortingSelector = getCssSelector(css.sortable);
             headerRow.off("click" + namespace, sortingSelector)
                 .on("click" + namespace, sortingSelector, function (e)
                 {
                     e.preventDefault();
-                    var $this = $(this),
-                        columnId = $this.data("column-id") || $this.parents("th").first().data("column-id"),
-                        sortOrder = that.sort[columnId],
-                        icon = $this.find(iconSelector);
 
-                    if (!that.options.multiSort)
-                    {
-                        $this.parents("tr").first().find(iconSelector).removeClass(css.iconDown + " " + css.iconUp);
-                        that.sort = {};
-                    }
-
-                    if (sortOrder && sortOrder === "asc")
-                    {
-                        that.sort[columnId] = "desc";
-                        icon.removeClass(css.iconUp).addClass(css.iconDown);
-                    }
-                    else if (sortOrder && sortOrder === "desc")
-                    {
-                        if (that.options.multiSort)
-                        {
-                            var newSort = {};
-                            for (var key in that.sort)
-                            {
-                                if (key !== columnId)
-                                {
-                                    newSort[key] = that.sort[key];
-                                }
-                            }
-                            that.sort = newSort;
-                            icon.removeClass(css.iconDown);
-                        }
-                        else
-                        {
-                            that.sort[columnId] = "asc";
-                            icon.removeClass(css.iconDown).addClass(css.iconUp);
-                        }
-                    }
-                    else
-                    {
-                        that.sort[columnId] = "asc";
-                        icon.addClass(css.iconUp);
-                    }
-
+                    setTableHeaderSortDirection.call(that, $(this));
                     sortRows.call(that);
                     loadData.call(that);
                 });
@@ -860,6 +817,53 @@
                         that.deselect();
                     }
                 });
+        }
+    }
+
+    function setTableHeaderSortDirection(element)
+    {
+        var css = this.options.css,
+            iconSelector = getCssSelector(css.icon),
+            columnId = element.data("column-id") || element.parents("th").first().data("column-id"),
+            sortOrder = this.sortDictionary[columnId],
+            icon = element.find(iconSelector);
+
+        if (!this.options.multiSort)
+        {
+            element.parents("tr").first().find(iconSelector).removeClass(css.iconDown + " " + css.iconUp);
+            this.sortDictionary = {};
+        }
+
+        if (sortOrder && sortOrder === "asc")
+        {
+            this.sortDictionary[columnId] = "desc";
+            icon.removeClass(css.iconUp).addClass(css.iconDown);
+        }
+        else if (sortOrder && sortOrder === "desc")
+        {
+            if (this.options.multiSort)
+            {
+                var newSort = {};
+                for (var key in this.sortDictionary)
+                {
+                    if (key !== columnId)
+                    {
+                        newSort[key] = this.sortDictionary[key];
+                    }
+                }
+                this.sortDictionary = newSort;
+                icon.removeClass(css.iconDown);
+            }
+            else
+            {
+                this.sortDictionary[columnId] = "asc";
+                icon.removeClass(css.iconDown).addClass(css.iconUp);
+            }
+        }
+        else
+        {
+            this.sortDictionary[columnId] = "asc";
+            icon.addClass(css.iconUp);
         }
     }
 
@@ -916,13 +920,13 @@
         {
             var that = this;
 
-            for (var key in this.sort)
+            for (var key in this.sortDictionary)
             {
                 if (this.options.multiSort || sortArray.length === 0)
                 {
                     sortArray.push({
                         id: key,
-                        order: this.sort[key]
+                        order: this.sortDictionary[key]
                     });
                 }
             }
@@ -963,7 +967,7 @@
         this.rows = [];
         this.searchPhrase = "";
         this.selectedRows = [];
-        this.sort = {};
+        this.sortDictionary = {};
         this.total = 0;
         this.totalPages = 0;
         this.cachedParams = {
@@ -1031,7 +1035,7 @@
         rowSelect: false,
 
         /**
-         * Defines whether the row selection is saved internally on filtering, paging and sorting 
+         * Defines whether the row selection is saved internally on filtering, paging and sorting
          * (even if the selected rows are not visible).
          *
          * @property keepSelection
@@ -1081,7 +1085,7 @@
         },
 
         /**
-         * Enriches the request object with additional properties. Either a `PlainObject` or a `Function` 
+         * Enriches the request object with additional properties. Either a `PlainObject` or a `Function`
          * that returns a `PlainObject` can be passed. Default value is `{}`.
          *
          * @property post
@@ -1093,7 +1097,7 @@
         post: {}, // or use function () { return {}; } (reserved properties are "current", "rowCount", "sort" and "searchPhrase")
 
         /**
-         * Sets the data URL to a data service (e.g. a REST service). Either a `String` or a `Function` 
+         * Sets the data URL to a data service (e.g. a REST service). Either a `String` or a `Function`
          * that returns a `String` can be passed. Default value is `""`.
          *
          * @property url
@@ -1504,7 +1508,7 @@
         {
             rowIds = rowIds || this.currentRows.propValues(this.identifier);
 
-            var id, i, 
+            var id, i,
                 selectedRows = [];
 
             while (rowIds.length > 0 && !(!this.options.multiSelect && selectedRows.length === 1))
@@ -1602,7 +1606,7 @@
                         .removeClass(this.options.css.selected)._bgAria("selected", "false")
                         .find(selectBoxSelector).prop("checked", false);
                 }
-                
+
                 this.element.trigger("deselected" + namespace, [deselectedRows]);
             }
         }
@@ -1622,13 +1626,13 @@
     Grid.prototype.sort = function(dictionary)
     {
         var values = (dictionary) ? $.extend({}, dictionary) : {};
-        if (values === this.sort)
+
+        if (values === this.sortDictionary)
         {
             return this;
         }
 
-        this.sort = values;
-
+        this.sortDictionary = values;
         renderTableHeader.call(this);
         sortRows.call(this);
         loadData.call(this);
