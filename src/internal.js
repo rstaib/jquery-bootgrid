@@ -104,6 +104,7 @@ function loadColumns()
                 headerAlign: data.headerAlign || "left",
                 cssClass: data.cssClass || "",
                 headerCssClass: data.headerCssClass || "",
+                title: data.title || "",
                 formatter: that.options.formatters[data.formatter] || null,
                 order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
                 searchable: !(data.searchable === false), // default: true
@@ -600,8 +601,10 @@ function renderRows(rows)
                             column.formatter.call(that, column, row) : 
                                 column.converter.to(row[column.id]),
                         cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
+                        title = (column.title.length > 0) ? "" + column.title : "";
                     cells += tpl.cell.resolve(getParams.call(that, {
                         content: (value == null || value === "") ? "&nbsp;" : value,
+                        title: (title == null || title === "") ? "" : title,
                         css: ((column.align === "right") ? css.right : (column.align === "center") ? 
                             css.center : css.left) + cssClass }));
                 }
