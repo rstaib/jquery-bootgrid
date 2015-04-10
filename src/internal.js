@@ -104,11 +104,13 @@ function loadColumns()
                 headerAlign: data.headerAlign || "left",
                 cssClass: data.cssClass || "",
                 headerCssClass: data.headerCssClass || "",
+                title: data.title || "",
                 formatter: that.options.formatters[data.formatter] || null,
                 order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
                 searchable: !(data.searchable === false), // default: true
                 sortable: !(data.sortable === false), // default: true
-                visible: !(data.visible === false) // default: true
+                visible: !(data.visible === false), // default: true
+                html: !(data.html === true) // default: false, recomended to use in conjunction with data-sortable="false"
             };
         that.columns.push(column);
         if (column.order != null)
@@ -254,7 +256,14 @@ function loadRows()
 
             $.each(that.columns, function (i, column)
             {
-                row[column.id] = column.converter.from(cells.eq(i).text());
+                if (column.html === true) 
+                {
+                    row[column.id] = column.converter.from(cells.eq(i).text());
+                } 
+                else 
+                {
+                    row[column.id] = column.converter.from(cells.eq(i).html());
+                }
             });
 
             appendRow.call(that, row);
@@ -591,9 +600,11 @@ function renderRows(rows)
                     var value = ($.isFunction(column.formatter)) ? 
                             column.formatter.call(that, column, row) : 
                                 column.converter.to(row[column.id]),
-                        cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
+                        cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "",
+                        title = (column.title.length > 0) ? "" + column.title : "";
                     cells += tpl.cell.resolve(getParams.call(that, {
                         content: (value == null || value === "") ? "&nbsp;" : value,
+                        title: (title == null || title === "") ? "" : title,
                         css: ((column.align === "right") ? css.right : (column.align === "center") ? 
                             css.center : css.left) + cssClass }));
                 }
