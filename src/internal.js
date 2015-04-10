@@ -600,7 +600,7 @@ function renderRows(rows)
                     var value = ($.isFunction(column.formatter)) ? 
                             column.formatter.call(that, column, row) : 
                                 column.converter.to(row[column.id]),
-                        cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
+                        cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "",
                         title = (column.title.length > 0) ? "" + column.title : "";
                     cells += tpl.cell.resolve(getParams.call(that, {
                         content: (value == null || value === "") ? "&nbsp;" : value,
