@@ -871,22 +871,30 @@ function replacePlaceHolder(placeholder, element)
 
 function showLoading()
 {
-    var tpl = this.options.templates,
-        thead = this.element.children("thead").first(),
-        tbody = this.element.children("tbody").first(),
-        firstCell = tbody.find("tr > td").first(),
-        padding = (this.element.height() - thead.height()) - (firstCell.height() + 20),
-        count = this.columns.where(isVisible).length;
+    var that = this;
 
-    if (this.selection)
+    window.setTimeout(function()
     {
-        count = count + 1;
-    }
-    tbody.html(tpl.loading.resolve(getParams.call(this, { columns: count })));
-    if (this.rowCount !== -1 && padding > 0)
-    {
-        tbody.find("tr > td").css("padding", "20px 0 " + padding + "px");
-    }
+        if (that.element._bgAria("busy") === "true")
+        {
+            var tpl = that.options.templates,
+                thead = that.element.children("thead").first(),
+                tbody = that.element.children("tbody").first(),
+                firstCell = tbody.find("tr > td").first(),
+                padding = (that.element.height() - thead.height()) - (firstCell.height() + 20),
+                count = that.columns.where(isVisible).length;
+
+            if (that.selection)
+            {
+                count = count + 1;
+            }
+            tbody.html(tpl.loading.resolve(getParams.call(that, { columns: count })));
+            if (that.rowCount !== -1 && padding > 0)
+            {
+                tbody.find("tr > td").css("padding", "20px 0 " + padding + "px");
+            }
+        }
+    }, 250);
 }
 
 function sortRows()

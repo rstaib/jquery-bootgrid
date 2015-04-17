@@ -4,7 +4,7 @@
 $.fn.extend({
     _bgAria: function (name, value)
     {
-        return this.attr("aria-" + name, value);
+        return (value) ? this.attr("aria-" + name, value) : this.attr("aria-" + name);
     },
 
     _bgBusyAria: function(busy)

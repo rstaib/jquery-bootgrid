@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.2.0 - 04/09/2015
+ * jQuery Bootgrid v1.2.0-rc - 04/17/2015
  * Copyright (c) 2014-2015 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -196,11 +196,14 @@
                 that.selectedRows = [];
             }
 
-            renderRows.call(that, rows);
-            renderInfos.call(that);
-            renderPagination.call(that);
+            window.setTimeout(function()
+            {
+                renderRows.call(that, rows);
+                renderInfos.call(that);
+                renderPagination.call(that);
 
-            that.element._bgBusyAria(false).trigger("loaded" + namespace);
+                that.element._bgBusyAria(false).trigger("loaded" + namespace);
+            }, 100);
         }
 
         if (this.options.ajax)
@@ -242,8 +245,11 @@
 
                     if (textStatus !== "abort")
                     {
-                        renderNoResultsRow.call(that); // overrides loading mask
-                        that.element._bgBusyAria(false).trigger("loaded" + namespace);
+                        window.setTimeout(function()
+                        {
+                            renderNoResultsRow.call(that); // overrides loading mask
+                            that.element._bgBusyAria(false).trigger("loaded" + namespace);
+                        }, 100);
                     }
                 }
             };
@@ -881,22 +887,30 @@
 
     function showLoading()
     {
-        var tpl = this.options.templates,
-            thead = this.element.children("thead").first(),
-            tbody = this.element.children("tbody").first(),
-            firstCell = tbody.find("tr > td").first(),
-            padding = (this.element.height() - thead.height()) - (firstCell.height() + 20),
-            count = this.columns.where(isVisible).length;
+        var that = this;
 
-        if (this.selection)
+        window.setTimeout(function()
         {
-            count = count + 1;
-        }
-        tbody.html(tpl.loading.resolve(getParams.call(this, { columns: count })));
-        if (this.rowCount !== -1 && padding > 0)
-        {
-            tbody.find("tr > td").css("padding", "20px 0 " + padding + "px");
-        }
+            if (that.element._bgAria("busy") === "true")
+            {
+                var tpl = that.options.templates,
+                    thead = that.element.children("thead").first(),
+                    tbody = that.element.children("tbody").first(),
+                    firstCell = tbody.find("tr > td").first(),
+                    padding = (that.element.height() - thead.height()) - (firstCell.height() + 20),
+                    count = that.columns.where(isVisible).length;
+
+                if (that.selection)
+                {
+                    count = count + 1;
+                }
+                tbody.html(tpl.loading.resolve(getParams.call(that, { columns: count })));
+                if (that.rowCount !== -1 && padding > 0)
+                {
+                    tbody.find("tr > td").css("padding", "20px 0 " + padding + "px");
+                }
+            }
+        }, 250);
     }
 
     function sortRows()
@@ -1765,7 +1779,7 @@
     $.fn.extend({
         _bgAria: function (name, value)
         {
-            return this.attr("aria-" + name, value);
+            return (value) ? this.attr("aria-" + name, value) : this.attr("aria-" + name);
         },
 
         _bgBusyAria: function(busy)
