@@ -22,6 +22,10 @@
 .bootgrid-footer .search .glyphicon {
   top: 0;
 }
+.bootgrid-header .search .fa,
+.bootgrid-footer .search .fa {
+  display: table-cell;
+}
 .bootgrid-header .search.search-field::-ms-clear,
 .bootgrid-footer .search.search-field::-ms-clear,
 .bootgrid-header .search .search-field::-ms-clear,
