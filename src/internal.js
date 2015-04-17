@@ -718,11 +718,14 @@ function renderSearchField()
                 if (currentValue !== newValue)
                 {
                     currentValue = newValue;
-                    window.clearTimeout(timer);
-                    timer = window.setTimeout(function ()
+                    if (newValue.length === 0 || newValue.length >= that.options.searchSettings.characters)
                     {
-                        executeSearch.call(that, newValue);
-                    }, 250);
+                        window.clearTimeout(timer);
+                        timer = window.setTimeout(function ()
+                        {
+                            executeSearch.call(that, newValue);
+                        }, that.options.searchSettings.delay);
+                    }
                 }
             });
 

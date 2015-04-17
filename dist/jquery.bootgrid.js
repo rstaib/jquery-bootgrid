@@ -196,14 +196,11 @@
                 that.selectedRows = [];
             }
 
-            window.setTimeout(function()
-            {
-                renderRows.call(that, rows);
-                renderInfos.call(that);
-                renderPagination.call(that);
+            renderRows.call(that, rows);
+            renderInfos.call(that);
+            renderPagination.call(that);
 
-                that.element._bgBusyAria(false).trigger("loaded" + namespace);
-            }, 100);
+            that.element._bgBusyAria(false).trigger("loaded" + namespace);
         }
 
         if (this.options.ajax)
@@ -245,11 +242,8 @@
 
                     if (textStatus !== "abort")
                     {
-                        window.setTimeout(function()
-                        {
-                            renderNoResultsRow.call(that); // overrides loading mask
-                            that.element._bgBusyAria(false).trigger("loaded" + namespace);
-                        }, 100);
+                        renderNoResultsRow.call(that); // overrides loading mask
+                        that.element._bgBusyAria(false).trigger("loaded" + namespace);
                     }
                 }
             };
@@ -734,11 +728,14 @@
                     if (currentValue !== newValue)
                     {
                         currentValue = newValue;
-                        window.clearTimeout(timer);
-                        timer = window.setTimeout(function ()
+                        if (newValue.length === 0 || newValue.length >= that.options.searchSettings.characters)
                         {
-                            executeSearch.call(that, newValue);
-                        }, 250);
+                            window.clearTimeout(timer);
+                            timer = window.setTimeout(function ()
+                            {
+                                executeSearch.call(that, newValue);
+                            }, that.options.searchSettings.delay);
+                        }
                     }
                 });
 
@@ -1066,6 +1063,36 @@
         highlightRows: false, // highlights new rows (find the page of the first new row)
         sorting: true,
         multiSort: false,
+
+        /**
+         * Generall search settings to configure the search field behaviour.
+         *
+         * @property searchSettings
+         * @type Object
+         * @for defaults
+         * @since 1.2.0
+         **/
+        searchSettings: {
+            /**
+             * The time in milliseconds to wait before search gets executed.
+             *
+             * @property delay
+             * @type Number
+             * @default 250
+             * @for searchSettings
+             **/
+            delay: 250,
+            
+            /**
+             * The characters to type before the search gets executed.
+             *
+             * @property characters
+             * @type Number
+             * @default 1
+             * @for searchSettings
+             **/
+            characters: 1
+        },
 
         /**
          * Defines whether the data shall be loaded via an asynchronous HTTP (Ajax) request.

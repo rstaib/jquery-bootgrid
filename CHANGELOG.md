@@ -8,7 +8,7 @@
 - *FontAwesome* iconset overload
 - Clear search filter method [#89](http://github.com/rstaib/jquery-bootgrid/issues/89)
 - Overridable ajax request settings; see issue [#27](http://github.com/rstaib/jquery-bootgrid/issues/27) for more details
-- Adjusting search input field to perform search not on every key #109  -> todo
+- Adjusting search input field to perform search not on every key [#109](http://github.com/rstaib/jquery-bootgrid/issues/109)
 - Public getters for internal variables; see issues [#121](http://github.com/rstaib/jquery-bootgrid/issues/121) and [#116](http://github.com/rstaib/jquery-bootgrid/issues/116) for more details
 - Noticeable flicker on any table update [#118](http://github.com/rstaib/jquery-bootgrid/issues/118) (Partially improved by deferring loading mask)
 

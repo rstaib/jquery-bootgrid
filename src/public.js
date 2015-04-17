@@ -111,6 +111,36 @@ Grid.defaults = {
     multiSort: false,
 
     /**
+     * Generall search settings to configure the search field behaviour.
+     *
+     * @property searchSettings
+     * @type Object
+     * @for defaults
+     * @since 1.2.0
+     **/
+    searchSettings: {
+        /**
+         * The time in milliseconds to wait before search gets executed.
+         *
+         * @property delay
+         * @type Number
+         * @default 250
+         * @for searchSettings
+         **/
+        delay: 250,
+        
+        /**
+         * The characters to type before the search gets executed.
+         *
+         * @property characters
+         * @type Number
+         * @default 1
+         * @for searchSettings
+         **/
+        characters: 1
+    },
+
+    /**
      * Defines whether the data shall be loaded via an asynchronous HTTP (Ajax) request.
      *
      * @property ajax
