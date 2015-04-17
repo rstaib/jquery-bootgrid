@@ -725,10 +725,10 @@
                 {
                     e.stopPropagation();
                     var newValue = $(this).val();
-                    if (currentValue !== newValue)
+                    if (currentValue !== newValue || (e.which === 13 && newValue !== ""))
                     {
                         currentValue = newValue;
-                        if (newValue.length === 0 || newValue.length >= that.options.searchSettings.characters)
+                        if (e.which === 13 || newValue.length === 0 || newValue.length >= that.options.searchSettings.characters)
                         {
                             window.clearTimeout(timer);
                             timer = window.setTimeout(function ()
