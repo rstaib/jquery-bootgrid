@@ -60,6 +60,7 @@
                     <button id="getTotalPageCount" type="button" class="btn btn-default">Total Page Count</button>
                     <button id="getSearchPhrase" type="button" class="btn btn-default">Search Phrase</button>
                     <button id="getSortDictionary" type="button" class="btn btn-default">Sort Dictionary</button>
+                    <button id="getSelectedRows" type="button" class="btn btn-default">Selected Rows</button>
                     <!--div class="table-responsive"-->
                         <table id="grid" class="table table-condensed table-hover table-striped" data-selection="true" data-multi-select="true" data-row-select="true" data-keep-selection="true">
                             <thead>
@@ -253,6 +254,11 @@
                 $("#getSortDictionary").on("click", function ()
                 {
                     alert($("#grid").bootgrid("getSortDictionary"));
+                });
+                
+                $("#getSelectedRows").on("click", function ()
+                {
+                    alert($("#grid").bootgrid("getSelectedRows"));
                 });
             });
         </script>
