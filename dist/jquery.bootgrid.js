@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.2.0 - 04/22/2015
+ * jQuery Bootgrid v1.2.0 - 05/02/2015
  * Copyright (c) 2014-2015 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -1065,7 +1065,7 @@
         multiSort: false,
 
         /**
-         * Generall search settings to configure the search field behaviour.
+         * General search settings to configure the search field behaviour.
          *
          * @property searchSettings
          * @type Object
@@ -1106,7 +1106,7 @@
 
         /**
          * Ajax request settings that shall be used for server-side communication.
-         * All setting can be overridden except data, error, success and url.
+         * All setting except data, error, success and url can be overridden.
          * For the full list of settings go to http://api.jquery.com/jQuery.ajax/.
          *
          * @property ajaxSettings
@@ -1690,6 +1690,7 @@
      *
      * @method getColumnSettings
      * @return {Array} Returns a list of the column settings.
+     * @since 1.2.0
      **/
     Grid.prototype.getColumnSettings = function()
     {
@@ -1703,6 +1704,7 @@
      *
      * @method getCurrentPage
      * @return {Number} Returns the current page index.
+     * @since 1.2.0
      **/
     Grid.prototype.getCurrentPage = function()
     {
@@ -1716,6 +1718,7 @@
      *
      * @method getCurrentPage
      * @return {Array} Returns the current rows.
+     * @since 1.2.0
      **/
     Grid.prototype.getCurrentRows = function()
     {
@@ -1729,6 +1732,7 @@
      *
      * @method getRowCount
      * @return {Number} Returns the row count per page.
+     * @since 1.2.0
      **/
     Grid.prototype.getRowCount = function()
     {
@@ -1742,6 +1746,7 @@
      *
      * @method getSearchPhrase
      * @return {String} Returns the actual search phrase.
+     * @since 1.2.0
      **/
     Grid.prototype.getSearchPhrase = function()
     {
@@ -1755,6 +1760,7 @@
      *
      * @method getSelectedRows
      * @return {Array} Returns all selected rows.
+     * @since 1.2.0
      **/
     Grid.prototype.getSelectedRows = function()
     {
@@ -1768,6 +1774,7 @@
      *
      * @method getSortDictionary
      * @return {Object} Returns the sort dictionary.
+     * @since 1.2.0
      **/
     Grid.prototype.getSortDictionary = function()
     {
@@ -1781,6 +1788,7 @@
      *
      * @method getTotalPageCount
      * @return {Number} Returns the total page count.
+     * @since 1.2.0
      **/
     Grid.prototype.getTotalPageCount = function()
     {
@@ -1794,6 +1802,7 @@
      *
      * @method getTotalRowCount
      * @return {Number} Returns the total row count.
+     * @since 1.2.0
      **/
     Grid.prototype.getTotalRowCount = function()
     {
