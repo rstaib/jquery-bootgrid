@@ -113,6 +113,7 @@ function loadColumns()
                 headerCssClass: data.headerCssClass || "",
                 formatter: that.options.formatters[data.formatter] || null,
                 order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
+                selectable: !(data.selectable === false), // default: true
                 searchable: !(data.searchable === false), // default: true
                 sortable: !(data.sortable === false), // default: true
                 visible: !(data.visible === false), // default: true
@@ -372,6 +373,8 @@ function renderColumnSelection(actions)
 
         $.each(this.columns, function (i, column)
         {
+            if(column.selectable)
+            {
             var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
                 { name: column.id, label: column.text, checked: column.visible })))
                     .on("click" + namespace, selector, function (e)
@@ -393,6 +396,7 @@ function renderColumnSelection(actions)
                         }
                     });
             dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
+            }
         });
         actions.append(dropDown);
     }
