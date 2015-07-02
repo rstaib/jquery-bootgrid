@@ -392,8 +392,9 @@ function renderColumnSelection(actions)
 							loadData.call(that);
 						}
 					});
+        		dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
         	}
-            dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
+            
         });
         actions.append(dropDown);
     }
