@@ -271,7 +271,6 @@ function loadRows()
 
             $.each(that.columns, function (i, column)
             {
-            	//row[column.id] = column.converter.from(cells.eq(i).text());
             	row[column.id] = column.converter.from(cells.eq(i).html());
             });
 
