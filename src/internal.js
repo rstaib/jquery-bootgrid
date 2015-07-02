@@ -161,7 +161,7 @@ function loadData()
     function containsPhrase(row)
     {
         var column,
-            searchPattern = new RegExp(that.searchPhrase, (that.options.caseSensitive) ? "g" : "gi");
+            searchPattern = new RegExp(that.searchPhrase, (that.options.caseInsensitive) ? "g" : "gi");
 
         for (var i = 0; i < that.columns.length; i++)
         {
@@ -271,7 +271,7 @@ function loadRows()
 
             $.each(that.columns, function (i, column)
             {
-                row[column.id] = column.converter.from(cells.eq(i).text());
+            	row[column.id] = column.converter.from(cells.eq(i).html());
             });
 
             appendRow.call(that, row);
@@ -372,27 +372,29 @@ function renderColumnSelection(actions)
 
         $.each(this.columns, function (i, column)
         {
-            var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
-                { name: column.id, label: column.text, checked: column.visible })))
-                    .on("click" + namespace, selector, function (e)
-                    {
-                        e.stopPropagation();
+        	var columnText = $.trim(column.text);
+        	if (columnText !== '') {
+        		var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
+				{ name: column.id, label: column.text, checked: column.visible })))
+					.on("click" + namespace, selector, function (e) {
+						e.stopPropagation();
 
-                        var $this = $(this),
-                            checkbox = $this.find(checkboxSelector);
-                        if (!checkbox.prop("disabled"))
-                        {
-                            column.visible = checkbox.prop("checked");
-                            var enable = that.columns.where(isVisible).length > 1;
-                            $this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
-                                ._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
+						var $this = $(this),
+							checkbox = $this.find(checkboxSelector);
+						if (!checkbox.prop("disabled")) {
+							column.visible = checkbox.prop("checked");
+							var enable = that.columns.where(isVisible).length > 1;
+							$this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
+								._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
 
-                            that.element.find("tbody").empty(); // Fixes an column visualization bug
-                            renderTableHeader.call(that);
-                            loadData.call(that);
-                        }
-                    });
-            dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
+							that.element.find("tbody").empty(); // Fixes an column visualization bug
+							renderTableHeader.call(that);
+							loadData.call(that);
+						}
+					});
+        		dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
+        	}
+            
         });
         actions.append(dropDown);
     }
