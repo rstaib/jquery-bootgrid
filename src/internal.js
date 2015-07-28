@@ -178,6 +178,8 @@ function loadData()
 
     function update(rows, total)
     {
+    	var rows = parseInt(rows),
+    		total = parseInt(total);
         that.currentRows = rows;
         setTotals.call(that, total);
 
@@ -223,7 +225,7 @@ function loadData()
 
                 response = that.options.responseHandler(response);
 
-                that.current = response.current;
+                that.current = parseInt(response.current);
                 update(response.rows, response.total);
             },
             error: function (jqXHR, textStatus, errorThrown)
