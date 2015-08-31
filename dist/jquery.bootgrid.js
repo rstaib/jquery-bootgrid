@@ -234,6 +234,7 @@
                     response = that.options.responseHandler(response);
 
                     that.current = response.current;
+                    that.rowCount = response.rowCount;
                     update(response.rows, response.total);
                 },
                 error: function (jqXHR, textStatus, errorThrown)
