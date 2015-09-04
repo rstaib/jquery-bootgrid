@@ -429,7 +429,7 @@ Grid.prototype.append = function(rows)
 {
     if (this.options.ajax)
     {
-        // todo: implement ajax DELETE
+        // todo: implement ajax PUT
     }
     else
     {

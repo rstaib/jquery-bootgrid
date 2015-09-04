@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.2.0 - 05/02/2015
+ * jQuery Bootgrid v1.3.0 - 09/04/2015
  * Copyright (c) 2014-2015 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -126,6 +126,7 @@
                     searchable: !(data.searchable === false), // default: true
                     sortable: !(data.sortable === false), // default: true
                     visible: !(data.visible === false), // default: true
+                    visibleInSelection: !(data.visibleInSelection === false), // default: true
                     width: ($.isNumeric(data.width)) ? data.width + "px" : 
                         (typeof(data.width) === "string") ? data.width : null
                 };
@@ -382,27 +383,30 @@
 
             $.each(this.columns, function (i, column)
             {
-                var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
-                    { name: column.id, label: column.text, checked: column.visible })))
-                        .on("click" + namespace, selector, function (e)
-                        {
-                            e.stopPropagation();
-
-                            var $this = $(this),
-                                checkbox = $this.find(checkboxSelector);
-                            if (!checkbox.prop("disabled"))
+                if (column.visibleInSelection)
+                {
+                    var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
+                        { name: column.id, label: column.text, checked: column.visible })))
+                            .on("click" + namespace, selector, function (e)
                             {
-                                column.visible = checkbox.prop("checked");
-                                var enable = that.columns.where(isVisible).length > 1;
-                                $this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
-                                    ._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
-
-                                that.element.find("tbody").empty(); // Fixes an column visualization bug
-                                renderTableHeader.call(that);
-                                loadData.call(that);
-                            }
-                        });
-                dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
+                                e.stopPropagation();
+        
+                                var $this = $(this),
+                                    checkbox = $this.find(checkboxSelector);
+                                if (!checkbox.prop("disabled"))
+                                {
+                                    column.visible = checkbox.prop("checked");
+                                    var enable = that.columns.where(isVisible).length > 1;
+                                    $this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
+                                        ._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
+        
+                                    that.element.find("tbody").empty(); // Fixes an column visualization bug
+                                    renderTableHeader.call(that);
+                                    loadData.call(that);
+                                }
+                            });
+                    dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
+                }
             });
             actions.append(dropDown);
         }
@@ -1383,7 +1387,7 @@
     {
         if (this.options.ajax)
         {
-            // todo: implement ajax DELETE
+            // todo: implement ajax PUT
         }
         else
         {

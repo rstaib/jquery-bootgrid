@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.0
+
+### Enhancements & Features
+- Option to hide column from the selection box; see issue [#62](http://github.com/rstaib/jquery-bootgrid/issues/62) for more details
+
 ## 1.2.0
 
 ### Enhancements & Features
