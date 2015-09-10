@@ -691,8 +691,8 @@ function registerRowEvents(tbody)
                     that.select([id]);
                 }
             }
-
-            that.element.trigger("click" + namespace, [that.columns, row]);
+	    // Add in the original event target so listener can work out what was clicked.
+	    that.element.trigger("click" + namespace, [that.columns, row, e.target]);
         });
 }
 
