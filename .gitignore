@@ -7,3 +7,4 @@ src/*.map
 *.diff
 *.patch
 .DS_Store
+settings.json

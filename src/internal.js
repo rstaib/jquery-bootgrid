@@ -485,16 +485,17 @@ function renderPagination()
     }
 }
 
-function renderPaginationItem(list, uri, text, markerCss)
+function renderPaginationItem(list, page, text, markerCss)
 {
     var that = this,
         tpl = this.options.templates,
         css = this.options.css,
-        values = getParams.call(this, { css: markerCss, text: text, uri: "#" + uri }),
+        values = getParams.call(this, { css: markerCss, text: text, page: page }),
         item = $(tpl.paginationItem.resolve(values))
             .on("click" + namespace, getCssSelector(css.paginationButton), function (e)
             {
                 e.stopPropagation();
+                e.preventDefault();
 
                 var $this = $(this),
                     parent = $this.parent();
@@ -506,8 +507,8 @@ function renderPaginationItem(list, uri, text, markerCss)
                         next: that.current + 1,
                         last: that.totalPages
                     };
-                    var command = $this.attr("href").substr(1);
-                    that.current = commandList[command] || +command; // + converts string to int
+                    var command = $this.data("page");
+                    that.current = commandList[command] || command;
                     loadData.call(that);
                 }
                 $this.trigger("blur");
@@ -540,14 +541,14 @@ function renderRowCountSelection(actions)
         $.each(rowCountList, function (index, value)
         {
             var item = $(tpl.actionDropDownItem.resolve(getParams.call(that,
-                { text: getText(value), uri: "#" + value })))
+                { text: getText(value), action: value })))
                     ._bgSelectAria(value === that.rowCount)
                     .on("click" + namespace, menuItemSelector, function (e)
                     {
                         e.preventDefault();
 
                         var $this = $(this),
-                            newRowCount = +$this.attr("href").substr(1);
+                            newRowCount = $this.data("action");
                         if (newRowCount !== that.rowCount)
                         {
                             // todo: sophisticated solution needed for calculating which page is selected
@@ -556,7 +557,7 @@ function renderRowCountSelection(actions)
                             $this.parents(menuItemsSelector).children().each(function ()
                             {
                                 var $item = $(this),
-                                    currentRowCount = +$item.find(menuItemSelector).attr("href").substr(1);
+                                    currentRowCount = $item.find(menuItemSelector).data("action");
                                 $item._bgSelectAria(currentRowCount === newRowCount);
                             });
                             $this.parents(menuSelector).find(menuTextSelector).text(getText(newRowCount));
