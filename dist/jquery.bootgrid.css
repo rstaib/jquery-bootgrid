@@ -145,3 +145,6 @@
   text-overflow: inherit !important;
   white-space: inherit !important;
 }
+.bootgrid-footer a.button{
+	cursor: pointer;
+}
