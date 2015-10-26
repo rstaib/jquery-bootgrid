@@ -91,6 +91,11 @@ function isVisible(column)
     return column.visible;
 }
 
+function isVisibleAndVisibleInSelection(column)
+{
+    return column.visible && column.visibleInSelection;
+}
+
 function loadColumns()
 {
     var that = this,
@@ -386,7 +391,7 @@ function renderColumnSelection(actions)
                             if (!checkbox.prop("disabled"))
                             {
                                 column.visible = checkbox.prop("checked");
-                                var enable = that.columns.where(isVisible).length > 1;
+                                var enable = that.columns.where(isVisibleAndVisibleInSelection).length > 1;
                                 $this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
                                     ._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
     
