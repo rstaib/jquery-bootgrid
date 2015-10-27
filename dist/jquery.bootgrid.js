@@ -714,8 +714,9 @@
             var css = this.options.css,
                 selector = getCssSelector(css.search),
                 searchItems = findFooterAndHeaderItems.call(this, selector);
-
-            if (searchItems.length > 0)
+            
+            // allows for search field to be be disabled in the head by setting disabled: true in searchSettings
+            if ((searchItems.length > 0) && (!(this.options.searchSettings.disabled)))
             {
                 var that = this,
                     tpl = this.options.templates,
