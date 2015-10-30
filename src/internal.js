@@ -393,6 +393,7 @@ function renderColumnSelection(actions)
                                 that.element.find("tbody").empty(); // Fixes an column visualization bug
                                 renderTableHeader.call(that);
                                 loadData.call(that);
+                                that.element.trigger("columnToggle" + namespace, column);
                             }
                         });
                 dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
