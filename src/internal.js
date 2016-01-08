@@ -611,10 +611,24 @@ function renderRows(rows)
             {
                 if (column.visible)
                 {
-                    var value = ($.isFunction(column.formatter)) ?
-                            column.formatter.call(that, column, row) :
-                                column.converter.to(row[column.id]),
-                        cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
+                    var value = "";
+                    if($.isFunction(column.formatter)){
+                        value = column.formatter.call(that, column, row);
+                    }else{
+                        // 解决JSON嵌套取值为undefinded问题
+                        var columnId = column.id;
+                        if(columnId.indexOf(".")){
+                            var columnIds = columnId.split(".");
+                            $.each(columnIds, function(index, id){
+                                value = (index===0) ? row[id] : value[id];
+                            })
+                        }else{
+                            value = row[column.id];
+                        }
+                        column.converter.to(value);
+                    }
+
+                    var  cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
                     cells += tpl.cell.resolve(getParams.call(that, {
                         content: (value == null || value === "") ? "&nbsp;" : value,
                         css: ((column.align === "right") ? css.right : (column.align === "center") ?
