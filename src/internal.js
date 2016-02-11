@@ -159,16 +159,37 @@ function loadData()
     this.element._bgBusyAria(true).trigger("load" + namespace);
     showLoading.call(this);
 
+    function stringSearch(needle, haystack)
+    {
+        var index;
+        if (that.options.regexSearch) {
+            index = haystack.search(needle);
+        } else {
+            index = haystack.toLowerCase().indexOf(needle);
+        }
+        return index > -1 ? true : false;
+    }
+
+    function getRegexSearchPhrase (searchPhrase) {
+        return new RegExp(searchPhrase, that.options.caseSensitive ? "g" : "gi");
+    }
+
+    function getPlainSearchPhrase (searchPhrase) {
+        return that.options.caseSensitive ? searchPhrase : searchPhrase.toLowerCase();
+    }
+
     function containsPhrase(row)
     {
-        var column,
-            searchPattern = new RegExp(that.searchPhrase, (that.options.caseSensitive) ? "g" : "gi");
+        var column;
+        var searchPattern = 
+            that.options.regexSearch ? 
+            getRegexSearchPhrase(that.searchPhrase) : 
+            getPlainSearchPhrase(that.searchPhrase);
 
         for (var i = 0; i < that.columns.length; i++)
         {
             column = that.columns[i];
-            if (column.searchable && column.visible &&
-                column.converter.to(row[column.id]).search(searchPattern) > -1)
+            if (column.searchable && column.visible && stringSearch(searchPattern, column.converter.to(row[column.id])))
             {
                 return true;
             }
