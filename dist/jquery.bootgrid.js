@@ -126,7 +126,7 @@
                     searchable: !(data.searchable === false), // default: true
                     sortable: !(data.sortable === false), // default: true
                     visible: !(data.visible === false), // default: true
-                    visibleInSelection: !(data.visibleInSelection === false), // default: true
+                    visibleInSelection: !(data.visibleinselection === false), // default: true
                     width: ($.isNumeric(data.width)) ? data.width + "px" : 
                         (typeof(data.width) === "string") ? data.width : null
                 };
