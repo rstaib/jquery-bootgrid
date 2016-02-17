@@ -208,6 +208,15 @@ Grid.defaults = {
      **/
     caseSensitive: true,
 
+    /**
+     * Defines if regex should be used when searching
+     *
+     * @property regexSearch
+     * @type Boolean
+     * @for defaults
+     **/
+     regexSearch: true,
+
     // note: The following properties should not be used via data-api attributes
 
     /**
