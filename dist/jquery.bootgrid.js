@@ -151,19 +151,23 @@
         showLoading.call(this);
 
         function containsPhrase(row) {
-            var match = true;
-            var match2 = false;
+            var innerMatch = false;
+            var outerMatch = true;
+            var searchMatch = false;
             if (Object.keys(that.searchParams).length > 0) {
                 for (var index = 0; index < that.columns.length; index++) {
-                    if (that.searchParams[index.toString()] != null) {
-                        searchPattern = new RegExp(that.searchParams[index.toString()], (that.options.caseSensitive) ? "g" : "gi");
-                        column = that.columns[index];
-                        if (column.searchable && column.visible &&
-                            column.converter.to(row[column.id]).search(searchPattern) > -1) {
-                        }
-                        else {
-                            match = false;
-                            break;
+                    innerMatch = false;
+                    column = that.columns[index];
+                    if (column.searchable && column.visible) {
+                        if (that.searchParams[index.toString()] != null) {
+                            for (var phraseNum = that.searchParams[index.toString()].length - 1; phraseNum >= 0; phraseNum--) {
+                                searchPattern = new RegExp(that.searchParams[index.toString()][phraseNum], (that.options.caseSensitive) ? "g" : "gi");
+                                if (column.converter.to(row[column.id]).search(searchPattern) > -1) {
+                                    innerMatch = true;
+                                    break;
+                                }
+                            }
+                            outerMatch = outerMatch && innerMatch;
                         }
                     }
                 }
@@ -175,11 +179,11 @@
                 column = that.columns[i];
                 if (column.searchable && column.visible &&
                     column.converter.to(row[column.id]).search(searchPattern) > -1) {
-                    match2 = true;
+                    searchMatch = true;
                 }
             }
 
-            return (match && match2);
+            return (outerMatch && searchMatch);
         }
 
         function update(rows, total) {
@@ -1429,18 +1433,32 @@
 
 
     Grid.prototype.addParams = function (phrase, columnNum) {
-
-        this.searchParams[columnNum.toString()] = phrase;
-        executeSearchByParams.call(this);
-
+        if (this.searchParams.hasOwnProperty(columnNum.toString())) {
+            this.searchParams[columnNum.toString()].push(phrase);
+            executeSearchByParams.call(this);
+        }
+        else {
+            this.searchParams[columnNum.toString()] = new Array();
+            this.searchParams[columnNum.toString()].push(phrase);
+            executeSearchByParams.call(this);
+        }
         return this;
     };
 
-    Grid.prototype.removeParams = function (columnNum) {
+    Grid.prototype.removeParams = function (phrase, columnNum) {
         if(this.searchParams.hasOwnProperty(columnNum.toString())){
+            if (phrase == null){
+                delete this.searchParams[columnNum.toString()];
+            }
+            for (var dex = this.searchParams[columnNum.toString()].length - 1; dex >= 0; dex--){
+                if (this.searchParams[columnNum.toString()][dex] == phrase){
+                    delete this.searchParams[columnNum.toString()][dex];
+                    break;
+                }
+            }
             delete this.searchParams[columnNum.toString()];
+            executeSearchByParams.call(this);
         }
-        executeSearchByParams.call(this);
 
         return this;
     };
@@ -1450,6 +1468,7 @@
         executeSearchByParams.call(this);
         return this;
     };
+
 
 
     /**
