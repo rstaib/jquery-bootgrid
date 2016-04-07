@@ -24,6 +24,20 @@ function appendRow(row)
     return false;
 }
 
+function appendRows(rows)
+{
+    var that = this;
+
+    var appendenRows = rows.slice();
+    appendenRows.filter(function(item) {
+      return !(that.identifier && item[that.identifier] === this.rows[that.identifier]);
+    });
+
+    this.rows = this.rows.concat(appendenRows);
+
+    return appendenRows;
+}
+
 function findFooterAndHeaderItems(selector)
 {
     var footer = (this.footer) ? this.footer.find(selector) : $(),
@@ -264,6 +278,7 @@ function loadRows()
         var that = this,
             rows = this.element.find("tbody > tr");
 
+        var convertedRows = [];
         rows.each(function ()
         {
             var $this = $(this),
@@ -275,9 +290,10 @@ function loadRows()
                 row[column.id] = column.converter.from(cells.eq(i).text());
             });
 
-            appendRow.call(that, row);
+            convertedRows.push(row);
         });
 
+        appendRows.call(that, convertedRows);
         setTotals.call(this, this.rows.length);
         sortRows.call(this);
     }

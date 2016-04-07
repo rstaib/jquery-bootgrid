@@ -1,6 +1,6 @@
 /*! 
- * jQuery Bootgrid v1.3.1 - 09/11/2015
- * Copyright (c) 2014-2015 Rafael Staib (http://www.jquery-bootgrid.com)
+ * jQuery Bootgrid v1.3.1 - 04/07/2016
+ * Copyright (c) 2014-2016 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
 ;(function ($, window, undefined)
@@ -32,6 +32,20 @@
         }
 
         return false;
+    }
+
+    function appendRows(rows)
+    {
+        var that = this;
+
+        var appendenRows = rows.slice();
+        appendenRows.filter(function(item) {
+          return !(that.identifier && item[that.identifier] === this.rows[that.identifier]);
+        });
+
+        this.rows = this.rows.concat(appendenRows);
+
+        return appendenRows;
     }
 
     function findFooterAndHeaderItems(selector)
@@ -274,6 +288,7 @@
             var that = this,
                 rows = this.element.find("tbody > tr");
 
+            var convertedRows = [];
             rows.each(function ()
             {
                 var $this = $(this),
@@ -285,9 +300,10 @@
                     row[column.id] = column.converter.from(cells.eq(i).text());
                 });
 
-                appendRow.call(that, row);
+                convertedRows.push(row);
             });
 
+            appendRows.call(that, convertedRows);
             setTotals.call(this, this.rows.length);
             sortRows.call(this);
         }
@@ -1392,14 +1408,7 @@
         }
         else
         {
-            var appendedRows = [];
-            for (var i = 0; i < rows.length; i++)
-            {
-                if (appendRow.call(this, rows[i]))
-                {
-                    appendedRows.push(rows[i]);
-                }
-            }
+            var appendedRows = appendRows.call(this, rows);
             sortRows.call(this);
             highlightAppendedRows.call(this, appendedRows);
             loadData.call(this);
