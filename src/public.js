@@ -433,14 +433,7 @@ Grid.prototype.append = function(rows)
     }
     else
     {
-        var appendedRows = [];
-        for (var i = 0; i < rows.length; i++)
-        {
-            if (appendRow.call(this, rows[i]))
-            {
-                appendedRows.push(rows[i]);
-            }
-        }
+        var appendedRows = appendRows.call(this, rows);
         sortRows.call(this);
         highlightAppendedRows.call(this, appendedRows);
         loadData.call(this);
