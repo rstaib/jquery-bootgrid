@@ -246,6 +246,8 @@
                         renderNoResultsRow.call(that); // overrides loading mask
                         that.element._bgBusyAria(false).trigger("loaded" + namespace);
                     }
+                    
+                    that.options.ajaxError(jqXHR, textStatus, errorThrown);
                 }
             };
             settings = $.extend(this.options.ajaxSettings, settings);
@@ -1190,6 +1192,15 @@
          * @since 1.1.0
          **/
         responseHandler: function (response) { return response; },
+        
+        /**
+         * Exposes Ajax Error event to callee
+         * @property ajaxError
+         * @type Function
+         * @default function(jqXHR, textStatus, errorThrown) {};
+         * @for defaults
+         * */
+         ajaxError: function(jqXHR, textStatus, errorThrown) {},
 
         /**
          * A list of converters.
