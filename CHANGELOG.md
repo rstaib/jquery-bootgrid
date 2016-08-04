@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.2
+
+### Enhancements & Features
+- Sorting columns now respects the `caseSensitive` flag.
+
 ## 1.3.1
 
 ### Enhancements & Features
