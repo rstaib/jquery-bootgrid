@@ -8,3 +8,4 @@ src/*.map
 *.patch
 .DS_Store
 settings.json
+bower_components
