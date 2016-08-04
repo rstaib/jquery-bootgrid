@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.3.1 - 08/03/2016
+ * jQuery Bootgrid v1.3.1 - 08/04/2016
  * Copyright (c) 2014-2016 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -1002,7 +1002,7 @@ Grid.defaults = {
          * @for searchSettings
          **/
         delay: 250,
-        
+
         /**
          * The characters to type before the search gets executed.
          *
@@ -1072,7 +1072,7 @@ Grid.defaults = {
     url: "", // or use function () { return ""; }
 
     /**
-     * Defines whether the search is case sensitive or insensitive.
+     * Defines whether the search and sorting is case sensitive.
      *
      * @property caseSensitive
      * @type Boolean
@@ -1250,7 +1250,7 @@ Grid.defaults = {
          * @for statusMapping
          **/
         2: "warning",
-        
+
         /**
          * Specifies a dangerous or potentially negative action.
          *
@@ -1434,7 +1434,7 @@ Grid.prototype.remove = function(rowIds)
 };
 
 /**
- * Searches in all rows for a specific phrase (but only in visible cells). 
+ * Searches in all rows for a specific phrase (but only in visible cells).
  * The search filter will be reseted, if no argument is provided.
  *
  * @method search
@@ -1579,7 +1579,7 @@ Grid.prototype.deselect = function(rowIds)
 };
 
 /**
- * Sorts the rows by a given sort descriptor dictionary. 
+ * Sorts the rows by a given sort descriptor dictionary.
  * The sort filter will be reseted, if no argument is provided.
  *
  * @method sort
