@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.4.0
+
+### Enhancements & Features
+- Added 3 new events      
+    - **search** Fired when a search is executed
+    - **changePage** Fired when pagination is clicked
+    - **toggleColumn** Fired when the checkbox is clicked to show/hide a column
+    - **changeRowCount** Fired when changing the row count
+- Added function that resolves the relative page the table show display after changing row count.
+- Added option to disable the feature to resolve relative page after changing row count. `resolvePageFromRowCount: {boolean} [true]`
+
 ## 1.3.2
 
 ### Enhancements & Features

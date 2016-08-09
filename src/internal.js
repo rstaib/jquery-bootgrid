@@ -352,6 +352,7 @@ function renderColumnSelection(actions) {
 							checkbox = $this.find(checkboxSelector);
 						if (!checkbox.prop("disabled")) {
 							column.visible = checkbox.prop("checked");
+							that.element.trigger('toggleColumn', [column.id, column.text, column.visible]);
 							var enable = that.columns.where(isVisible).length > 1;
 							$this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
 								._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
@@ -468,6 +469,7 @@ function renderPaginationItem(list, page, text, markerCss) {
 				};
 				var command = $this.data("page");
 				that.current = commandList[command] || command;
+				that.element.trigger('changePage', [command.toString(), that.current]);
 				loadData.call(that);
 			}
 			$this.trigger("blur");
@@ -508,8 +510,14 @@ function renderRowCountSelection(actions) {
 					var $this = $(this),
 						newRowCount = $this.data("action");
 					if (newRowCount !== that.rowCount) {
-						// todo: sophisticated solution needed for calculating which page is selected
-						that.current = 1; // that.rowCount === -1 ---> All
+						if(that.options.resolvePageFromRowCount){
+							var page = that.current > 1 ? that.current : 1;
+							var skip = that.current > 1 ? that.rowCount * (that.current-1) + 1 : 0;
+							var newPage = skip > 1 ? Math.ceil(skip/newRowCount) : 1;
+							that.current = newRowCount > 0 ? newPage : 1;
+						}else{
+							that.current = 1;
+						}
 						that.rowCount = newRowCount;
 						$this.parents(menuItemsSelector).children().each(function() {
 							var $item = $(this),
@@ -517,6 +525,7 @@ function renderRowCountSelection(actions) {
 							$item._bgSelectAria(currentRowCount === newRowCount);
 						});
 						$this.parents(menuSelector).find(menuTextSelector).text(getText(newRowCount));
+						that.element.trigger('changeRowCount' + namespace, [newRowCount]);
 						loadData.call(that);
 					}
 				});
@@ -682,6 +691,7 @@ function executeSearch(phrase) {
 	if (this.searchPhrase !== phrase) {
 		this.current = 1;
 		this.searchPhrase = phrase;
+		this.element.trigger("search" + namespace, [this.searchPhrase]);
 		loadData.call(this);
 	}
 }

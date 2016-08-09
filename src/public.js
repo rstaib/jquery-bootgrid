@@ -62,6 +62,17 @@ Grid.defaults = {
     rowCount: [10, 25, 50, -1], // rows per page int or array of int (-1 represents "All")
 
     /**
+     * Resolves the correct page number after changing the row count so that the top most row will remain in the table
+     *
+     * @property resolvePageFromRowCount
+     * @type Boolean
+     * @default true
+     * @for defaults
+     * @since 1.4.0
+     **/
+    resolvePageFromRowCount: true,
+
+    /**
      * Enables row selection (to enable multi selection see also `multiSelect`). Default value is `false`.
      *
      * @property selection
@@ -735,12 +746,25 @@ Grid.prototype.sort = function(dictionary)
  * Therefore be sure that only one grid instance is catched by your selector.
  *
  * @method getColumnSettings
+ * @param {Object} filter object to filter return array with
  * @return {Array} Returns a list of the column settings.
  * @since 1.2.0
+ * @version 1.4.0
  **/
-Grid.prototype.getColumnSettings = function()
+Grid.prototype.getColumnSettings = function(filter)
 {
-    return $.merge([], this.columns);
+    var res = this.columns;
+    if(filter && typeof filter === 'object'){
+        res = this.columns.filter(function(el){
+            for (var key in filter) {
+                if(el[key] !== filter[key]){
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+    return $.merge([], res);
 };
 
 /**

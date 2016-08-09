@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.3.1 - 08/04/2016
+ * jQuery Bootgrid v1.3.2 - 08/09/2016
  * Copyright (c) 2014-2016 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -362,6 +362,7 @@ function renderColumnSelection(actions) {
 							checkbox = $this.find(checkboxSelector);
 						if (!checkbox.prop("disabled")) {
 							column.visible = checkbox.prop("checked");
+							that.element.trigger('toggleColumn', [column.id, column.text, column.visible]);
 							var enable = that.columns.where(isVisible).length > 1;
 							$this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
 								._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
@@ -478,6 +479,7 @@ function renderPaginationItem(list, page, text, markerCss) {
 				};
 				var command = $this.data("page");
 				that.current = commandList[command] || command;
+				that.element.trigger('changePage', [command.toString(), that.current]);
 				loadData.call(that);
 			}
 			$this.trigger("blur");
@@ -518,8 +520,14 @@ function renderRowCountSelection(actions) {
 					var $this = $(this),
 						newRowCount = $this.data("action");
 					if (newRowCount !== that.rowCount) {
-						// todo: sophisticated solution needed for calculating which page is selected
-						that.current = 1; // that.rowCount === -1 ---> All
+						if(that.options.resolvePageFromRowCount){
+							var page = that.current > 1 ? that.current : 1;
+							var skip = that.current > 1 ? that.rowCount * (that.current-1) + 1 : 0;
+							var newPage = skip > 1 ? Math.ceil(skip/newRowCount) : 1;
+							that.current = newRowCount > 0 ? newPage : 1;
+						}else{
+							that.current = 1;
+						}
 						that.rowCount = newRowCount;
 						$this.parents(menuItemsSelector).children().each(function() {
 							var $item = $(this),
@@ -527,6 +535,7 @@ function renderRowCountSelection(actions) {
 							$item._bgSelectAria(currentRowCount === newRowCount);
 						});
 						$this.parents(menuSelector).find(menuTextSelector).text(getText(newRowCount));
+						that.element.trigger('changeRowCount' + namespace, [newRowCount]);
 						loadData.call(that);
 					}
 				});
@@ -692,6 +701,7 @@ function executeSearch(phrase) {
 	if (this.searchPhrase !== phrase) {
 		this.current = 1;
 		this.searchPhrase = phrase;
+		this.element.trigger("search" + namespace, [this.searchPhrase]);
 		loadData.call(this);
 	}
 }
@@ -934,6 +944,17 @@ Grid.defaults = {
     padding: 2, // page padding (pagination)
     columnSelection: true,
     rowCount: [10, 25, 50, -1], // rows per page int or array of int (-1 represents "All")
+
+    /**
+     * Resolves the correct page number after changing the row count so that the top most row will remain in the table
+     *
+     * @property resolvePageFromRowCount
+     * @type Boolean
+     * @default true
+     * @for defaults
+     * @since 1.4.0
+     **/
+    resolvePageFromRowCount: true,
 
     /**
      * Enables row selection (to enable multi selection see also `multiSelect`). Default value is `false`.
@@ -1609,12 +1630,25 @@ Grid.prototype.sort = function(dictionary)
  * Therefore be sure that only one grid instance is catched by your selector.
  *
  * @method getColumnSettings
+ * @param {Object} filter object to filter return array with
  * @return {Array} Returns a list of the column settings.
  * @since 1.2.0
+ * @version 1.4.0
  **/
-Grid.prototype.getColumnSettings = function()
+Grid.prototype.getColumnSettings = function(filter)
 {
-    return $.merge([], this.columns);
+    var res = this.columns;
+    if(filter && typeof filter === 'object'){
+        res = this.columns.filter(function(el){
+            for (var key in filter) {
+                if(el[key] !== filter[key]){
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+    return $.merge([], res);
 };
 
 /**
