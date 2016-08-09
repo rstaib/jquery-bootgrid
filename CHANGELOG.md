@@ -3,7 +3,7 @@
 ## 1.4.0
 
 ### Enhancements & Features
-- Added 3 new events      
+- Added 4 new events      
     - **search** Fired when a search is executed
     - **changePage** Fired when pagination is clicked
     - **toggleColumn** Fired when the checkbox is clicked to show/hide a column
