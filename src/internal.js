@@ -351,8 +351,6 @@ function renderColumnSelection(actions) {
 						var $this = $(this),
 							checkbox = $this.find(checkboxSelector);
 						if (!checkbox.prop("disabled")) {
-							column.visible = checkbox.prop("checked");
-							that.element.trigger('toggleColumn', [column.id, column.text, column.visible]);
 							var enable = that.columns.where(isVisible).length > 1;
 							$this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
 								._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
@@ -361,6 +359,11 @@ function renderColumnSelection(actions) {
 							renderTableHeader.call(that);
 							loadData.call(that);
 						}
+					})
+					.on("change" + namespace, checkboxSelector, function(e){
+						var $this = $(this);
+						column.visible = $this.prop("checked");
+						that.element.trigger('toggleColumn', [column.id, column.text, column.visible]);
 					});
 				dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
 			}

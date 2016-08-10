@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.1
+
+### Bug Fixes
+- Fixed toggleColumn event being fired twice in some cases
+
 ## 1.4.0
 
 ### Enhancements & Features
