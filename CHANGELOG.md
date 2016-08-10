@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.2
+
+### Bug Fixes
+- Fixed bug with showing/hiding columns
+
 ## 1.4.1
 
 ### Bug Fixes
