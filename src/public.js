@@ -148,7 +148,17 @@ Grid.defaults = {
          * @default 1
          * @for searchSettings
          **/
-        characters: 1
+        characters: 1,
+
+        /**
+         * Option if search should ignore hidden columns
+         *
+         * @property includeHidden
+         * @type Boolean
+         * @default false
+         * @for searchSettings
+         **/
+        includeHidden: false
     },
 
     /**

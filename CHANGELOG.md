@@ -5,6 +5,9 @@
 ### Bug Fixes
 - Fixed bug with showing/hiding columns
 
+### Enhancements & Features
+- Added options for search to include hidden columns
+
 ## 1.4.1
 
 ### Bug Fixes

@@ -149,7 +149,7 @@ function loadData() {
 
 		for (var i = 0; i < that.columns.length; i++) {
 			column = that.columns[i];
-			if (column.searchable && column.visible &&
+			if (column.searchable && (column.visible || that.options.searchSettings.includeHidden ) &&
 				column.converter.to(row[column.id]).search(searchPattern) > -1) {
 				return true;
 			}

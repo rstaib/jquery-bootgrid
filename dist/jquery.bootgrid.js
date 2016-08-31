@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.4.1 - 08/10/2016
+ * jQuery Bootgrid v1.4.1 - 08/31/2016
  * Copyright (c) 2014-2016 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -159,7 +159,7 @@ function loadData() {
 
 		for (var i = 0; i < that.columns.length; i++) {
 			column = that.columns[i];
-			if (column.searchable && column.visible &&
+			if (column.searchable && (column.visible || that.options.searchSettings.includeHidden ) &&
 				column.converter.to(row[column.id]).search(searchPattern) > -1) {
 				return true;
 			}
@@ -1035,7 +1035,17 @@ Grid.defaults = {
          * @default 1
          * @for searchSettings
          **/
-        characters: 1
+        characters: 1,
+
+        /**
+         * Option if search should ignore hidden columns
+         *
+         * @property includeHidden
+         * @type Boolean
+         * @default false
+         * @for searchSettings
+         **/
+        includeHidden: false
     },
 
     /**
