@@ -150,7 +150,7 @@ function loadData() {
 		for (var i = 0; i < that.columns.length; i++) {
 			column = that.columns[i];
 			if (column.searchable && (column.visible || that.options.searchSettings.includeHidden ) &&
-				column.converter.to(row[column.id]).search(searchPattern) > -1) {
+				column.converter.to(row[column.id], row).search(searchPattern) > -1) {
 				return true;
 			}
 		}
@@ -579,7 +579,7 @@ function renderRows(rows) {
 				if (column.visible) {
 					var value = ($.isFunction(column.formatter)) ?
 						column.formatter.call(that, column, row) :
-						column.converter.to(row[column.id]),
+						column.converter.to(row[column.id], row),
 						cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
 					cells += tpl.cell.resolve(getParams.call(that, {
 						content: (value == null || value === "") ? "&nbsp;" : value,
