@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.4.1 - 08/31/2016
+ * jQuery Bootgrid v1.4.2 - 09/01/2016
  * Copyright (c) 2014-2016 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -223,6 +223,20 @@ function loadData() {
 		settings = $.extend(this.options.ajaxSettings, settings);
 
 		this.xqr = $.ajax(settings);
+	} else if (this.options.dataFunc) {
+		var querySettings = {
+			data: getRequest.call(this),
+			success: function(response) {
+				that.current = response.current;
+				update(response.rows, response.total);
+			},
+			error: function(err) {
+				renderNoResultsRow.call(that); // overrides loading mask
+				that.element._bgBusyAria(false).trigger("loaded" + namespace);
+			}
+		};
+
+		this.options.dataFunc(querySettings);
 	} else {
 		var rows = (this.searchPhrase.length > 0) ? this.rows.where(containsPhrase) : this.rows,
 			total = rows.length;
@@ -239,7 +253,7 @@ function loadData() {
 }
 
 function loadRows() {
-	if (!this.options.ajax) {
+	if (!this.options.ajax && !this.options.dataFunc) {
 		var that = this,
 			rows = this.element.find("tbody > tr");
 
@@ -305,7 +319,7 @@ function renderActions() {
 				actions = $(tpl.actions.resolve(getParams.call(this)));
 
 			// Refresh Button
-			if (this.options.ajax) {
+			if (this.options.ajax || this.options.dataFunc) {
 				var refreshIcon = tpl.icon.resolve(getParams.call(this, {
 						iconCss: css.iconRefresh
 					})),
@@ -867,7 +881,7 @@ function sortRows() {
 			(sortArray.length > next) ? sort(x, y, next) : 0;
 	}
 
-	if (!this.options.ajax) {
+	if (!this.options.ajax || !this.options.dataFunc) {
 		var that = this;
 
 		for (var key in this.sortDictionary) {
