@@ -852,6 +852,13 @@ function sortRows() {
 		var a = that.options.caseSensitive ? x[item.id] : x[item.id].toLowerCase();
 		var b = that.options.caseSensitive ? y[item.id] : y[item.id].toLowerCase();
 
+		// if column has a converter, use it
+        var col = that.getColumnSettings({id: item.id});
+        if(col.length > 0){
+            a = col[0].converter ? col[0].converter.to(a, x) : a;
+            b = col[0].converter ? col[0].converter.to(b, y) : b;
+        }
+
 		return (a > b) ? sortOrder(1) :
 			(a < b) ? sortOrder(-1) :
 			(sortArray.length > next) ? sort(x, y, next) : 0;

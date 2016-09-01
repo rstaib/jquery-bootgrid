@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.3
+
+### Enhancements & Features
+- Updated sort function to use column converter if it exists
+
 ## 1.4.2
 
 ### Bug Fixes
