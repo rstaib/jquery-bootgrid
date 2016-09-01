@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.4.1 - 08/31/2016
+ * jQuery Bootgrid v1.4.2 - 09/01/2016
  * Copyright (c) 2014-2016 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -861,6 +861,13 @@ function sortRows() {
 
 		var a = that.options.caseSensitive ? x[item.id] : x[item.id].toLowerCase();
 		var b = that.options.caseSensitive ? y[item.id] : y[item.id].toLowerCase();
+
+		// if column has a converter, use it
+        var col = that.getColumnSettings({id: item.id});
+        if(col.length > 0){
+            a = col[0].converter ? col[0].converter.to(a, x) : a;
+            b = col[0].converter ? col[0].converter.to(b, y) : b;
+        }
 
 		return (a > b) ? sortOrder(1) :
 			(a < b) ? sortOrder(-1) :

@@ -150,7 +150,7 @@ function loadData() {
 		for (var i = 0; i < that.columns.length; i++) {
 			column = that.columns[i];
 			if (column.searchable && (column.visible || that.options.searchSettings.includeHidden ) &&
-				column.converter.to(row[column.id]).search(searchPattern) > -1) {
+				column.converter.to(row[column.id], row).search(searchPattern) > -1) {
 				return true;
 			}
 		}
@@ -579,7 +579,7 @@ function renderRows(rows) {
 				if (column.visible) {
 					var value = ($.isFunction(column.formatter)) ?
 						column.formatter.call(that, column, row) :
-						column.converter.to(row[column.id]),
+						column.converter.to(row[column.id], row),
 						cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
 					cells += tpl.cell.resolve(getParams.call(that, {
 						content: (value == null || value === "") ? "&nbsp;" : value,
@@ -851,6 +851,13 @@ function sortRows() {
 
 		var a = that.options.caseSensitive ? x[item.id] : x[item.id].toLowerCase();
 		var b = that.options.caseSensitive ? y[item.id] : y[item.id].toLowerCase();
+
+		// if column has a converter, use it
+        var col = that.getColumnSettings({id: item.id});
+        if(col.length > 0){
+            a = col[0].converter ? col[0].converter.to(a, x) : a;
+            b = col[0].converter ? col[0].converter.to(b, y) : b;
+        }
 
 		return (a > b) ? sortOrder(1) :
 			(a < b) ? sortOrder(-1) :
