@@ -76,11 +76,16 @@ if (!String.prototype.resolve)
                 var hasStart = (s.charAt(0) === "}");
                 var hasEnd = (s.charAt(s.length - 1) === "{");
                 if (hasStart)
+                {
                     s = s.substr(1);
+                }
                 if (hasEnd)
+                {
                     s = s.substr(0, s.length - 1);
+                }
 
-                if (hasStart || hasEnd){
+                if (hasStart || hasEnd)
+                {
                     str[i] = s;  //plain old html
                 } else {
                     str[i] = {
@@ -104,9 +109,13 @@ if (!String.prototype.resolve)
                 var v = "";
                  // now we have a variable to be substitued
                 if (substitutes.hasOwnProperty(key[0]))
+                {
                     v = substitutes[key[0]];
+                }
                 else
+                {
                     continue;
+                }
 
                 for (var k = 1; k < key.length; k++){
                     if (v.hasOwnProperty(key[k])){
