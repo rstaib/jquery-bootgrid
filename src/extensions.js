@@ -101,9 +101,10 @@ if (!String.prototype.resolve)
         for (var i = 0; i < str.length; i++){
             if (typeof str[i] === "object"){
                 var key = str[i].key;
+                var v = "";
                  // now we have a variable to be substitued
                 if (substitutes.hasOwnProperty(key[0]))
-                    var v = substitutes[key[0]];
+                    v = substitutes[key[0]];
                 else
                     continue;
 
