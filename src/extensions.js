@@ -65,32 +65,66 @@ if (!String.prototype.resolve)
             return value;
         }
     };
+    
+    var _templateCache = {};
+    var getTemplate = function(template){
+        if (!_templateCache.hasOwnProperty(template)){
+            var str = template.split(/{([^{}]+)}/g);
+
+            for (var i = 0; i < str.length; i++){
+                var s = str[i];
+                var hasStart = (s.charAt(0) === "}");
+                var hasEnd = (s.charAt(s.length - 1) === "{");
+                if (hasStart)
+                    s = s.substr(1);
+                if (hasEnd)
+                    s = s.substr(0, s.length - 1);
+
+                if (hasStart || hasEnd){
+                    str[i] = s;  //plain old html
+                } else {
+                    str[i] = {
+                        token: str[i],
+                        key: s.split(".")
+                    };
+                }
+            }
+            _templateCache[template] = str;
+        }
+        return _templateCache[template];
+    };
 
     String.prototype.resolve = function (substitutes, prefixes)
     {
-        var result = this;
-        $.each(substitutes, function (key, value)
-        {
-            if (value != null && typeof value !== "function")
-            {
-                if (typeof value === "object")
-                {
-                    var keys = (prefixes) ? $.extend([], prefixes) : [];
-                    keys.push(key);
-                    result = result.resolve(value, keys) + "";
-                }
+        var str = getTemplate(this);
+        var result = "";
+        for (var i = 0; i < str.length; i++){
+            if (typeof str[i] === "object"){
+                var key = str[i].key;
+                 // now we have a variable to be substitued
+                if (substitutes.hasOwnProperty(key[0]))
+                    var v = substitutes[key[0]];
                 else
-                {
-                    if (formatter && formatter[key] && typeof formatter[key] === "function")
-                    {
-                        value = formatter[key](value);
+                    continue;
+
+                for (var k = 1; k < key.length; k++){
+                    if (v.hasOwnProperty(key[k])){
+                        v = v[key[k]];
+                    } else {
+                        v = null;
+                        break;
                     }
-                    key = (prefixes) ? prefixes.join(".") + "." + key : key;
-                    var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");
-                    result = result.replace(pattern, (value.replace) ? value.replace(/\$/gi, "&#36;") : value);
                 }
+                var formatter_key = key[key.length-1];
+                if (formatter && formatter[formatter_key] && typeof formatter[formatter_key] === "function"){
+                    result += formatter[formatter_key](v);
+                } else {
+                    result += v;
+                }
+            } else {
+                result += str[i]; // plain old html
             }
-        });
+        }
         return result;
     };
 }
