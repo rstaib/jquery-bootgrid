@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>jQuery Bootgrid Demo</title>
+        <link href="css/bootstrap.css" rel="stylesheet"/>
+        <link href="../dist/jquery.bootgrid.css" rel="stylesheet"/>
+        <script src="js/moderniz.2.8.1.js"></script>
+        <style>
+            @-webkit-viewport {
+                width: device-width;
+            }
+            @-moz-viewport {
+                width: device-width;
+            }
+            @-ms-viewport {
+                width: device-width;
+            }
+            @-o-viewport {
+                width: device-width;
+            }
+            @viewport {
+                width: device-width;
+            }
+
+            body {
+                padding-top: 70px;
+            }
+
+            .column .text {
+                color: #f00 !important;
+            }
+            .cell {
+                font-weight: bold;
+            }
+
+        </style>
+    </head>
+    <body>
+        <header id="header" class="navbar navbar-default navbar-fixed-top">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <span class="navbar-brand" data-i18n="title">jQuery Bootgrid</span>
+                </div>
+                <nav id="menu" class="navbar-collapse collapse" role="navigation">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#">Basic Demo</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <button id="append" type="button" class="btn btn-default">Append</button>
+                    <button id="clear" type="button" class="btn btn-default">Clear</button>
+                    <button id="removeSelected" type="button" class="btn btn-default">Remove Selected</button>
+                    <button id="destroy" type="button" class="btn btn-default">Destroy</button>
+                    <button id="init" type="button" class="btn btn-default">Init</button>
+                    <button id="clearSearch" type="button" class="btn btn-default">Clear Search</button>
+                    <button id="clearSort" type="button" class="btn btn-default">Clear Sort</button>
+                    <button id="getCurrentPage" type="button" class="btn btn-default">Current Page Index</button>
+                    <button id="getRowCount" type="button" class="btn btn-default">Row Count</button>
+                    <button id="getTotalRowCount" type="button" class="btn btn-default">Total Row Count</button>
+                    <button id="getTotalPageCount" type="button" class="btn btn-default">Total Page Count</button>
+                    <button id="getSearchPhrase" type="button" class="btn btn-default">Search Phrase</button>
+                    <button id="getSortDictionary" type="button" class="btn btn-default">Sort Dictionary</button>
+                    <button id="getSelectedRows" type="button" class="btn btn-default">Selected Rows</button>
+                    <!--div class="table-responsive"-->
+                    <table id="grid" class="table table-condensed table-hover table-striped" data-selection="true" data-multi-select="true" data-row-select="true" data-keep-selection="true">
+                        <thead>
+                            <tr>
+                                <th data-column-id="id" data-identifier="true" data-converter="numeric" data-align="right" data-width="40">ID</th>
+                                <th data-column-id="name" data-formatter="link" data-order="asc" data-sort-rendered="true" data-converter="link">Name</th>
+                                <th data-column-id="email" data-align="center" data-header-align="center" data-width="20%">Sender</th>
+                                <th data-column-id="received" data-css-class="cell" data-header-css-class="column" data-filterable="true">Received</th>
+                                <th data-column-id="link" data-sortable="false">Company</th>
+                                <th data-column-id="cost" data-formatter="currency" data-converter="numeric">Cost</th>
+                                <th data-column-id="derived" data-formatter="derived" data-converter="derived" data-sort-key="cost" data-derived-rows="cost,name">
+                                    Derived
+                                </th>
+                                <th data-column-id="hidden" data-visible="false" data-visible-in-selection="false">Hidden</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>{"text": "Aimee Delaney", "url":"http://www.aaa.ca"}</td>
+                                <td>erat.vitae@estvitaesodales.com</td>
+                                <td>03.06.16</td>
+                                <td>Maecenas Malesuada Foundation</td>
+                                <td>222222</td>
+                                <td>
+
+                                </td>
+                                <td>C9F35176-EE9C-7DA5-DB47-5B62C57AA176</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>{"text": "BORIS BULE", "url": "http://www.zzz.ca"}</td>
+                                <td>vitae.diam@Proinultrices.edu</td>
+                                <td>10.12.16</td>
+                                <td>Ac Corporation</td>
+                                <td>11111111</td>
+                                <td>
+
+                                </td>
+                                <td>1BC83AA2-0979-C426-A3B4-4CC4F8B0CFF9</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>{"text": "ALEX Reese", "url": "http://www.ccc.com"}</td>
+                                <td>mauris.sit.amet@nonmassa.ca</td>
+                                <td>27.06.17</td>
+                                <td>Nulla At Incorporated</td>
+                                <td>333333333</td>
+                                <td>
+
+                                </td>
+                                <td>C3CF97AE-0E0E-EA4E-FBF5-A63444134B8E</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>{"text": "Juliet Mcfarland", "url": "http://www.eee.com"}</td>
+                                <td>egestas.Duis.ac@eu.net</td>
+                                <td>02.07.16</td>
+                                <td>Nisi Sem Semper Limited</td>
+                                <td>555555</td>
+                                <td>
+
+                                </td>
+                                <td>33AC322B-8AB4-B9F0-FAF0-BD69A7937627</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>{"url": "http://www.ddd.com", "text": "Aaron Weaver"}</td>
+                                <td>Curabitur@fermentumconvallisligula.org</td>
+                                <td>07.06.17</td>
+                                <td>Magna Nec Quam Industries</td>
+                                <td>4444444</td>
+                                <td>
+
+                                </td>
+                                <td>235B6F73-2150-A423-DC0A-A75C74669824</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!--/div-->
+                </div>
+            </div>
+        </div>
+
+        <footer id="footer">
+            © Copyright 2014-2015, Rafael Staib
+        </footer>
+
+        <script src="../lib/jquery-1.11.1.min.js"></script>
+        <script src="js/bootstrap.js"></script>
+        <script src="../dist/jquery.bootgrid.js"></script>
+        <script src="../dist/jquery.bootgrid.fa.js"></script>
+        <script>
+            $(function() {
+                function init() {
+                    $("#grid").bootgrid({
+                        formatters: {
+                            "currency": function(column, row) {
+                                try {
+                                  var symbol = this.options ? this.options.currencySymbol : '$';
+                                  var raw = JSON.parse(row[column.id]);
+                                  var re = '\\d(?=(\\d{' + (3) + '})+' + ('$') + ')';
+                                  var parsed = symbol + raw.toFixed(0).replace(new RegExp(re, 'g'), '$&,');
+                                  return parsed;
+                                } catch (e) {
+                                  return row[column.id];
+                                }
+                            },
+                            'link': function(column, row) {
+                                try {
+                                  var defaults = {
+                                      'url': 'http://www.realtor.com',
+                                      'text': 'http://www.realtor.com',
+                                      'target': '_blank',
+                                      'class': ''
+                                    },
+                                    options = JSON.parse(row[column.id]),
+                                    link = $.extend(true, {}, defaults, options);
+                                  return '<a href="' + link.url + '" target="' + link.target + '" class="' + link.class + '">' + link.text + '</a>';
+                                } catch (e) {
+                                    console.log(e);
+                                  return row[column.id];
+                                }
+                            }
+                        },
+                        converters: {
+                              link: {
+                                to: function(val, row, column, that){
+                                  try{
+                                    val = JSON.parse(val);
+                                    return val.text;
+                                  }catch(e){
+                                    return val;
+                                  }
+                                },
+                                from: function(val){
+                                  return val;
+                                }
+                              }
+                        },
+                        caseSensitive: true,
+                        rowCount: [-1, 5, 10, 15],
+                        searchSettings:{
+                            includeHidden: false
+                        },
+                        currencySymbol: '$'
+                    });
+                }
+
+                init();
+
+                $("#append").on("click", function() {
+                    $("#grid").bootgrid("append", [
+                        {
+                            id: 0,
+                            sender: "hh@derhase.de",
+                            received: "Gestern",
+                            link: ""
+                        }, {
+                            id: 12,
+                            sender: "er@fsdfs.de",
+                            received: "Heute",
+                            link: ""
+                        }
+                    ]);
+                });
+
+                $("#clear").on("click", function() {
+                    $("#grid").bootgrid("clear");
+                });
+
+                $("#removeSelected").on("click", function() {
+                    $("#grid").bootgrid("remove");
+                });
+
+                $("#destroy").on("click", function() {
+                    $("#grid").bootgrid("destroy");
+                });
+
+                $("#init").on("click", init);
+
+                $("#clearSearch").on("click", function() {
+                    $("#grid").bootgrid("search");
+                });
+
+                $("#clearSort").on("click", function() {
+                    $("#grid").bootgrid("sort");
+                });
+
+                $("#getCurrentPage").on("click", function() {
+                    alert($("#grid").bootgrid("getCurrentPage"));
+                });
+
+                $("#getRowCount").on("click", function() {
+                    alert($("#grid").bootgrid("getRowCount"));
+                });
+
+                $("#getTotalPageCount").on("click", function() {
+                    alert($("#grid").bootgrid("getTotalPageCount"));
+                });
+
+                $("#getTotalRowCount").on("click", function() {
+                    alert($("#grid").bootgrid("getTotalRowCount"));
+                });
+
+                $("#getSearchPhrase").on("click", function() {
+                    alert($("#grid").bootgrid("getSearchPhrase"));
+                });
+
+                $("#getSortDictionary").on("click", function() {
+                    alert($("#grid").bootgrid("getSortDictionary"));
+                });
+
+                $("#getSelectedRows").on("click", function() {
+                    alert($("#grid").bootgrid("getSelectedRows"));
+                });
+            });
+        </script>
+    </body>
+</html>

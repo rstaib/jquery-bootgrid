@@ -270,7 +270,28 @@ Grid.defaults = {
             // default converter
             from: function (value) { return value; },
             to: function (value) { return value; }
-        }
+        },
+        derived: {
+            // applies reference column converter to each row
+            to: function(val, row, column, grid) {
+              try {
+                var rows = column.rows.split(',');
+                var self = grid;
+                var compiledRows = [];
+                $.each(rows, function(index, element) {
+                  var column = self.getColumnSettings({id: element})[0];
+                  var content = column.converter.to(row[column.id]);
+                  compiledRows.push(content);
+                });
+                return compiledRows.join('');
+              } catch (e) {
+                return val;
+              }
+            },
+            from: function(val) {
+              return val;
+            }
+          }
     },
 
     /**
@@ -344,7 +365,31 @@ Grid.defaults = {
      * @for defaults
      * @since 1.0.0
      **/
-    formatters: {},
+    formatters: {
+      'derived': function(column, row) {
+        try {
+          var rows = column.rows.split(',');
+          var self = this;
+          var compiledRows = [];
+          $.each(rows, function(index, element) {
+            var content = row[element];
+            var template = element.template || '<p>__data__</p>';
+            var column = self.getColumnSettings({id: element})[0];
+            if (element.formatter || column.formatter) {
+                var formatter = column.formatter || element.formatter;
+                content = ($.isFunction(formatter)) ?
+                    formatter.call(self, column, row) :
+                    column.converter.to(row[column.id]);
+            }
+            var data = template.replace('__data__', content);
+            compiledRows.push(data);
+          });
+          return compiledRows.join('');
+        } catch (e) {
+          return row[column.id];
+        }
+      }
+    },
 
     /**
      * Contains all labels.

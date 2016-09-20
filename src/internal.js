@@ -103,6 +103,9 @@ function loadColumns() {
 				order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
 				searchable: !(data.searchable === false), // default: true
 				sortable: !(data.sortable === false), // default: true
+				sortKey: data.sortKey || '',
+				sortRendered: data.sortRendered || false, // default: false
+				rows: data.derivedRows || [],
 				visible: !(data.visible === false), // default: true
 				visibleInSelection: !(data.visibleInSelection === false), // default: true
 				width: ($.isNumeric(data.width)) ? data.width + "px" :
@@ -149,8 +152,8 @@ function loadData() {
 
 		for (var i = 0; i < that.columns.length; i++) {
 			column = that.columns[i];
-			if (column.searchable && (column.visible || that.options.searchSettings.includeHidden ) &&
-				column.converter.to(row[column.id], row).search(searchPattern) > -1) {
+			if (column.searchable && (column.visible || that.options.searchSettings.includeHidden) &&
+				column.converter.to(row[column.id], row, column, that).search(searchPattern) > -1) {
 				return true;
 			}
 		}
@@ -375,7 +378,7 @@ function renderColumnSelection(actions) {
 							loadData.call(that);
 						}
 					})
-					.on("change" + namespace, checkboxSelector, function(e){
+					.on("change" + namespace, checkboxSelector, function(e) {
 						var $this = $(this);
 						that.element.trigger('toggleColumn', [column.id, column.text, column.visible]);
 					});
@@ -527,12 +530,12 @@ function renderRowCountSelection(actions) {
 					var $this = $(this),
 						newRowCount = $this.data("action");
 					if (newRowCount !== that.rowCount) {
-						if(that.options.resolvePageFromRowCount){
+						if (that.options.resolvePageFromRowCount) {
 							var page = that.current > 1 ? that.current : 1;
-							var skip = that.current > 1 ? that.rowCount * (that.current-1) + 1 : 0;
-							var newPage = skip > 1 ? Math.ceil(skip/newRowCount) : 1;
+							var skip = that.current > 1 ? that.rowCount * (that.current - 1) + 1 : 0;
+							var newPage = skip > 1 ? Math.ceil(skip / newRowCount) : 1;
 							that.current = newRowCount > 0 ? newPage : 1;
-						}else{
+						} else {
 							that.current = 1;
 						}
 						that.rowCount = newRowCount;
@@ -593,7 +596,7 @@ function renderRows(rows) {
 				if (column.visible) {
 					var value = ($.isFunction(column.formatter)) ?
 						column.formatter.call(that, column, row) :
-						column.converter.to(row[column.id], row),
+						column.converter.to(row[column.id], row, column, that),
 						cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
 					cells += tpl.cell.resolve(getParams.call(that, {
 						content: (value == null || value === "") ? "&nbsp;" : value,
@@ -852,26 +855,52 @@ function showLoading() {
 }
 
 function sortRows() {
+	var that = this;
 	var sortArray = [];
 
 	function sort(x, y, current) {
 		current = current || 0;
 		var next = current + 1,
-			item = sortArray[current];
+			item = sortArray[current],
+			cell = item.id;
 
 		function sortOrder(value) {
 			return (item.order === "asc") ? value : value * -1;
 		}
 
-		var a = that.options.caseSensitive ? x[item.id] : x[item.id].toLowerCase();
-		var b = that.options.caseSensitive ? y[item.id] : y[item.id].toLowerCase();
+		var column = that.getColumnSettings({
+			id: cell
+		})[0];
 
-		// if column has a converter, use it
-        var col = that.getColumnSettings({id: item.id});
-        if(col.length > 0){
-            a = col[0].converter ? col[0].converter.to(a, x) : a;
-            b = col[0].converter ? col[0].converter.to(b, y) : b;
-        }
+		if (column.sortKey) {
+			cell = column.sortKey;
+			column = that.getColumnSettings({
+				id: cell
+			})[0];
+		}
+
+		var a = x[cell];
+		var b = y[cell];
+
+		if (column.sortRendered) {
+			a = ($.isFunction(column.formatter)) ?
+				column.formatter.call(that, column, x) :
+				column.converter.to(x[column.id]);
+			try {
+				a = $(a).text();
+			} catch (e) {}
+			b = ($.isFunction(column.formatter)) ?
+				column.formatter.call(that, column, y) :
+				column.converter.to(y[column.id]);
+			try {
+				b = $(b).text();
+			} catch (e) {}
+		}
+
+		if (that.options.caseSensitive) {
+			a = $.type(a) === 'string' ? a.toLowerCase() : a;
+			b = $.type(b) === 'string' ? b.toLowerCase() : b;
+		}
 
 		return (a > b) ? sortOrder(1) :
 			(a < b) ? sortOrder(-1) :
@@ -879,8 +908,6 @@ function sortRows() {
 	}
 
 	if (!this.options.ajax || !this.options.dataFunc) {
-		var that = this;
-
 		for (var key in this.sortDictionary) {
 			if (this.options.multiSort || sortArray.length === 0) {
 				sortArray.push({

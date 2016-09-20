@@ -3,8 +3,12 @@
 ## 1.4.3
 
 ### Enhancements & Features
-- Updated sort function to use column converter if it exists
-- Updated search to pass row to converter
+- Updated search to pass row, column, and grid to converter
+- Add derived cell support with a derived formatter
+  - Adds additional `sortKey` parameter to determine which reference should be considered for sorting
+- Add `sortRendered` parameter that uses the rendered cell value as the comparator
+  - Useful is situations where the formatter expects values other than what you want to sort on
+- Add `derived` formatter and converter to defaults
 
 ## 1.4.2
 
