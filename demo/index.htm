@@ -1,23 +1,40 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
     <head>
-        <meta charset="utf-8" />
+        <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>jQuery Bootgrid Demo</title>
-        <link href="css/bootstrap.css" rel="stylesheet" />
-        <link href="../dist/jquery.bootgrid.css" rel="stylesheet" />
-        <script src="js/modernizr-2.8.1.js"></script>
+        <link href="css/bootstrap.css" rel="stylesheet"/>
+        <link href="../dist/jquery.bootgrid.css" rel="stylesheet"/>
+        <script src="js/moderniz.2.8.1.js"></script>
         <style>
-            @-webkit-viewport { width: device-width; }
-            @-moz-viewport { width: device-width; }
-            @-ms-viewport { width: device-width; }
-            @-o-viewport { width: device-width; }
-            @viewport { width: device-width; }
+            @-webkit-viewport {
+                width: device-width;
+            }
+            @-moz-viewport {
+                width: device-width;
+            }
+            @-ms-viewport {
+                width: device-width;
+            }
+            @-o-viewport {
+                width: device-width;
+            }
+            @viewport {
+                width: device-width;
+            }
 
-            body { padding-top: 70px; }
-            
-            .column .text { color: #f00 !important; }
-            .cell { font-weight: bold; }
+            body {
+                padding-top: 70px;
+            }
+
+            .column .text {
+                color: #f00 !important;
+            }
+            .cell {
+                font-weight: bold;
+            }
+
         </style>
     </head>
     <body>
@@ -33,7 +50,9 @@
                 </div>
                 <nav id="menu" class="navbar-collapse collapse" role="navigation">
                     <ul class="nav navbar-nav navbar-right">
-                        <li><a href="#">Basic Demo</a></li>
+                        <li>
+                            <a href="#">Basic Demo</a>
+                        </li>
                     </ul>
                 </nav>
             </div>
@@ -62,108 +81,381 @@
                     <button id="getSortDictionary" type="button" class="btn btn-default">Sort Dictionary</button>
                     <button id="getSelectedRows" type="button" class="btn btn-default">Selected Rows</button>
                     <!--div class="table-responsive"-->
-                        <table id="grid" class="table table-condensed table-hover table-striped" data-selection="true" data-multi-select="true" data-row-select="true" data-keep-selection="true">
-                            <thead>
-                                <tr>
-                                    <th data-column-id="id" data-identifier="true" data-type="numeric" data-align="right" data-width="40">ID</th>
-                                    <th data-column-id="sender" data-order="asc" data-align="center" data-header-align="center" data-width="75%">Sender</th>
-                                    <th data-column-id="received" data-css-class="cell" data-header-css-class="column" data-filterable="true">Received</th>
-                                    <th data-column-id="link" data-formatter="link" data-sortable="false" data-width="75px">Link</th>
-                                    <th data-column-id="status" data-type="numeric" data-visible="false">Status</th>
-                                    <th data-column-id="hidden" data-visible="false" data-visible-in-selection="false">Hidden</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>me@rafaelstaib.com</td>
-                                    <td>11.12.2014</td>
-                                    <td>Link</td>
-                                    <td>999</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>me@rafaelstaib.com</td>
-                                    <td>12.12.2014</td>
-                                    <td>Link</td>
-                                    <td>999</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td>me@rafaelstaib.com</td>
-                                    <td>10.12.2014</td>
-                                    <td>Link</td>
-                                    <td>2</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>4</td>
-                                    <td>mo@rafaelstaib.com</td>
-                                    <td>12.08.2014</td>
-                                    <td>Link</td>
-                                    <td>999</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>5</td>
-                                    <td>ma@rafaelstaib.com</td>
-                                    <td>12.06.2014</td>
-                                    <td>Link</td>
-                                    <td>3</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>6</td>
-                                    <td>me@rafaelstaib.com</td>
-                                    <td>12.12.2014</td>
-                                    <td>Link</td>
-                                    <td>999</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>7</td>
-                                    <td>ma@rafaelstaib.com</td>
-                                    <td>12.11.2014</td>
-                                    <td>Link</td>
-                                    <td>999</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>8</td>
-                                    <td>mo@rafaelstaib.com</td>
-                                    <td>15.12.2014</td>
-                                    <td>Link</td>
-                                    <td>999</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>9</td>
-                                    <td>me@rafaelstaib.com</td>
-                                    <td>24.12.2014</td>
-                                    <td>Link</td>
-                                    <td>0</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>10</td>
-                                    <td>ma@rafaelstaib.com</td>
-                                    <td>14.12.2014</td>
-                                    <td>Link</td>
-                                    <td>1</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>11</td>
-                                    <td>mo@rafaelstaib.com</td>
-                                    <td>12.12.2014</td>
-                                    <td>Link</td>
-                                    <td>999</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <table id="grid" class="table table-condensed table-hover table-striped" data-selection="true" data-multi-select="true" data-row-select="true" data-keep-selection="true">
+                        <thead>
+                            <tr>
+                                <th data-column-id="id" data-identifier="true" data-type="numeric" data-align="right" data-width="40">ID</th>
+                                <th data-column-id="name" data-order="asc">Name</th>
+                                <th data-column-id="email" data-align="center" data-header-align="center" data-width="50%">Sender</th>
+                                <th data-column-id="received" data-css-class="cell" data-header-css-class="column" data-filterable="true">Received</th>
+                                <th data-column-id="link" data-formatter="link" data-sortable="false" data-width="75px">Link</th>
+                                <th data-column-id="status" data-type="numeric" data-visible="false">Status</th>
+                                <th data-column-id="hidden" data-visible="false" data-visible-in-selection="false">Hidden</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Aimee Delaney</td>
+                                <td>erat.vitae@estvitaesodales.com</td>
+                                <td>03.06.16</td>
+                                <td>Maecenas Malesuada Foundation</td>
+                                <td>1</td>
+                                <td>C9F35176-EE9C-7DA5-DB47-5B62C57AA176</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>BORIS BULE</td>
+                                <td>vitae.diam@Proinultrices.edu</td>
+                                <td>10.12.16</td>
+                                <td>Ac Corporation</td>
+                                <td>3</td>
+                                <td>1BC83AA2-0979-C426-A3B4-4CC4F8B0CFF9</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>ALEX Reese</td>
+                                <td>mauris.sit.amet@nonmassa.ca</td>
+                                <td>27.06.17</td>
+                                <td>Nulla At Incorporated</td>
+                                <td>5</td>
+                                <td>C3CF97AE-0E0E-EA4E-FBF5-A63444134B8E</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Juliet Mcfarland</td>
+                                <td>egestas.Duis.ac@eu.net</td>
+                                <td>02.07.16</td>
+                                <td>Nisi Sem Semper Limited</td>
+                                <td>3</td>
+                                <td>33AC322B-8AB4-B9F0-FAF0-BD69A7937627</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>Lester Weaver</td>
+                                <td>Curabitur@fermentumconvallisligula.org</td>
+                                <td>07.06.17</td>
+                                <td>Magna Nec Quam Industries</td>
+                                <td>2</td>
+                                <td>235B6F73-2150-A423-DC0A-A75C74669824</td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>Aaron Henderson</td>
+                                <td>In@volutpat.co.uk</td>
+                                <td>29.01.16</td>
+                                <td>Nec Tellus Incorporated</td>
+                                <td>1</td>
+                                <td>284D00C0-6A24-E9B3-E462-3A3892BA7EF1</td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>Sloane Craft</td>
+                                <td>Fusce.feugiat.Lorem@tellusAeneanegestas.co.uk</td>
+                                <td>02.02.17</td>
+                                <td>Non Sollicitudin Institute</td>
+                                <td>1</td>
+                                <td>BC72D4C2-C600-44CF-D8CE-A3A0C8C98224</td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td>Mufutau Cooke</td>
+                                <td>Sed@tempusnonlacinia.ca</td>
+                                <td>02.05.16</td>
+                                <td>Nascetur Ridiculus Mus Company</td>
+                                <td>1</td>
+                                <td>1DF470B0-15B8-44C2-0991-A15F13EBE087</td>
+                            </tr>
+                            <tr>
+                                <td>9</td>
+                                <td>Brooke Malone</td>
+                                <td>Aliquam.adipiscing@posuere.edu</td>
+                                <td>27.06.16</td>
+                                <td>Ut Eros Inc.</td>
+                                <td>4</td>
+                                <td>7346FBE9-4AC2-ECD4-96D8-75BF2B20E021</td>
+                            </tr>
+                            <tr>
+                                <td>10</td>
+                                <td>Rooney Cline</td>
+                                <td>Proin.ultrices.Duis@eu.com</td>
+                                <td>29.08.16</td>
+                                <td>Mauris Integer Inc.</td>
+                                <td>2</td>
+                                <td>87412B97-5862-AB2C-EB92-F7692EB0C17A</td>
+                            </tr>
+                            <tr>
+                                <td>11</td>
+                                <td>Alexander Velasquez</td>
+                                <td>Praesent.interdum@infaucibusorci.org</td>
+                                <td>14.01.17</td>
+                                <td>Luctus Et Limited</td>
+                                <td>2</td>
+                                <td>E4DAE99C-6078-A89E-210A-C21487A90361</td>
+                            </tr>
+                            <tr>
+                                <td>12</td>
+                                <td>Stone Sosa</td>
+                                <td>Ut@turpis.com</td>
+                                <td>18.05.16</td>
+                                <td>Orci Luctus Et Foundation</td>
+                                <td>4</td>
+                                <td>44723C37-B0D3-FBE6-E1A2-6EA3E13388E3</td>
+                            </tr>
+                            <tr>
+                                <td>13</td>
+                                <td>Graham Harvey</td>
+                                <td>nulla.Integer@Phasellus.edu</td>
+                                <td>02.03.17</td>
+                                <td>Nibh Donec Est Consulting</td>
+                                <td>1</td>
+                                <td>AA3B3771-D300-8411-1167-AC7AEA0995B2</td>
+                            </tr>
+                            <tr>
+                                <td>14</td>
+                                <td>Lance Oliver</td>
+                                <td>elit.sed.consequat@mollis.com</td>
+                                <td>19.03.16</td>
+                                <td>Dignissim Consulting</td>
+                                <td>4</td>
+                                <td>D8241C7E-4B13-7A24-DD90-CFAC74C44E40</td>
+                            </tr>
+                            <tr>
+                                <td>15</td>
+                                <td>Cassady Bright</td>
+                                <td>libero.dui.nec@dis.org</td>
+                                <td>24.12.16</td>
+                                <td>Nulla Consulting</td>
+                                <td>1</td>
+                                <td>6A4BB223-3FC0-242F-CDBD-341E014BA7CD</td>
+                            </tr>
+                            <tr>
+                                <td>16</td>
+                                <td>Brett Sloan</td>
+                                <td>ligula.Donec.luctus@scelerisquescelerisque.co.uk</td>
+                                <td>25.05.17</td>
+                                <td>Velit Pellentesque LLP</td>
+                                <td>3</td>
+                                <td>78A0AC6A-55CE-E7F9-9E8D-F9638A067FC1</td>
+                            </tr>
+                            <tr>
+                                <td>17</td>
+                                <td>Cheyenne Herring</td>
+                                <td>molestie.pharetra@egetmetus.ca</td>
+                                <td>17.09.16</td>
+                                <td>Egestas Foundation</td>
+                                <td>4</td>
+                                <td>37D88706-931A-25EF-ABEB-D65F3D72BB8A</td>
+                            </tr>
+                            <tr>
+                                <td>18</td>
+                                <td>2</td>
+                                <td>porttitor.interdum@pharetra.edu</td>
+                                <td>19.06.16</td>
+                                <td>Elit Nulla Facilisi Inc.</td>
+                                <td>5</td>
+                                <td>C919D2B9-63E6-BF6D-6639-F058F0141D27</td>
+                            </tr>
+                            <tr>
+                                <td>19</td>
+                                <td>11</td>
+                                <td>nunc.sed.pede@lectusrutrum.edu</td>
+                                <td>15.11.15</td>
+                                <td>Leo Morbi Incorporated</td>
+                                <td>2</td>
+                                <td>AA9836DC-8FA0-DCE3-12F0-78ABD416279C</td>
+                            </tr>
+                            <tr>
+                                <td>20</td>
+                                <td>01</td>
+                                <td>nulla.magna.malesuada@musProin.edu</td>
+                                <td>30.01.17</td>
+                                <td>Ac Urna Corp.</td>
+                                <td>2</td>
+                                <td>F51F8323-42AB-5E84-091D-F02B5E1E04E3</td>
+                            </tr>
+                            <tr>
+                                <td>21</td>
+                                <td>Martin Sharpe</td>
+                                <td>Cras@Suspendissenon.com</td>
+                                <td>06.10.15</td>
+                                <td>Etiam Imperdiet Dictum LLP</td>
+                                <td>4</td>
+                                <td>7EDF8E88-70D2-4A80-AEF6-60661DF2ECA9</td>
+                            </tr>
+                            <tr>
+                                <td>22</td>
+                                <td>Ray Oconnor</td>
+                                <td>Fusce.aliquam.enim@tristiquepharetraQuisque.edu</td>
+                                <td>03.11.16</td>
+                                <td>Consectetuer Cursus Company</td>
+                                <td>3</td>
+                                <td>334C5153-2E2C-EB0A-C42C-CF221CCD6674</td>
+                            </tr>
+                            <tr>
+                                <td>23</td>
+                                <td>Yetta Becker</td>
+                                <td>dictum.placerat@in.org</td>
+                                <td>24.12.16</td>
+                                <td>Sed Company</td>
+                                <td>4</td>
+                                <td>89877E4F-8A15-5CAE-75DA-278F27D0B49F</td>
+                            </tr>
+                            <tr>
+                                <td>24</td>
+                                <td>Ishmael Wiley</td>
+                                <td>arcu@ornare.edu</td>
+                                <td>14.08.16</td>
+                                <td>Velit Institute</td>
+                                <td>4</td>
+                                <td>38FB6436-85EB-9DE4-4A77-17B20941C627</td>
+                            </tr>
+                            <tr>
+                                <td>25</td>
+                                <td>Omar Mckinney</td>
+                                <td>a.dui.Cras@Integeraliquamadipiscing.edu</td>
+                                <td>03.02.17</td>
+                                <td>Quis Massa Ltd</td>
+                                <td>2</td>
+                                <td>0619ED7E-4295-962D-A068-99AC32D0D088</td>
+                            </tr>
+                            <tr>
+                                <td>26</td>
+                                <td>Lucy Small</td>
+                                <td>Maecenas.iaculis.aliquet@diamDuismi.co.uk</td>
+                                <td>13.03.17</td>
+                                <td>Dolor Dapibus Gravida Associates</td>
+                                <td>4</td>
+                                <td>5322357B-864C-9D07-6220-551095B9E85A</td>
+                            </tr>
+                            <tr>
+                                <td>27</td>
+                                <td>Davis Henson</td>
+                                <td>mus.Aenean@enim.net</td>
+                                <td>26.08.16</td>
+                                <td>Elementum Corp.</td>
+                                <td>5</td>
+                                <td>F8403A4B-1604-1798-7948-1B6C2E48D386</td>
+                            </tr>
+                            <tr>
+                                <td>28</td>
+                                <td>Ralph Travis</td>
+                                <td>tristique.pellentesque.tellus@vulputatedui.ca</td>
+                                <td>16.08.15</td>
+                                <td>Posuere Cubilia Curae; LLP</td>
+                                <td>4</td>
+                                <td>8081C1C0-5EF3-C7FF-7307-2E59683D86E0</td>
+                            </tr>
+                            <tr>
+                                <td>29</td>
+                                <td>Wayne Hampton</td>
+                                <td>Nam.interdum@Proin.ca</td>
+                                <td>19.01.17</td>
+                                <td>Dictum Placerat Augue Foundation</td>
+                                <td>5</td>
+                                <td>1A7276D5-A929-72E5-A397-F3AB7AE0EEBC</td>
+                            </tr>
+                            <tr>
+                                <td>30</td>
+                                <td>Priscilla Roberson</td>
+                                <td>magna.Nam.ligula@lectus.com</td>
+                                <td>26.08.16</td>
+                                <td>Tortor At Industries</td>
+                                <td>2</td>
+                                <td>2AFA1C2B-CDD0-84E7-8535-DC8551AE9945</td>
+                            </tr>
+                            <tr>
+                                <td>31</td>
+                                <td>Garth Greene</td>
+                                <td>Cum.sociis.natoque@lacusUt.org</td>
+                                <td>04.08.16</td>
+                                <td>Tincidunt Inc.</td>
+                                <td>5</td>
+                                <td>4580886C-89E0-8FEE-CEFD-ED87FAC5FDA2</td>
+                            </tr>
+                            <tr>
+                                <td>32</td>
+                                <td>Erasmus Hampton</td>
+                                <td>nunc@non.net</td>
+                                <td>08.10.16</td>
+                                <td>Dui Nec Urna PC</td>
+                                <td>4</td>
+                                <td>C1B98F7D-0554-7719-697D-754B1711F76C</td>
+                            </tr>
+                            <tr>
+                                <td>33</td>
+                                <td>Doris Maynard</td>
+                                <td>Donec.egestas.Aliquam@dolorsitamet.com</td>
+                                <td>11.07.17</td>
+                                <td>Est Arcu PC</td>
+                                <td>1</td>
+                                <td>C039DE61-4AFA-1B40-1074-5DD823625E00</td>
+                            </tr>
+                            <tr>
+                                <td>34</td>
+                                <td>Margaret Gonzalez</td>
+                                <td>pellentesque.tellus.sem@mi.ca</td>
+                                <td>19.11.16</td>
+                                <td>A Associates</td>
+                                <td>2</td>
+                                <td>94C687D6-0085-D04C-1D16-7945411E9E3A</td>
+                            </tr>
+                            <tr>
+                                <td>35</td>
+                                <td>Kylan Watts</td>
+                                <td>Cras@atnisiCum.com</td>
+                                <td>17.07.16</td>
+                                <td>Rutrum Consulting</td>
+                                <td>1</td>
+                                <td>8CF021E9-AEE6-79DE-A368-BBE456153B5A</td>
+                            </tr>
+                            <tr>
+                                <td>36</td>
+                                <td>Ursula Lewis</td>
+                                <td>tempus@sitametconsectetuer.net</td>
+                                <td>16.09.16</td>
+                                <td>Parturient Montes Consulting</td>
+                                <td>4</td>
+                                <td>EC79724F-9632-7C26-ED36-60737A57E57A</td>
+                            </tr>
+                            <tr>
+                                <td>37</td>
+                                <td>Vance Adkins</td>
+                                <td>Curabitur.egestas.nunc@Sed.ca</td>
+                                <td>17.12.16</td>
+                                <td>Tristique Pharetra Company</td>
+                                <td>1</td>
+                                <td>0720A4E2-19D4-5023-4E56-659C63B3D655</td>
+                            </tr>
+                            <tr>
+                                <td>38</td>
+                                <td>Steven Frank</td>
+                                <td>viverra@lectus.co.uk</td>
+                                <td>15.10.15</td>
+                                <td>Aliquam Gravida Mauris Foundation</td>
+                                <td>2</td>
+                                <td>C73C063E-68AF-BA1B-F318-B5A1F8D98E27</td>
+                            </tr>
+                            <tr>
+                                <td>39</td>
+                                <td>Rhoda Mccarty</td>
+                                <td>elit.dictum@sollicitudincommodo.com</td>
+                                <td>24.08.15</td>
+                                <td>Pellentesque Inc.</td>
+                                <td>4</td>
+                                <td>61308679-75BF-06BA-AA56-A29DF911537D</td>
+                            </tr>
+                            <tr>
+                                <td>40</td>
+                                <td>Dara Hudson</td>
+                                <td>ac.feugiat.non@neque.ca</td>
+                                <td>05.09.15</td>
+                                <td>Sit Consulting</td>
+                                <td>1</td>
+                                <td>8B1634F8-05AA-CBBD-B7A7-EC9F3CE97AC3</td>
+                            </tr>
+                        </tbody>
+                    </table>
                     <!--/div-->
                 </div>
             </div>
@@ -178,98 +470,87 @@
         <script src="../dist/jquery.bootgrid.js"></script>
         <script src="../dist/jquery.bootgrid.fa.js"></script>
         <script>
-            $(function()
-            {
-                function init()
-                {
+            $(function() {
+                function init() {
                     $("#grid").bootgrid({
                         formatters: {
-                            "link": function(column, row)
-                            {
+                            "link": function(column, row) {
                                 return "<a href=\"#\">" + column.id + ": " + row.id + "</a>";
                             }
                         },
-                        rowCount: [-1, 10, 50, 75]
+                        caseSensitive: false,
+                        rowCount: [-1, 5, 10, 15],
+                        searchSettings:{
+                            includeHidden: false
+                        }
                     });
                 }
-                
+
                 init();
-                
-                $("#append").on("click", function ()
-                {
-                    $("#grid").bootgrid("append", [{
+
+                $("#append").on("click", function() {
+                    $("#grid").bootgrid("append", [
+                        {
                             id: 0,
                             sender: "hh@derhase.de",
                             received: "Gestern",
                             link: ""
-                        },
-                        {
+                        }, {
                             id: 12,
                             sender: "er@fsdfs.de",
                             received: "Heute",
                             link: ""
-                        }]);
+                        }
+                    ]);
                 });
-                
-                $("#clear").on("click", function ()
-                {
+
+                $("#clear").on("click", function() {
                     $("#grid").bootgrid("clear");
                 });
-                
-                $("#removeSelected").on("click", function ()
-                {
+
+                $("#removeSelected").on("click", function() {
                     $("#grid").bootgrid("remove");
                 });
-                
-                $("#destroy").on("click", function ()
-                {
+
+                $("#destroy").on("click", function() {
                     $("#grid").bootgrid("destroy");
                 });
-                
+
                 $("#init").on("click", init);
-                
-                $("#clearSearch").on("click", function ()
-                {
+
+                $("#clearSearch").on("click", function() {
                     $("#grid").bootgrid("search");
                 });
-                
-                $("#clearSort").on("click", function ()
-                {
+
+                $("#clearSort").on("click", function() {
                     $("#grid").bootgrid("sort");
                 });
-                
-                $("#getCurrentPage").on("click", function ()
-                {
+
+                $("#getCurrentPage").on("click", function() {
                     alert($("#grid").bootgrid("getCurrentPage"));
                 });
-                
-                $("#getRowCount").on("click", function ()
-                {
+
+                $("#getRowCount").on("click", function() {
                     alert($("#grid").bootgrid("getRowCount"));
                 });
-                
-                $("#getTotalPageCount").on("click", function ()
-                {
+
+                $("#getTotalPageCount").on("click", function() {
                     alert($("#grid").bootgrid("getTotalPageCount"));
                 });
-                
-                $("#getTotalRowCount").on("click", function ()
-                {
+
+                $("#getTotalRowCount").on("click", function() {
                     alert($("#grid").bootgrid("getTotalRowCount"));
                 });
-                
-                $("#getSearchPhrase").on("click", function ()
-                {
+
+                $("#getSearchPhrase").on("click", function() {
                     alert($("#grid").bootgrid("getSearchPhrase"));
                 });
-                
-                $("#getSortDictionary").on("click", function ()
-                {
+
+                $("#getSortDictionary").on("click", function() {
                     alert($("#grid").bootgrid("getSortDictionary"));
                 });
-                
-                $("#getSelectedRows").on("click", function ()
-                {
+
+                $("#getSelectedRows").on("click", function() {
                     alert($("#grid").bootgrid("getSelectedRows"));
                 });
             });

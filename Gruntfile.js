@@ -55,7 +55,7 @@ module.exports = function (grunt)
             scripts: {
                 options: {
                     separator: '\r\n\r\n',
-                    banner: '<%= banner %>;(function ($, window, undefined)\r\n{\r\n    /*jshint validthis: true */\r\n    "use strict";\r\n\r\n',
+                    banner: '<%= banner %>;(function ($, window, undefined)\r\n{\r\n    /*jshint validthis: true, latedef: false */\r\n    "use strict";\r\n\r\n',
                     footer: '\r\n})(jQuery, window);',
                     process: function(src, filepath)
                     {
@@ -210,7 +210,7 @@ module.exports = function (grunt)
                 files: [
                     {
                         flatten: true,
-                        expand: true, 
+                        expand: true,
                         src: ['<%= folders.dist %>/*.js', '<%= folders.dist %>/*.css'], dest: '/'
                     }
                 ]

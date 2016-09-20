@@ -1,5 +1,44 @@
 # Changelog
 
+## 1.4.3
+
+### Enhancements & Features
+- Updated search to pass row, column, and grid to converter
+- Add derived cell support with a derived formatter
+  - Adds additional `sortKey` parameter to determine which reference should be considered for sorting
+- Add `sortRendered` parameter that uses the rendered cell value as the comparator
+  - Useful is situations where the formatter expects values other than what you want to sort on
+- Add `derived` formatter and converter to defaults
+
+## 1.4.2
+
+### Bug Fixes
+- Fixed bug with showing/hiding columns
+
+### Enhancements & Features
+- Added options for search to include hidden columns
+
+## 1.4.1
+
+### Bug Fixes
+- Fixed toggleColumn event being fired twice in some cases
+
+## 1.4.0
+
+### Enhancements & Features
+- Added 4 new events      
+    - **search** Fired when a search is executed
+    - **changePage** Fired when pagination is clicked
+    - **toggleColumn** Fired when the checkbox is clicked to show/hide a column
+    - **changeRowCount** Fired when changing the row count
+- Added function that resolves the relative page the table show display after changing row count.
+- Added option to disable the feature to resolve relative page after changing row count. `resolvePageFromRowCount: {boolean} [true]`
+
+## 1.3.2
+
+### Enhancements & Features
+- Sorting columns now respects the `caseSensitive` flag.
+
 ## 1.3.1
 
 ### Enhancements & Features

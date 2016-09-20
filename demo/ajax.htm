@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jQuery Bootgrid Demo</title>
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <link href="../dist/jquery.bootgrid.css" rel="stylesheet" />
+    <script src="js/moderniz.2.8.1.js"></script>
+    <style>
+        @-webkit-viewport {
+            width: device-width;
+        }
+
+        @-moz-viewport {
+            width: device-width;
+        }
+
+        @-ms-viewport {
+            width: device-width;
+        }
+
+        @-o-viewport {
+            width: device-width;
+        }
+
+        @viewport {
+            width: device-width;
+        }
+
+        body {
+            padding-top: 70px;
+        }
+    </style>
+</head>
+<body>
+    <header id="header" class="navbar navbar-default navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <span class="navbar-brand" data-i18n="title">jQuery Bootgrid</span>
+            </div>
+            <nav id="menu" class="navbar-collapse collapse" role="navigation">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="#">Basic Demo</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3 visible-md visible-lg">
+                <div class="affix">
+                    Sub Nav
+                </div>
+            </div>
+            <div class="col-md-9">
+                <table id="grid" class="table table-condensed table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th data-column-id="id" data-identifier="true" data-type="numeric">ID</th>
+                            <th data-column-id="sender" data-order="asc">Sender</th>
+                            <th data-column-id="received">Received</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer id="footer">
+        © Copyright 2014-2015, Rafael Staib
+    </footer>
+
+    <script src="../lib/jquery-1.11.1.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="../dist/jquery.bootgrid.js"></script>
+    <script>
+        $(function ()
+        {
+            var data = [];
+
+            var grid = $("#grid").bootgrid({
+                ajaxSettings: {
+                    method: "GET"
+                },
+                ajax: true,
+                url: 'http://127.0.0.1:8080/demo/data.json',
+                selection: true,
+                multiSelect: true
+            }).on('loaded.rs.jquery.bootgrid', function(){
+                var rows = grid.bootgrid('getCurrentRows');
+                $.each(rows, function(index, row){
+                    if(row.checked){
+                        grid.bootgrid('select', [row.id]);
+                    }
+                })
+            });
+        });
+    </script>
+</body>
+</html>

@@ -62,6 +62,17 @@ Grid.defaults = {
     rowCount: [10, 25, 50, -1], // rows per page int or array of int (-1 represents "All")
 
     /**
+     * Resolves the correct page number after changing the row count so that the top most row will remain in the table
+     *
+     * @property resolvePageFromRowCount
+     * @type Boolean
+     * @default true
+     * @for defaults
+     * @since 1.4.0
+     **/
+    resolvePageFromRowCount: true,
+
+    /**
      * Enables row selection (to enable multi selection see also `multiSelect`). Default value is `false`.
      *
      * @property selection
@@ -128,7 +139,7 @@ Grid.defaults = {
          * @for searchSettings
          **/
         delay: 250,
-        
+
         /**
          * The characters to type before the search gets executed.
          *
@@ -137,7 +148,17 @@ Grid.defaults = {
          * @default 1
          * @for searchSettings
          **/
-        characters: 1
+        characters: 1,
+
+        /**
+         * Option if search should ignore hidden columns
+         *
+         * @property includeHidden
+         * @type Boolean
+         * @default false
+         * @for searchSettings
+         **/
+        includeHidden: false
     },
 
     /**
@@ -198,7 +219,7 @@ Grid.defaults = {
     url: "", // or use function () { return ""; }
 
     /**
-     * Defines whether the search is case sensitive or insensitive.
+     * Defines whether the search and sorting is case sensitive.
      *
      * @property caseSensitive
      * @type Boolean
@@ -249,7 +270,28 @@ Grid.defaults = {
             // default converter
             from: function (value) { return value; },
             to: function (value) { return value; }
-        }
+        },
+        derived: {
+            // applies reference column converter to each row
+            to: function(val, row, column, grid) {
+              try {
+                var rows = column.rows.split(',');
+                var self = grid;
+                var compiledRows = [];
+                $.each(rows, function(index, element) {
+                  var column = self.getColumnSettings({id: element})[0];
+                  var content = column.converter.to(row[column.id]);
+                  compiledRows.push(content);
+                });
+                return compiledRows.join('');
+              } catch (e) {
+                return val;
+              }
+            },
+            from: function(val) {
+              return val;
+            }
+          }
     },
 
     /**
@@ -323,7 +365,31 @@ Grid.defaults = {
      * @for defaults
      * @since 1.0.0
      **/
-    formatters: {},
+    formatters: {
+      'derived': function(column, row) {
+        try {
+          var rows = column.rows.split(',');
+          var self = this;
+          var compiledRows = [];
+          $.each(rows, function(index, element) {
+            var content = row[element];
+            var template = element.template || '<p>__data__</p>';
+            var column = self.getColumnSettings({id: element})[0];
+            if (element.formatter || column.formatter) {
+                var formatter = column.formatter || element.formatter;
+                content = ($.isFunction(formatter)) ?
+                    formatter.call(self, column, row) :
+                    column.converter.to(row[column.id]);
+            }
+            var data = template.replace('__data__', content);
+            compiledRows.push(data);
+          });
+          return compiledRows.join('');
+        } catch (e) {
+          return row[column.id];
+        }
+      }
+    },
 
     /**
      * Contains all labels.
@@ -376,7 +442,7 @@ Grid.defaults = {
          * @for statusMapping
          **/
         2: "warning",
-        
+
         /**
          * Specifies a dangerous or potentially negative action.
          *
@@ -560,7 +626,7 @@ Grid.prototype.remove = function(rowIds)
 };
 
 /**
- * Searches in all rows for a specific phrase (but only in visible cells). 
+ * Searches in all rows for a specific phrase (but only in visible cells).
  * The search filter will be reseted, if no argument is provided.
  *
  * @method search
@@ -705,7 +771,7 @@ Grid.prototype.deselect = function(rowIds)
 };
 
 /**
- * Sorts the rows by a given sort descriptor dictionary. 
+ * Sorts the rows by a given sort descriptor dictionary.
  * The sort filter will be reseted, if no argument is provided.
  *
  * @method sort
@@ -735,12 +801,25 @@ Grid.prototype.sort = function(dictionary)
  * Therefore be sure that only one grid instance is catched by your selector.
  *
  * @method getColumnSettings
+ * @param {Object} filter object to filter return array with
  * @return {Array} Returns a list of the column settings.
  * @since 1.2.0
+ * @version 1.4.0
  **/
-Grid.prototype.getColumnSettings = function()
+Grid.prototype.getColumnSettings = function(filter)
 {
-    return $.merge([], this.columns);
+    var res = this.columns;
+    if(filter && typeof filter === 'object'){
+        res = this.columns.filter(function(el){
+            for (var key in filter) {
+                if(el[key] !== filter[key]){
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+    return $.merge([], res);
 };
 
 /**
