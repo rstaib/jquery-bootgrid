@@ -334,7 +334,10 @@ Grid.defaults = {
      **/
     labels: {
         all: "All",
-        infos: "Showing {{ctx.start}} to {{ctx.end}} of {{ctx.total}} entries",
+        showing: "Showing",
+        to: "to",
+        of: "of",
+        entries: "entries",
         loading: "Loading...",
         noResults: "No results found!",
         refresh: "Refresh",
@@ -406,7 +409,7 @@ Grid.defaults = {
         header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.search}}\"></p><p class=\"{{css.actions}}\"></p></div></div></div>",
         headerCell: "<th data-column-id=\"{{ctx.column.id}}\" class=\"{{ctx.css}}\" style=\"{{ctx.style}}\"><a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.column.text}}</span>{{ctx.icon}}</a></th>",
         icon: "<span class=\"{{css.icon}} {{ctx.iconCss}}\"></span>",
-        infos: "<div class=\"{{css.infos}}\">{{lbl.infos}}</div>",
+        infos: "<div class=\"{{css.infos}}\">{{lbl.showing}} {{ctx.start}} {{lbl.to}} {{ctx.end}} {{lbl.of}} {{ctx.total}} {{lbl.entries}}</div>",
         loading: "<tr><td colspan=\"{{ctx.columns}}\" class=\"loading\">{{lbl.loading}}</td></tr>",
         noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{lbl.noResults}}</td></tr>",
         pagination: "<ul class=\"{{css.pagination}}\"></ul>",
