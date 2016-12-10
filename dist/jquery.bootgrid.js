@@ -1,6 +1,6 @@
 /*! 
- * jQuery Bootgrid v1.3.1 - 09/11/2015
- * Copyright (c) 2014-2015 Rafael Staib (http://www.jquery-bootgrid.com)
+ * jQuery Bootgrid v1.3.1 - 12/10/2016
+ * Copyright (c) 2014-2016 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
 ;(function ($, window, undefined)
@@ -25,13 +25,27 @@
             return that.identifier && item[that.identifier] === row[that.identifier];
         }
 
-        if (!this.rows.contains(exists))
+        if (!arrayContains(this.rows, exists))
         {
             this.rows.push(row);
             return true;
         }
 
         return false;
+    }
+
+    function appendRows(rows)
+    {
+         var that = this;
+
+         var appendedRows = rows.slice();
+         appendedRows.filter(function(item) {
+           return !(that.identifier && item[that.identifier] === rows[that.identifier]);
+         });
+
+         this.rows = this.rows.concat(appendedRows);
+
+         return appendedRows;
     }
 
     function findFooterAndHeaderItems(selector)
@@ -127,7 +141,7 @@
                     sortable: !(data.sortable === false), // default: true
                     visible: !(data.visible === false), // default: true
                     visibleInSelection: !(data.visibleInSelection === false), // default: true
-                    width: ($.isNumeric(data.width)) ? data.width + "px" : 
+                    width: ($.isNumeric(data.width)) ? data.width + "px" :
                         (typeof(data.width) === "string") ? data.width : null
                 };
             that.columns.push(column);
@@ -254,11 +268,11 @@
         }
         else
         {
-            var rows = (this.searchPhrase.length > 0) ? this.rows.where(containsPhrase) : this.rows,
+            var rows = (this.searchPhrase.length > 0) ? arrayWhere(this.rows, containsPhrase) : this.rows,
                 total = rows.length;
             if (this.rowCount !== -1)
             {
-                rows = rows.page(this.current, this.rowCount);
+                rows = arrayPage(rows, this.current, this.rowCount);
             }
 
             // todo: improve the following comment
@@ -273,7 +287,7 @@
         {
             var that = this,
                 rows = this.element.find("tbody > tr");
-
+            var convertedRows = [];
             rows.each(function ()
             {
                 var $this = $(this),
@@ -285,9 +299,9 @@
                     row[column.id] = column.converter.from(cells.eq(i).text());
                 });
 
-                appendRow.call(that, row);
+                convertedRows.push(row);
             });
-
+            appendRows.call(that, convertedRows);
             setTotals.call(this, this.rows.length);
             sortRows.call(this);
         }
@@ -316,13 +330,13 @@
 
         if (this.options.navigation & 1)
         {
-            this.header = $(tpl.header.resolve(getParams.call(this, { id: this.element._bgId() + "-header" })));
+            this.header = $(template(tpl.header, getParams.call(this, { id: this.element._bgId() + "-header" })));
             wrapper.before(this.header);
         }
 
         if (this.options.navigation & 2)
         {
-            this.footer = $(tpl.footer.resolve(getParams.call(this, { id: this.element._bgId() + "-footer" })));
+            this.footer = $(template(tpl.footer, getParams.call(this, { id: this.element._bgId() + "-footer" })));
             wrapper.after(this.footer);
         }
     }
@@ -339,13 +353,13 @@
             {
                 var that = this,
                     tpl = this.options.templates,
-                    actions = $(tpl.actions.resolve(getParams.call(this)));
+                    actions = $(template(tpl.actions, getParams.call(this)));
 
                 // Refresh Button
                 if (this.options.ajax)
                 {
-                    var refreshIcon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconRefresh })),
-                        refresh = $(tpl.actionButton.resolve(getParams.call(this,
+                    var refreshIcon = template(tpl.icon, getParams.call(this, { iconCss: css.iconRefresh })),
+                        refresh = $(template(tpl.actionButton, getParams.call(this,
                         { content: refreshIcon, text: this.options.labels.refresh })))
                             .on("click" + namespace, function (e)
                             {
@@ -375,8 +389,8 @@
             var that = this,
                 css = this.options.css,
                 tpl = this.options.templates,
-                icon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconColumns })),
-                dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: icon }))),
+                icon = template(tpl.icon, getParams.call(this, { iconCss: css.iconColumns })),
+                dropDown = $(template(tpl.actionDropDown, getParams.call(this, { content: icon }))),
                 selector = getCssSelector(css.dropDownItem),
                 checkboxSelector = getCssSelector(css.dropDownItemCheckbox),
                 itemsSelector = getCssSelector(css.dropDownMenuItems);
@@ -385,24 +399,25 @@
             {
                 if (column.visibleInSelection)
                 {
-                    var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
+                    var item = $(template(tpl.actionDropDownCheckboxItem, getParams.call(that,
                         { name: column.id, label: column.text, checked: column.visible })))
                             .on("click" + namespace, selector, function (e)
                             {
                                 e.stopPropagation();
-        
+
                                 var $this = $(this),
                                     checkbox = $this.find(checkboxSelector);
                                 if (!checkbox.prop("disabled"))
                                 {
                                     column.visible = checkbox.prop("checked");
-                                    var enable = that.columns.where(isVisible).length > 1;
+                                    var enable = arrayWhere(that.columns, isVisible).length > 1;
                                     $this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
                                         ._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
-        
+
                                     that.element.find("tbody").empty(); // Fixes an column visualization bug
                                     renderTableHeader.call(that);
                                     loadData.call(that);
+                                    that.element.trigger("columnToggle" + namespace, column);
                                 }
                             });
                     dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
@@ -422,7 +437,7 @@
             if (infoItems.length > 0)
             {
                 var end = (this.current * this.rowCount),
-                    infos = $(this.options.templates.infos.resolve(getParams.call(this, {
+                    infos = $(template(this.options.templates.infos, getParams.call(this, {
                         end: (this.total === 0 || end === -1 || end > this.total) ? this.total : end,
                         start: (this.total === 0) ? 0 : (end - this.rowCount + 1),
                         total: this.total
@@ -437,13 +452,13 @@
     {
         var tbody = this.element.children("tbody").first(),
             tpl = this.options.templates,
-            count = this.columns.where(isVisible).length;
+            count = arrayWhere(this.columns, isVisible).length;
 
         if (this.selection)
         {
             count = count + 1;
         }
-        tbody.html(tpl.noResults.resolve(getParams.call(this, { columns: count })));
+        tbody.html(template(tpl.noResults, getParams.call(this, { columns: count })));
     }
 
     function renderPagination()
@@ -458,7 +473,7 @@
                 var tpl = this.options.templates,
                     current = this.current,
                     totalPages = this.totalPages,
-                    pagination = $(tpl.pagination.resolve(getParams.call(this))),
+                    pagination = $(template(tpl.pagination, getParams.call(this))),
                     offsetRight = totalPages - current,
                     offsetLeft = (this.options.padding - current) * -1,
                     startWith = ((offsetRight >= this.options.padding) ?
@@ -501,7 +516,7 @@
             tpl = this.options.templates,
             css = this.options.css,
             values = getParams.call(this, { css: markerCss, text: text, page: page }),
-            item = $(tpl.paginationItem.resolve(values))
+            item = $(template(tpl.paginationItem, values))
                 .on("click" + namespace, getCssSelector(css.paginationButton), function (e)
                 {
                     e.stopPropagation();
@@ -542,7 +557,7 @@
         {
             var css = this.options.css,
                 tpl = this.options.templates,
-                dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: getText(this.rowCount) }))),
+                dropDown = $(template(tpl.actionDropDown, getParams.call(this, { content: getText(this.rowCount) }))),
                 menuSelector = getCssSelector(css.dropDownMenu),
                 menuTextSelector = getCssSelector(css.dropDownMenuText),
                 menuItemsSelector = getCssSelector(css.dropDownMenuItems),
@@ -550,7 +565,7 @@
 
             $.each(rowCountList, function (index, value)
             {
-                var item = $(tpl.actionDropDownItem.resolve(getParams.call(that,
+                var item = $(template(tpl.actionDropDownItem, getParams.call(that,
                     { text: getText(value), action: value })))
                         ._bgSelectAria(value === that.rowCount)
                         .on("click" + namespace, menuItemSelector, function (e)
@@ -600,9 +615,9 @@
                 if (that.selection)
                 {
                     var selected = ($.inArray(row[that.identifier], that.selectedRows) !== -1),
-                        selectBox = tpl.select.resolve(getParams.call(that,
+                        selectBox = template(tpl.select, getParams.call(that,
                             { type: "checkbox", value: row[that.identifier], checked: selected }));
-                    cells += tpl.cell.resolve(getParams.call(that, { content: selectBox, css: css.selectCell }));
+                    cells += template(tpl.cell, getParams.call(that, { content: selectBox, css: css.selectCell }));
                     allRowsSelected = (allRowsSelected && selected);
                     if (selected)
                     {
@@ -625,7 +640,7 @@
                                 column.formatter.call(that, column, row) :
                                     column.converter.to(row[column.id]),
                             cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
-                        cells += tpl.cell.resolve(getParams.call(that, {
+                        cells += template(tpl.cell, getParams.call(that, {
                             content: (value == null || value === "") ? "&nbsp;" : value,
                             css: ((column.align === "right") ? css.right : (column.align === "center") ?
                                 css.center : css.left) + cssClass,
@@ -637,7 +652,7 @@
                 {
                     rowAttr += " class=\"" + rowCss + "\"";
                 }
-                html += tpl.row.resolve(getParams.call(that, { attr: rowAttr, cells: cells }));
+                html += template(tpl.row, getParams.call(that, { attr: rowAttr, cells: cells }));
             });
 
             // sets or clears multi selectbox state
@@ -722,7 +737,7 @@
                     timer = null, // fast keyup detection
                     currentValue = "",
                     searchFieldSelector = getCssSelector(css.searchField),
-                    search = $(tpl.search.resolve(getParams.call(this))),
+                    search = $(template(tpl.search, getParams.call(this))),
                     searchField = (search.is(searchFieldSelector)) ? search :
                         search.find(searchFieldSelector);
 
@@ -771,8 +786,8 @@
         if (this.selection)
         {
             var selectBox = (this.options.multiSelect) ?
-                tpl.select.resolve(getParams.call(that, { type: "checkbox", value: "all" })) : "";
-            html += tpl.rawHeaderCell.resolve(getParams.call(that, { content: selectBox,
+                template(tpl.select, getParams.call(that, { type: "checkbox", value: "all" })) : "";
+            html += template(tpl.rawHeaderCell, getParams.call(that, { content: selectBox,
                 css: css.selectCell }));
         }
 
@@ -783,10 +798,10 @@
                 var sortOrder = that.sortDictionary[column.id],
                     iconCss = ((sorting && sortOrder && sortOrder === "asc") ? css.iconUp :
                         (sorting && sortOrder && sortOrder === "desc") ? css.iconDown : ""),
-                    icon = tpl.icon.resolve(getParams.call(that, { iconCss: iconCss })),
+                    icon = template(tpl.icon, getParams.call(that, { iconCss: iconCss })),
                     align = column.headerAlign,
                     cssClass = (column.headerCssClass.length > 0) ? " " + column.headerCssClass : "";
-                html += tpl.headerCell.resolve(getParams.call(that, {
+                html += template(tpl.headerCell, getParams.call(that, {
                     column: column, icon: icon, sortable: sorting && column.sortable && css.sortable || "",
                     css: ((align === "right") ? css.right : (align === "center") ?
                         css.center : css.left) + cssClass,
@@ -883,7 +898,7 @@
         placeholder.each(function (index, item)
         {
             // todo: check how append is implemented. Perhaps cloning here is superfluous.
-            $(item).before(element.clone(true)).remove();
+            $(item).before(element).remove();
         });
     }
 
@@ -900,13 +915,13 @@
                     tbody = that.element.children("tbody").first(),
                     firstCell = tbody.find("tr > td").first(),
                     padding = (that.element.height() - thead.height()) - (firstCell.height() + 20),
-                    count = that.columns.where(isVisible).length;
+                    count = arrayWhere(that.columns, isVisible).length;
 
                 if (that.selection)
                 {
                     count = count + 1;
                 }
-                tbody.html(tpl.loading.resolve(getParams.call(that, { columns: count })));
+                tbody.html(template(tpl.loading, getParams.call(that, { columns: count })));
                 if (that.rowCount !== -1 && padding > 0)
                 {
                     tbody.find("tr > td").css("padding", "20px 0 " + padding + "px");
@@ -1087,7 +1102,7 @@
              * @for searchSettings
              **/
             delay: 250,
-            
+
             /**
              * The characters to type before the search gets executed.
              *
@@ -1293,7 +1308,10 @@
          **/
         labels: {
             all: "All",
-            infos: "Showing {{ctx.start}} to {{ctx.end}} of {{ctx.total}} entries",
+            showing: "Showing",
+            to: "to",
+            of: "of",
+            entries: "entries",
             loading: "Loading...",
             noResults: "No results found!",
             refresh: "Refresh",
@@ -1335,7 +1353,7 @@
              * @for statusMapping
              **/
             2: "warning",
-            
+
             /**
              * Specifies a dangerous or potentially negative action.
              *
@@ -1365,7 +1383,7 @@
             header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.search}}\"></p><p class=\"{{css.actions}}\"></p></div></div></div>",
             headerCell: "<th data-column-id=\"{{ctx.column.id}}\" class=\"{{ctx.css}}\" style=\"{{ctx.style}}\"><a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.column.text}}</span>{{ctx.icon}}</a></th>",
             icon: "<span class=\"{{css.icon}} {{ctx.iconCss}}\"></span>",
-            infos: "<div class=\"{{css.infos}}\">{{lbl.infos}}</div>",
+            infos: "<div class=\"{{css.infos}}\">{{lbl.showing}} {{ctx.start}} {{lbl.to}} {{ctx.end}} {{lbl.of}} {{ctx.total}} {{lbl.entries}}</div>",
             loading: "<tr><td colspan=\"{{ctx.columns}}\" class=\"loading\">{{lbl.loading}}</td></tr>",
             noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{lbl.noResults}}</td></tr>",
             pagination: "<ul class=\"{{css.pagination}}\"></ul>",
@@ -1392,14 +1410,7 @@
         }
         else
         {
-            var appendedRows = [];
-            for (var i = 0; i < rows.length; i++)
-            {
-                if (appendRow.call(this, rows[i]))
-                {
-                    appendedRows.push(rows[i]);
-                }
-            }
+            var appendedRows = appendRows.call(this, rows);
             sortRows.call(this);
             highlightAppendedRows.call(this, appendedRows);
             loadData.call(this);
@@ -1519,7 +1530,7 @@
     };
 
     /**
-     * Searches in all rows for a specific phrase (but only in visible cells). 
+     * Searches in all rows for a specific phrase (but only in visible cells).
      * The search filter will be reseted, if no argument is provided.
      *
      * @method search
@@ -1555,7 +1566,7 @@
     {
         if (this.selection)
         {
-            rowIds = rowIds || this.currentRows.propValues(this.identifier);
+            rowIds = rowIds || arrayPropValues(this.currentRows, this.identifier);
 
             var id, i,
                 selectedRows = [];
@@ -1621,7 +1632,7 @@
     {
         if (this.selection)
         {
-            rowIds = rowIds || this.currentRows.propValues(this.identifier);
+            rowIds = rowIds || arrayPropValues(this.currentRows, this.identifier);
 
             var id, i, pos,
                 deselectedRows = [];
@@ -1664,7 +1675,7 @@
     };
 
     /**
-     * Sorts the rows by a given sort descriptor dictionary. 
+     * Sorts the rows by a given sort descriptor dictionary.
      * The sort filter will be reseted, if no argument is provided.
      *
      * @method sort
@@ -1825,8 +1836,8 @@
 
         _bgBusyAria: function(busy)
         {
-            return (busy == null || busy) ? 
-                this._bgAria("busy", "true") : 
+            return (busy == null || busy) ?
+                this._bgAria("busy", "true") :
                 this._bgAria("busy", "false");
         },
 
@@ -1837,29 +1848,29 @@
 
         _bgEnableAria: function (enable)
         {
-            return (enable == null || enable) ? 
-                this.removeClass("disabled")._bgAria("disabled", "false") : 
+            return (enable == null || enable) ?
+                this.removeClass("disabled")._bgAria("disabled", "false") :
                 this.addClass("disabled")._bgAria("disabled", "true");
         },
 
         _bgEnableField: function (enable)
         {
-            return (enable == null || enable) ? 
-                this.removeAttr("disabled") : 
+            return (enable == null || enable) ?
+                this.removeAttr("disabled") :
                 this.attr("disabled", "disable");
         },
 
         _bgShowAria: function (show)
         {
-            return (show == null || show) ? 
+            return (show == null || show) ?
                 this.show()._bgAria("hidden", "false") :
                 this.hide()._bgAria("hidden", "true");
         },
 
         _bgSelectAria: function (select)
         {
-            return (select == null || select) ? 
-                this.addClass("active")._bgAria("selected", "true") : 
+            return (select == null || select) ?
+                this.addClass("active")._bgAria("selected", "true") :
                 this.removeClass("active")._bgAria("selected", "false");
         },
 
@@ -1869,121 +1880,189 @@
         }
     });
 
-    if (!String.prototype.resolve)
-    {
-        var formatter = {
-            "checked": function(value)
-            {
-                if (typeof value === "boolean")
-                {
-                    return (value) ? "checked=\"checked\"" : "";
-                }
-                return value;
-            }
-        };
-
-        String.prototype.resolve = function (substitutes, prefixes)
+    var formatter = {
+        "checked": function(value)
         {
-            var result = this;
-            $.each(substitutes, function (key, value)
+            if (typeof value === "boolean")
             {
-                if (value != null && typeof value !== "function")
+                return (value) ? "checked=\"checked\"" : "";
+            }
+            return value;
+        }
+    };
+
+    var _templateCache = {};
+    var getTemplate = function(template){
+        if (!_templateCache.hasOwnProperty(template)){
+            var str = template.split(/{([^{}]+)}/g);
+
+            for (var i = 0; i < str.length; i++){
+                var s = str[i];
+                var hasStart = (s.charAt(0) === "}");
+                var hasEnd = (s.charAt(s.length - 1) === "{");
+                if (hasStart)
                 {
-                    if (typeof value === "object")
+                    s = s.substr(1);
+                }
+                if (hasEnd)
+                {
+                    s = s.substr(0, s.length - 1);
+                }
+
+                if (hasStart || hasEnd)
+                {
+                    str[i] = s;  //plain old html
+                } else {
+                    str[i] = {
+                        token: str[i],
+                        key: s.split(".")
+                    };
+                }
+            }
+            _templateCache[template] = str;
+        }
+        return _templateCache[template];
+    };
+    /*
+    // ONLY FOR TESTING
+    String.prototype.resolve_old = function (substitutes, prefixes)
+    {
+        var result = this;
+
+        $.each(substitutes, function (key, value)
+        {
+            if (value != null && typeof value !== "function")
+            {
+                if (typeof value === "object")
+                {
+                    var keys = (prefixes) ? $.extend([], prefixes) : [];
+                    keys.push(key);
+                    result = result.resolve_old(value, keys) + "";
+                }
+                else
+                {
+                    if (formatter && formatter[key] && typeof formatter[key] === "function")
                     {
-                        var keys = (prefixes) ? $.extend([], prefixes) : [];
-                        keys.push(key);
-                        result = result.resolve(value, keys) + "";
+                        value = formatter[key](value);
                     }
-                    else
-                    {
-                        if (formatter && formatter[key] && typeof formatter[key] === "function")
-                        {
-                            value = formatter[key](value);
-                        }
-                        key = (prefixes) ? prefixes.join(".") + "." + key : key;
-                        var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");
-                        result = result.replace(pattern, (value.replace) ? value.replace(/\$/gi, "&#36;") : value);
+                    key = (prefixes) ? prefixes.join(".") + "." + key : key;
+                    var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");
+                    result = result.replace(pattern, (value.replace) ? value.replace(/\$/gi, "&#36;") : value);
+                }
+            }
+        });
+
+        return result;
+    };
+    */
+    var template = function (template, substitutes, prefixes)
+    {
+        var str = getTemplate(template);
+        var result = "";
+        for (var i = 0; i < str.length; i++){
+            if (typeof str[i] === "object"){
+                var key = str[i].key;
+                var v = "";
+                 // now we have a variable to be substitued
+                if (substitutes.hasOwnProperty(key[0]))
+                {
+                    v = substitutes[key[0]];
+                }
+                else
+                {
+                    continue;
+                }
+
+                for (var k = 1; k < key.length; k++){
+                    if (v.hasOwnProperty(key[k])){
+                        v = v[key[k]];
+                    } else {
+                        v = "";
+                        break;
                     }
                 }
-            });
-            return result;
-        };
-    }
-
-    if (!Array.prototype.first)
-    {
-        Array.prototype.first = function (condition)
-        {
-            for (var i = 0; i < this.length; i++)
-            {
-                var item = this[i];
-                if (condition(item))
-                {
-                    return item;
+                var formatter_key = key[key.length-1];
+                if (formatter && formatter[formatter_key] && typeof formatter[formatter_key] === "function"){
+                    result += formatter[formatter_key](v);
+                } else {
+                    result += v;
                 }
+            } else {
+                result += str[i]; // plain old html
             }
-            return null;
-        };
-    }
-
-    if (!Array.prototype.contains)
+        }
+        // ONLY FOR TESTING
+        /*
+        var result_old = this.resolve_old(substitutes, prefixes);
+        if (result !== result_old){
+            console.warn("Difference templating result");
+            console.log(result);
+            console.log(result_old);
+        }
+    */
+        return result;
+    };
+    /*
+    var arrayFirst = function (arr, condition)
     {
-        Array.prototype.contains = function (condition)
+        for (var i = 0; i < arr.length; i++)
         {
-            for (var i = 0; i < this.length; i++)
+            var item = arr[i];
+            if (condition(item))
             {
-                var item = this[i];
-                if (condition(item))
-                {
-                    return true;
-                }
+                return item;
             }
-            return false;
-        };
-    }
-
-    if (!Array.prototype.page)
+        }
+        return null;
+    };
+    */
+    var arrayContains = function (arr, condition)
     {
-        Array.prototype.page = function (page, size)
+        for (var i = 0; i < arr.length; i++)
         {
-            var skip = (page - 1) * size,
-                end = skip + size;
-            return (this.length > skip) ? 
-                (this.length > end) ? this.slice(skip, end) : 
-                    this.slice(skip) : [];
-        };
-    }
-
-    if (!Array.prototype.where)
-    {
-        Array.prototype.where = function (condition)
-        {
-            var result = [];
-            for (var i = 0; i < this.length; i++)
+            var item = arr[i];
+            if (condition(item))
             {
-                var item = this[i];
-                if (condition(item))
-                {
-                    result.push(item);
-                }
+                return true;
             }
-            return result;
-        };
-    }
+        }
+        return false;
+    };
 
-    if (!Array.prototype.propValues)
+    var arrayPage = function (arr, page, size)
     {
-        Array.prototype.propValues = function (propName)
+        var skip = (page - 1) * size,
+            end = skip + size;
+        return (arr.length > skip) ?
+            (arr.length > end) ? arr.slice(skip, end) :
+                arr.slice(skip) : [];
+    };
+
+
+    var arrayWhere = function (arr, condition)
+    {
+        var result = [];
+        for (var i = 0; i < arr.length; i++)
         {
-            var result = [];
-            for (var i = 0; i < this.length; i++)
+            var item = arr[i];
+            if (condition(item))
             {
-                result.push(this[i][propName]);
+                result.push(item);
             }
-            return result;
-        };
-    }
+        }
+        return result;
+    };
+
+
+    var arrayPropValues = function (arr, propName)
+    {
+        var result = [];
+        for (var i = 0; i < arr.length; i++)
+        {
+            result.push(arr[i][propName]);
+        }
+        return result;
+    };
 
     // GRID PLUGIN DEFINITION
     // =====================
