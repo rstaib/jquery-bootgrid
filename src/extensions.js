@@ -121,7 +121,7 @@ if (!String.prototype.resolve)
                     if (v.hasOwnProperty(key[k])){
                         v = v[key[k]];
                     } else {
-                        v = null;
+                        v = "";
                         break;
                     }
                 }
