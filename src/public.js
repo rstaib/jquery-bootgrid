@@ -128,7 +128,7 @@ Grid.defaults = {
          * @for searchSettings
          **/
         delay: 250,
-
+        
         /**
          * The characters to type before the search gets executed.
          *
@@ -379,7 +379,7 @@ Grid.defaults = {
          * @for statusMapping
          **/
         2: "warning",
-
+        
         /**
          * Specifies a dangerous or potentially negative action.
          *
@@ -436,7 +436,14 @@ Grid.prototype.append = function(rows)
     }
     else
     {
-        var appendedRows = appendRows.call(this, rows);
+        var appendedRows = [];
+        for (var i = 0; i < rows.length; i++)
+        {
+            if (appendRow.call(this, rows[i]))
+            {
+                appendedRows.push(rows[i]);
+            }
+        }
         sortRows.call(this);
         highlightAppendedRows.call(this, appendedRows);
         loadData.call(this);
@@ -556,7 +563,7 @@ Grid.prototype.remove = function(rowIds)
 };
 
 /**
- * Searches in all rows for a specific phrase (but only in visible cells).
+ * Searches in all rows for a specific phrase (but only in visible cells). 
  * The search filter will be reseted, if no argument is provided.
  *
  * @method search
@@ -592,7 +599,7 @@ Grid.prototype.select = function(rowIds)
 {
     if (this.selection)
     {
-        rowIds = rowIds || arrayPropValues(this.currentRows, this.identifier);
+        rowIds = rowIds || this.currentRows.propValues(this.identifier);
 
         var id, i,
             selectedRows = [];
@@ -658,7 +665,7 @@ Grid.prototype.deselect = function(rowIds)
 {
     if (this.selection)
     {
-        rowIds = rowIds || arrayPropValues(this.currentRows, this.identifier);
+        rowIds = rowIds || this.currentRows.propValues(this.identifier);
 
         var id, i, pos,
             deselectedRows = [];
@@ -701,7 +708,7 @@ Grid.prototype.deselect = function(rowIds)
 };
 
 /**
- * Sorts the rows by a given sort descriptor dictionary.
+ * Sorts the rows by a given sort descriptor dictionary. 
  * The sort filter will be reseted, if no argument is provided.
  *
  * @method sort

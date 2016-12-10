@@ -15,27 +15,13 @@ function appendRow(row)
         return that.identifier && item[that.identifier] === row[that.identifier];
     }
 
-    if (!arrayContains(this.rows, exists))
+    if (!this.rows.contains(exists))
     {
         this.rows.push(row);
         return true;
     }
 
     return false;
-}
-
-function appendRows(rows)
-{
-     var that = this;
-
-     var appendedRows = rows.slice();
-     appendedRows.filter(function(item) {
-       return !(that.identifier && item[that.identifier] === rows[that.identifier]);
-     });
-
-     this.rows = this.rows.concat(appendedRows);
-
-     return appendedRows;
 }
 
 function findFooterAndHeaderItems(selector)
@@ -131,7 +117,7 @@ function loadColumns()
                 sortable: !(data.sortable === false), // default: true
                 visible: !(data.visible === false), // default: true
                 visibleInSelection: !(data.visibleInSelection === false), // default: true
-                width: ($.isNumeric(data.width)) ? data.width + "px" :
+                width: ($.isNumeric(data.width)) ? data.width + "px" : 
                     (typeof(data.width) === "string") ? data.width : null
             };
         that.columns.push(column);
@@ -258,11 +244,11 @@ function loadData()
     }
     else
     {
-        var rows = (this.searchPhrase.length > 0) ? arrayWhere(this.rows, containsPhrase) : this.rows,
+        var rows = (this.searchPhrase.length > 0) ? this.rows.where(containsPhrase) : this.rows,
             total = rows.length;
         if (this.rowCount !== -1)
         {
-            rows = arrayPage(rows, this.current, this.rowCount);
+            rows = rows.page(this.current, this.rowCount);
         }
 
         // todo: improve the following comment
@@ -277,7 +263,7 @@ function loadRows()
     {
         var that = this,
             rows = this.element.find("tbody > tr");
-        var convertedRows = [];
+
         rows.each(function ()
         {
             var $this = $(this),
@@ -289,9 +275,9 @@ function loadRows()
                 row[column.id] = column.converter.from(cells.eq(i).text());
             });
 
-            convertedRows.push(row);
+            appendRow.call(that, row);
         });
-        appendRows.call(that, convertedRows);
+
         setTotals.call(this, this.rows.length);
         sortRows.call(this);
     }
@@ -320,13 +306,13 @@ function prepareTable()
 
     if (this.options.navigation & 1)
     {
-        this.header = $(template(tpl.header, getParams.call(this, { id: this.element._bgId() + "-header" })));
+        this.header = $(tpl.header.resolve(getParams.call(this, { id: this.element._bgId() + "-header" })));
         wrapper.before(this.header);
     }
 
     if (this.options.navigation & 2)
     {
-        this.footer = $(template(tpl.footer, getParams.call(this, { id: this.element._bgId() + "-footer" })));
+        this.footer = $(tpl.footer.resolve(getParams.call(this, { id: this.element._bgId() + "-footer" })));
         wrapper.after(this.footer);
     }
 }
@@ -343,13 +329,13 @@ function renderActions()
         {
             var that = this,
                 tpl = this.options.templates,
-                actions = $(template(tpl.actions, getParams.call(this)));
+                actions = $(tpl.actions.resolve(getParams.call(this)));
 
             // Refresh Button
             if (this.options.ajax)
             {
-                var refreshIcon = template(tpl.icon, getParams.call(this, { iconCss: css.iconRefresh })),
-                    refresh = $(template(tpl.actionButton, getParams.call(this,
+                var refreshIcon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconRefresh })),
+                    refresh = $(tpl.actionButton.resolve(getParams.call(this,
                     { content: refreshIcon, text: this.options.labels.refresh })))
                         .on("click" + namespace, function (e)
                         {
@@ -379,8 +365,8 @@ function renderColumnSelection(actions)
         var that = this,
             css = this.options.css,
             tpl = this.options.templates,
-            icon = template(tpl.icon, getParams.call(this, { iconCss: css.iconColumns })),
-            dropDown = $(template(tpl.actionDropDown, getParams.call(this, { content: icon }))),
+            icon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconColumns })),
+            dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: icon }))),
             selector = getCssSelector(css.dropDownItem),
             checkboxSelector = getCssSelector(css.dropDownItemCheckbox),
             itemsSelector = getCssSelector(css.dropDownMenuItems);
@@ -389,21 +375,21 @@ function renderColumnSelection(actions)
         {
             if (column.visibleInSelection)
             {
-                var item = $(template(tpl.actionDropDownCheckboxItem, getParams.call(that,
+                var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
                     { name: column.id, label: column.text, checked: column.visible })))
                         .on("click" + namespace, selector, function (e)
                         {
                             e.stopPropagation();
-
+    
                             var $this = $(this),
                                 checkbox = $this.find(checkboxSelector);
                             if (!checkbox.prop("disabled"))
                             {
                                 column.visible = checkbox.prop("checked");
-                                var enable = arrayWhere(that.columns, isVisible).length > 1;
+                                var enable = that.columns.where(isVisible).length > 1;
                                 $this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
                                     ._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
-
+    
                                 that.element.find("tbody").empty(); // Fixes an column visualization bug
                                 renderTableHeader.call(that);
                                 loadData.call(that);
@@ -427,7 +413,7 @@ function renderInfos()
         if (infoItems.length > 0)
         {
             var end = (this.current * this.rowCount),
-                infos = $(template(this.options.templates.infos, getParams.call(this, {
+                infos = $(this.options.templates.infos.resolve(getParams.call(this, {
                     end: (this.total === 0 || end === -1 || end > this.total) ? this.total : end,
                     start: (this.total === 0) ? 0 : (end - this.rowCount + 1),
                     total: this.total
@@ -442,13 +428,13 @@ function renderNoResultsRow()
 {
     var tbody = this.element.children("tbody").first(),
         tpl = this.options.templates,
-        count = arrayWhere(this.columns, isVisible).length;
+        count = this.columns.where(isVisible).length;
 
     if (this.selection)
     {
         count = count + 1;
     }
-    tbody.html(template(tpl.noResults, getParams.call(this, { columns: count })));
+    tbody.html(tpl.noResults.resolve(getParams.call(this, { columns: count })));
 }
 
 function renderPagination()
@@ -463,7 +449,7 @@ function renderPagination()
             var tpl = this.options.templates,
                 current = this.current,
                 totalPages = this.totalPages,
-                pagination = $(template(tpl.pagination, getParams.call(this))),
+                pagination = $(tpl.pagination.resolve(getParams.call(this))),
                 offsetRight = totalPages - current,
                 offsetLeft = (this.options.padding - current) * -1,
                 startWith = ((offsetRight >= this.options.padding) ?
@@ -506,7 +492,7 @@ function renderPaginationItem(list, page, text, markerCss)
         tpl = this.options.templates,
         css = this.options.css,
         values = getParams.call(this, { css: markerCss, text: text, page: page }),
-        item = $(template(tpl.paginationItem, values))
+        item = $(tpl.paginationItem.resolve(values))
             .on("click" + namespace, getCssSelector(css.paginationButton), function (e)
             {
                 e.stopPropagation();
@@ -547,7 +533,7 @@ function renderRowCountSelection(actions)
     {
         var css = this.options.css,
             tpl = this.options.templates,
-            dropDown = $(template(tpl.actionDropDown, getParams.call(this, { content: getText(this.rowCount) }))),
+            dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: getText(this.rowCount) }))),
             menuSelector = getCssSelector(css.dropDownMenu),
             menuTextSelector = getCssSelector(css.dropDownMenuText),
             menuItemsSelector = getCssSelector(css.dropDownMenuItems),
@@ -555,7 +541,7 @@ function renderRowCountSelection(actions)
 
         $.each(rowCountList, function (index, value)
         {
-            var item = $(template(tpl.actionDropDownItem, getParams.call(that,
+            var item = $(tpl.actionDropDownItem.resolve(getParams.call(that,
                 { text: getText(value), action: value })))
                     ._bgSelectAria(value === that.rowCount)
                     .on("click" + namespace, menuItemSelector, function (e)
@@ -605,9 +591,9 @@ function renderRows(rows)
             if (that.selection)
             {
                 var selected = ($.inArray(row[that.identifier], that.selectedRows) !== -1),
-                    selectBox = template(tpl.select, getParams.call(that,
+                    selectBox = tpl.select.resolve(getParams.call(that,
                         { type: "checkbox", value: row[that.identifier], checked: selected }));
-                cells += template(tpl.cell, getParams.call(that, { content: selectBox, css: css.selectCell }));
+                cells += tpl.cell.resolve(getParams.call(that, { content: selectBox, css: css.selectCell }));
                 allRowsSelected = (allRowsSelected && selected);
                 if (selected)
                 {
@@ -630,7 +616,7 @@ function renderRows(rows)
                             column.formatter.call(that, column, row) :
                                 column.converter.to(row[column.id]),
                         cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
-                    cells += template(tpl.cell, getParams.call(that, {
+                    cells += tpl.cell.resolve(getParams.call(that, {
                         content: (value == null || value === "") ? "&nbsp;" : value,
                         css: ((column.align === "right") ? css.right : (column.align === "center") ?
                             css.center : css.left) + cssClass,
@@ -642,7 +628,7 @@ function renderRows(rows)
             {
                 rowAttr += " class=\"" + rowCss + "\"";
             }
-            html += template(tpl.row, getParams.call(that, { attr: rowAttr, cells: cells }));
+            html += tpl.row.resolve(getParams.call(that, { attr: rowAttr, cells: cells }));
         });
 
         // sets or clears multi selectbox state
@@ -727,7 +713,7 @@ function renderSearchField()
                 timer = null, // fast keyup detection
                 currentValue = "",
                 searchFieldSelector = getCssSelector(css.searchField),
-                search = $(template(tpl.search, getParams.call(this))),
+                search = $(tpl.search.resolve(getParams.call(this))),
                 searchField = (search.is(searchFieldSelector)) ? search :
                     search.find(searchFieldSelector);
 
@@ -776,8 +762,8 @@ function renderTableHeader()
     if (this.selection)
     {
         var selectBox = (this.options.multiSelect) ?
-            template(tpl.select, getParams.call(that, { type: "checkbox", value: "all" })) : "";
-        html += template(tpl.rawHeaderCell, getParams.call(that, { content: selectBox,
+            tpl.select.resolve(getParams.call(that, { type: "checkbox", value: "all" })) : "";
+        html += tpl.rawHeaderCell.resolve(getParams.call(that, { content: selectBox,
             css: css.selectCell }));
     }
 
@@ -788,10 +774,10 @@ function renderTableHeader()
             var sortOrder = that.sortDictionary[column.id],
                 iconCss = ((sorting && sortOrder && sortOrder === "asc") ? css.iconUp :
                     (sorting && sortOrder && sortOrder === "desc") ? css.iconDown : ""),
-                icon = template(tpl.icon, getParams.call(that, { iconCss: iconCss })),
+                icon = tpl.icon.resolve(getParams.call(that, { iconCss: iconCss })),
                 align = column.headerAlign,
                 cssClass = (column.headerCssClass.length > 0) ? " " + column.headerCssClass : "";
-            html += template(tpl.headerCell, getParams.call(that, {
+            html += tpl.headerCell.resolve(getParams.call(that, {
                 column: column, icon: icon, sortable: sorting && column.sortable && css.sortable || "",
                 css: ((align === "right") ? css.right : (align === "center") ?
                     css.center : css.left) + cssClass,
@@ -905,13 +891,13 @@ function showLoading()
                 tbody = that.element.children("tbody").first(),
                 firstCell = tbody.find("tr > td").first(),
                 padding = (that.element.height() - thead.height()) - (firstCell.height() + 20),
-                count = arrayWhere(that.columns, isVisible).length;
+                count = that.columns.where(isVisible).length;
 
             if (that.selection)
             {
                 count = count + 1;
             }
-            tbody.html(template(tpl.loading, getParams.call(that, { columns: count })));
+            tbody.html(tpl.loading.resolve(getParams.call(that, { columns: count })));
             if (that.rowCount !== -1 && padding > 0)
             {
                 tbody.find("tr > td").css("padding", "20px 0 " + padding + "px");
