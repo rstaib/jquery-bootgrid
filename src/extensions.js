@@ -98,6 +98,37 @@ if (!String.prototype.resolve)
         }
         return _templateCache[template];
     };
+    
+    // ONLY FOR TESTING
+    String.prototype.resolve_old = function (substitutes, prefixes)
+    {
+        var result = this;
+
+        $.each(substitutes, function (key, value)
+        {
+            if (value != null && typeof value !== "function")
+            {
+                if (typeof value === "object")
+                {
+                    var keys = (prefixes) ? $.extend([], prefixes) : [];
+                    keys.push(key);
+                    result = result.resolve_old(value, keys) + "";
+                }
+                else
+                {
+                    if (formatter && formatter[key] && typeof formatter[key] === "function")
+                    {
+                        value = formatter[key](value);
+                    }
+                    key = (prefixes) ? prefixes.join(".") + "." + key : key;
+                    var pattern = new RegExp("\\{\\{" + key + "\\}\\}", "gm");
+                    result = result.replace(pattern, (value.replace) ? value.replace(/\$/gi, "&#36;") : value);
+                }
+            }
+        });
+
+        return result;
+    };
 
     String.prototype.resolve = function (substitutes, prefixes)
     {
@@ -134,6 +165,13 @@ if (!String.prototype.resolve)
             } else {
                 result += str[i]; // plain old html
             }
+        }
+        // ONLY FOR TESTING, remove for release or testing performance of individal approaches
+        var result_old = this.resolve_old(substitutes, prefixes);
+        if (result !== result_old){
+            console.warn("Different templating result");
+            console.log("new: ", result);
+            console.log("old: ", result_old);
         }
         return result;
     };
