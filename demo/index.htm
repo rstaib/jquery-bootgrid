@@ -47,7 +47,6 @@
                     </div>
                 </div>
                 <div class="col-md-9">
-                    <button id="append" type="button" class="btn btn-default">Append</button>
                     <button id="clear" type="button" class="btn btn-default">Clear</button>
                     <button id="removeSelected" type="button" class="btn btn-default">Remove Selected</button>
                     <button id="destroy" type="button" class="btn btn-default">Destroy</button>
@@ -61,12 +60,20 @@
                     <button id="getSearchPhrase" type="button" class="btn btn-default">Search Phrase</button>
                     <button id="getSortDictionary" type="button" class="btn btn-default">Sort Dictionary</button>
                     <button id="getSelectedRows" type="button" class="btn btn-default">Selected Rows</button>
+                    
+                    <div>
+                        <button type="button" class="btn btn-default append" data-rows="10">Append 10</button>
+                        <button type="button" class="btn btn-default append" data-rows="100">Append 100</button>
+                        <button type="button" class="btn btn-default append" data-rows="1000">Append 1000</button>
+                        <span class="loading"/>
+                    </div>
+                    
                     <!--div class="table-responsive"-->
                         <table id="grid" class="table table-condensed table-hover table-striped" data-selection="true" data-multi-select="true" data-row-select="true" data-keep-selection="true">
                             <thead>
                                 <tr>
-                                    <th data-column-id="id" data-identifier="true" data-type="numeric" data-align="right" data-width="40">ID</th>
-                                    <th data-column-id="sender" data-order="asc" data-align="center" data-header-align="center" data-width="75%">Sender</th>
+                                    <th data-column-id="id" data-identifier="true" data-type="numeric" data-align="right" data-width="100">ID</th>
+                                    <th data-column-id="sender" data-order="asc" data-align="center" data-header-align="center" data-width="35%">Sender</th>
                                     <th data-column-id="received" data-css-class="cell" data-header-css-class="column" data-filterable="true">Received</th>
                                     <th data-column-id="link" data-formatter="link" data-sortable="false" data-width="75px">Link</th>
                                     <th data-column-id="status" data-type="numeric" data-visible="false">Status</th>
@@ -193,22 +200,47 @@
                     });
                 }
                 
+                var timerKey = 'initRender';
+                var timerStart = null;
+                $("#grid").on("loaded.rs.jquery.bootgrid", function (e){
+                   if (timerKey)
+                        console.timeEnd(timerKey);
+                    if (timerStart)
+                        $(".loading").text("rendered time: " + (new Date().getTime() - timerStart) + "ms");
+                    timerKey = null;
+                    timerStart = null;
+                });
+
+                function startTimer(key){
+                    $(".loading").html(timerKey + "<b>loading...</b>");
+                    console.time(timerKey);
+                    timerStart = new Date();
+                }
+
+                startTimer(timerKey);
                 init();
-                
-                $("#append").on("click", function ()
+                appendCounter = 100;
+
+                $(".append").on("click", function (e)
                 {
-                    $("#grid").bootgrid("append", [{
-                            id: 0,
-                            sender: "hh@derhase.de",
-                            received: "Gestern",
-                            link: ""
-                        },
-                        {
-                            id: 12,
-                            sender: "er@fsdfs.de",
-                            received: "Heute",
-                            link: ""
-                        }]);
+                    var data = [];
+                    var rows = $(e.target).data('rows');
+                    for (var i=0; i < rows; i++)
+                    {
+                        var row = {
+                            id: i+appendCounter,
+                            sender: "sample@example.com",
+                            received: new Date(new Date().getTime()+(i*24*60*60*1000)).toString(),
+                            link: "link",
+                            status: "status" + i,
+                            hidden: (i % 2 === 0) ? "yes" : "no"
+                        };
+                        data.push(row);
+                    }
+                    appendCounter = appendCounter + rows;
+                    timerKey = "[appendData: " + rows + " rows] ";
+                    startTimer(timerKey);
+                    $("#grid").bootgrid("append", data);
                 });
                 
                 $("#clear").on("click", function ()
