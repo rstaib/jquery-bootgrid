@@ -128,7 +128,7 @@ Grid.defaults = {
          * @for searchSettings
          **/
         delay: 250,
-        
+
         /**
          * The characters to type before the search gets executed.
          *
@@ -334,7 +334,10 @@ Grid.defaults = {
      **/
     labels: {
         all: "All",
-        infos: "Showing {{ctx.start}} to {{ctx.end}} of {{ctx.total}} entries",
+        showing: "Showing",
+        to: "to",
+        of: "of",
+        entries: "entries",
         loading: "Loading...",
         noResults: "No results found!",
         refresh: "Refresh",
@@ -376,7 +379,7 @@ Grid.defaults = {
          * @for statusMapping
          **/
         2: "warning",
-        
+
         /**
          * Specifies a dangerous or potentially negative action.
          *
@@ -406,7 +409,7 @@ Grid.defaults = {
         header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.search}}\"></p><p class=\"{{css.actions}}\"></p></div></div></div>",
         headerCell: "<th data-column-id=\"{{ctx.column.id}}\" class=\"{{ctx.css}}\" style=\"{{ctx.style}}\"><a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.column.text}}</span>{{ctx.icon}}</a></th>",
         icon: "<span class=\"{{css.icon}} {{ctx.iconCss}}\"></span>",
-        infos: "<div class=\"{{css.infos}}\">{{lbl.infos}}</div>",
+        infos: "<div class=\"{{css.infos}}\">{{lbl.showing}} {{ctx.start}} {{lbl.to}} {{ctx.end}} {{lbl.of}} {{ctx.total}} {{lbl.entries}}</div>",
         loading: "<tr><td colspan=\"{{ctx.columns}}\" class=\"loading\">{{lbl.loading}}</td></tr>",
         noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{lbl.noResults}}</td></tr>",
         pagination: "<ul class=\"{{css.pagination}}\"></ul>",
@@ -433,14 +436,7 @@ Grid.prototype.append = function(rows)
     }
     else
     {
-        var appendedRows = [];
-        for (var i = 0; i < rows.length; i++)
-        {
-            if (appendRow.call(this, rows[i]))
-            {
-                appendedRows.push(rows[i]);
-            }
-        }
+        var appendedRows = appendRows.call(this, rows);
         sortRows.call(this);
         highlightAppendedRows.call(this, appendedRows);
         loadData.call(this);
@@ -560,7 +556,7 @@ Grid.prototype.remove = function(rowIds)
 };
 
 /**
- * Searches in all rows for a specific phrase (but only in visible cells). 
+ * Searches in all rows for a specific phrase (but only in visible cells).
  * The search filter will be reseted, if no argument is provided.
  *
  * @method search
@@ -596,7 +592,7 @@ Grid.prototype.select = function(rowIds)
 {
     if (this.selection)
     {
-        rowIds = rowIds || this.currentRows.propValues(this.identifier);
+        rowIds = rowIds || arrayPropValues(this.currentRows, this.identifier);
 
         var id, i,
             selectedRows = [];
@@ -662,7 +658,7 @@ Grid.prototype.deselect = function(rowIds)
 {
     if (this.selection)
     {
-        rowIds = rowIds || this.currentRows.propValues(this.identifier);
+        rowIds = rowIds || arrayPropValues(this.currentRows, this.identifier);
 
         var id, i, pos,
             deselectedRows = [];
@@ -705,7 +701,7 @@ Grid.prototype.deselect = function(rowIds)
 };
 
 /**
- * Sorts the rows by a given sort descriptor dictionary. 
+ * Sorts the rows by a given sort descriptor dictionary.
  * The sort filter will be reseted, if no argument is provided.
  *
  * @method sort
