@@ -6,24 +6,6 @@ var namespace = ".rs.jquery.bootgrid";
 // GRID INTERNAL FUNCTIONS
 // =====================
 
-function appendRow(row)
-{
-    var that = this;
-
-    function exists(item)
-    {
-        return that.identifier && item[that.identifier] === row[that.identifier];
-    }
-
-    if (!arrayContains(this.rows, exists))
-    {
-        this.rows.push(row);
-        return true;
-    }
-
-    return false;
-}
-
 function appendRows(rows)
 {
      var that = this;
