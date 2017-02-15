@@ -18,7 +18,7 @@ var Grid = function(element, options)
     // overrides rowCount explicitly because deep copy ($.extend) leads to strange behaviour
     var rowCount = this.options.rowCount = this.element.data().rowCount || options.rowCount || this.options.rowCount;
     this.columns = [];
-    this.current =  = this.options.current;
+    this.current = this.options.current;
     this.currentRows = [];
     this.identifier = null; // The first column ID that is marked as identifier
     this.selection = false;
