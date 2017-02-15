@@ -18,7 +18,7 @@ var Grid = function(element, options)
     // overrides rowCount explicitly because deep copy ($.extend) leads to strange behaviour
     var rowCount = this.options.rowCount = this.element.data().rowCount || options.rowCount || this.options.rowCount;
     this.columns = [];
-    this.current = 1;
+    this.current =  = this.options.current;
     this.currentRows = [];
     this.identifier = null; // The first column ID that is marked as identifier
     this.selection = false;
@@ -27,7 +27,7 @@ var Grid = function(element, options)
     this.rows = [];
     this.searchPhrase = "";
     this.selectedRows = [];
-    this.sortDictionary = {};
+    this.sortDictionary = this.options.sortDictionary;
     this.total = 0;
     this.totalPages = 0;
     this.cachedParams = {
@@ -60,6 +60,8 @@ Grid.defaults = {
     padding: 2, // page padding (pagination)
     columnSelection: true,
     rowCount: [10, 25, 50, -1], // rows per page int or array of int (-1 represents "All")
+    current: 1, // Current page 1
+    sortDictionary: {}, // No sort option
 
     /**
      * Enables row selection (to enable multi selection see also `multiSelect`). Default value is `false`.
