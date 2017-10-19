@@ -111,7 +111,7 @@ Grid.defaults = {
     multiSort: false,
 
     /**
-     * Generall search settings to configure the search field behaviour.
+     * General search settings to configure the search field behaviour.
      *
      * @property searchSettings
      * @type Object
@@ -152,7 +152,7 @@ Grid.defaults = {
 
     /**
      * Ajax request settings that shall be used for server-side communication.
-     * All setting can be overridden except data, error, success and url.
+     * All setting except data, error, success and url can be overridden.
      * For the full list of settings go to http://api.jquery.com/jQuery.ajax/.
      *
      * @property ajaxSettings
@@ -397,7 +397,7 @@ Grid.defaults = {
     templates: {
         actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{ctx.content}}</button>",
         actionDropDown: "<div class=\"{{css.dropDownMenu}}\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\"><span class=\"{{css.dropDownMenuText}}\">{{ctx.content}}</span> <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenuItems}}\" role=\"menu\"></ul></div>",
-        actionDropDownItem: "<li><a href=\"{{ctx.uri}}\" class=\"{{css.dropDownItem}} {{css.dropDownItemButton}}\">{{ctx.text}}</a></li>",
+        actionDropDownItem: "<li><a data-action=\"{{ctx.action}}\" class=\"{{css.dropDownItem}} {{css.dropDownItemButton}}\">{{ctx.text}}</a></li>",
         actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItem}}\"><input name=\"{{ctx.name}}\" type=\"checkbox\" value=\"1\" class=\"{{css.dropDownItemCheckbox}}\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
         actions: "<div class=\"{{css.actions}}\"></div>",
         body: "<tbody></tbody>",
@@ -410,7 +410,7 @@ Grid.defaults = {
         loading: "<tr><td colspan=\"{{ctx.columns}}\" class=\"loading\">{{lbl.loading}}</td></tr>",
         noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{lbl.noResults}}</td></tr>",
         pagination: "<ul class=\"{{css.pagination}}\"></ul>",
-        paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
+        paginationItem: "<li class=\"{{ctx.css}}\"><a data-page=\"{{ctx.page}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
         rawHeaderCell: "<th class=\"{{ctx.css}}\">{{ctx.content}}</th>", // Used for the multi select box
         row: "<tr{{ctx.attr}}>{{ctx.cells}}</tr>",
         search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon {{css.iconSearch}}\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
@@ -429,7 +429,7 @@ Grid.prototype.append = function(rows)
 {
     if (this.options.ajax)
     {
-        // todo: implement ajax DELETE
+        // todo: implement ajax PUT
     }
     else
     {
@@ -736,6 +736,7 @@ Grid.prototype.sort = function(dictionary)
  *
  * @method getColumnSettings
  * @return {Array} Returns a list of the column settings.
+ * @since 1.2.0
  **/
 Grid.prototype.getColumnSettings = function()
 {
@@ -749,6 +750,7 @@ Grid.prototype.getColumnSettings = function()
  *
  * @method getCurrentPage
  * @return {Number} Returns the current page index.
+ * @since 1.2.0
  **/
 Grid.prototype.getCurrentPage = function()
 {
@@ -762,6 +764,7 @@ Grid.prototype.getCurrentPage = function()
  *
  * @method getCurrentPage
  * @return {Array} Returns the current rows.
+ * @since 1.2.0
  **/
 Grid.prototype.getCurrentRows = function()
 {
@@ -775,6 +778,7 @@ Grid.prototype.getCurrentRows = function()
  *
  * @method getRowCount
  * @return {Number} Returns the row count per page.
+ * @since 1.2.0
  **/
 Grid.prototype.getRowCount = function()
 {
@@ -788,6 +792,7 @@ Grid.prototype.getRowCount = function()
  *
  * @method getSearchPhrase
  * @return {String} Returns the actual search phrase.
+ * @since 1.2.0
  **/
 Grid.prototype.getSearchPhrase = function()
 {
@@ -801,6 +806,7 @@ Grid.prototype.getSearchPhrase = function()
  *
  * @method getSelectedRows
  * @return {Array} Returns all selected rows.
+ * @since 1.2.0
  **/
 Grid.prototype.getSelectedRows = function()
 {
@@ -814,6 +820,7 @@ Grid.prototype.getSelectedRows = function()
  *
  * @method getSortDictionary
  * @return {Object} Returns the sort dictionary.
+ * @since 1.2.0
  **/
 Grid.prototype.getSortDictionary = function()
 {
@@ -827,6 +834,7 @@ Grid.prototype.getSortDictionary = function()
  *
  * @method getTotalPageCount
  * @return {Number} Returns the total page count.
+ * @since 1.2.0
  **/
 Grid.prototype.getTotalPageCount = function()
 {
@@ -840,6 +848,7 @@ Grid.prototype.getTotalPageCount = function()
  *
  * @method getTotalRowCount
  * @return {Number} Returns the total row count.
+ * @since 1.2.0
  **/
 Grid.prototype.getTotalRowCount = function()
 {

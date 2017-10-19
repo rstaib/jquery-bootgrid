@@ -70,6 +70,7 @@
                                     <th data-column-id="received" data-css-class="cell" data-header-css-class="column" data-filterable="true">Received</th>
                                     <th data-column-id="link" data-formatter="link" data-sortable="false" data-width="75px">Link</th>
                                     <th data-column-id="status" data-type="numeric" data-visible="false">Status</th>
+                                    <th data-column-id="hidden" data-visible="false" data-visible-in-selection="false">Hidden</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -79,6 +80,7 @@
                                     <td>11.12.2014</td>
                                     <td>Link</td>
                                     <td>999</td>
+                                    <td>Hidden value 1</td>
                                 </tr>
                                 <tr>
                                     <td>2</td>
@@ -86,6 +88,7 @@
                                     <td>12.12.2014</td>
                                     <td>Link</td>
                                     <td>999</td>
+                                    <td>Hidden value 1</td>
                                 </tr>
                                 <tr>
                                     <td>3</td>
@@ -93,6 +96,7 @@
                                     <td>10.12.2014</td>
                                     <td>Link</td>
                                     <td>2</td>
+                                    <td>Hidden value 1</td>
                                 </tr>
                                 <tr>
                                     <td>4</td>
@@ -100,6 +104,7 @@
                                     <td>12.08.2014</td>
                                     <td>Link</td>
                                     <td>999</td>
+                                    <td>Hidden value 1</td>
                                 </tr>
                                 <tr>
                                     <td>5</td>
@@ -107,6 +112,7 @@
                                     <td>12.06.2014</td>
                                     <td>Link</td>
                                     <td>3</td>
+                                    <td>Hidden value 1</td>
                                 </tr>
                                 <tr>
                                     <td>6</td>
@@ -114,6 +120,7 @@
                                     <td>12.12.2014</td>
                                     <td>Link</td>
                                     <td>999</td>
+                                    <td>Hidden value 1</td>
                                 </tr>
                                 <tr>
                                     <td>7</td>
@@ -121,6 +128,7 @@
                                     <td>12.11.2014</td>
                                     <td>Link</td>
                                     <td>999</td>
+                                    <td>Hidden value 1</td>
                                 </tr>
                                 <tr>
                                     <td>8</td>
@@ -128,6 +136,7 @@
                                     <td>15.12.2014</td>
                                     <td>Link</td>
                                     <td>999</td>
+                                    <td>Hidden value 1</td>
                                 </tr>
                                 <tr>
                                     <td>9</td>
@@ -135,6 +144,7 @@
                                     <td>24.12.2014</td>
                                     <td>Link</td>
                                     <td>0</td>
+                                    <td>Hidden value 1</td>
                                 </tr>
                                 <tr>
                                     <td>10</td>
@@ -142,6 +152,7 @@
                                     <td>14.12.2014</td>
                                     <td>Link</td>
                                     <td>1</td>
+                                    <td>Hidden value 1</td>
                                 </tr>
                                 <tr>
                                     <td>11</td>
@@ -149,6 +160,7 @@
                                     <td>12.12.2014</td>
                                     <td>Link</td>
                                     <td>999</td>
+                                    <td>Hidden value 1</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -177,7 +189,7 @@
                                 return "<a href=\"#\">" + column.id + ": " + row.id + "</a>";
                             }
                         },
-                        rowCount: [-1, 25, 50, 75]
+                        rowCount: [-1, 10, 50, 75]
                     });
                 }
                 

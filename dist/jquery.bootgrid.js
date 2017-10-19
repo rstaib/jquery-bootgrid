@@ -1,5 +1,5 @@
 /*! 
- * jQuery Bootgrid v1.2.0-rc - 04/17/2015
+ * jQuery Bootgrid v1.3.1 - 09/11/2015
  * Copyright (c) 2014-2015 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
@@ -126,6 +126,7 @@
                     searchable: !(data.searchable === false), // default: true
                     sortable: !(data.sortable === false), // default: true
                     visible: !(data.visible === false), // default: true
+                    visibleInSelection: !(data.visibleInSelection === false), // default: true
                     width: ($.isNumeric(data.width)) ? data.width + "px" : 
                         (typeof(data.width) === "string") ? data.width : null
                 };
@@ -382,27 +383,30 @@
 
             $.each(this.columns, function (i, column)
             {
-                var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
-                    { name: column.id, label: column.text, checked: column.visible })))
-                        .on("click" + namespace, selector, function (e)
-                        {
-                            e.stopPropagation();
-
-                            var $this = $(this),
-                                checkbox = $this.find(checkboxSelector);
-                            if (!checkbox.prop("disabled"))
+                if (column.visibleInSelection)
+                {
+                    var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
+                        { name: column.id, label: column.text, checked: column.visible })))
+                            .on("click" + namespace, selector, function (e)
                             {
-                                column.visible = checkbox.prop("checked");
-                                var enable = that.columns.where(isVisible).length > 1;
-                                $this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
-                                    ._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
-
-                                that.element.find("tbody").empty(); // Fixes an column visualization bug
-                                renderTableHeader.call(that);
-                                loadData.call(that);
-                            }
-                        });
-                dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
+                                e.stopPropagation();
+        
+                                var $this = $(this),
+                                    checkbox = $this.find(checkboxSelector);
+                                if (!checkbox.prop("disabled"))
+                                {
+                                    column.visible = checkbox.prop("checked");
+                                    var enable = that.columns.where(isVisible).length > 1;
+                                    $this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
+                                        ._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
+        
+                                    that.element.find("tbody").empty(); // Fixes an column visualization bug
+                                    renderTableHeader.call(that);
+                                    loadData.call(that);
+                                }
+                            });
+                    dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
+                }
             });
             actions.append(dropDown);
         }
@@ -491,16 +495,17 @@
         }
     }
 
-    function renderPaginationItem(list, uri, text, markerCss)
+    function renderPaginationItem(list, page, text, markerCss)
     {
         var that = this,
             tpl = this.options.templates,
             css = this.options.css,
-            values = getParams.call(this, { css: markerCss, text: text, uri: "#" + uri }),
+            values = getParams.call(this, { css: markerCss, text: text, page: page }),
             item = $(tpl.paginationItem.resolve(values))
                 .on("click" + namespace, getCssSelector(css.paginationButton), function (e)
                 {
                     e.stopPropagation();
+                    e.preventDefault();
 
                     var $this = $(this),
                         parent = $this.parent();
@@ -512,8 +517,8 @@
                             next: that.current + 1,
                             last: that.totalPages
                         };
-                        var command = $this.attr("href").substr(1);
-                        that.current = commandList[command] || +command; // + converts string to int
+                        var command = $this.data("page");
+                        that.current = commandList[command] || command;
                         loadData.call(that);
                     }
                     $this.trigger("blur");
@@ -546,14 +551,14 @@
             $.each(rowCountList, function (index, value)
             {
                 var item = $(tpl.actionDropDownItem.resolve(getParams.call(that,
-                    { text: getText(value), uri: "#" + value })))
+                    { text: getText(value), action: value })))
                         ._bgSelectAria(value === that.rowCount)
                         .on("click" + namespace, menuItemSelector, function (e)
                         {
                             e.preventDefault();
 
                             var $this = $(this),
-                                newRowCount = +$this.attr("href").substr(1);
+                                newRowCount = $this.data("action");
                             if (newRowCount !== that.rowCount)
                             {
                                 // todo: sophisticated solution needed for calculating which page is selected
@@ -562,7 +567,7 @@
                                 $this.parents(menuItemsSelector).children().each(function ()
                                 {
                                     var $item = $(this),
-                                        currentRowCount = +$item.find(menuItemSelector).attr("href").substr(1);
+                                        currentRowCount = $item.find(menuItemSelector).data("action");
                                     $item._bgSelectAria(currentRowCount === newRowCount);
                                 });
                                 $this.parents(menuSelector).find(menuTextSelector).text(getText(newRowCount));
@@ -1065,7 +1070,7 @@
         multiSort: false,
 
         /**
-         * Generall search settings to configure the search field behaviour.
+         * General search settings to configure the search field behaviour.
          *
          * @property searchSettings
          * @type Object
@@ -1106,7 +1111,7 @@
 
         /**
          * Ajax request settings that shall be used for server-side communication.
-         * All setting can be overridden except data, error, success and url.
+         * All setting except data, error, success and url can be overridden.
          * For the full list of settings go to http://api.jquery.com/jQuery.ajax/.
          *
          * @property ajaxSettings
@@ -1351,7 +1356,7 @@
         templates: {
             actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{ctx.content}}</button>",
             actionDropDown: "<div class=\"{{css.dropDownMenu}}\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\"><span class=\"{{css.dropDownMenuText}}\">{{ctx.content}}</span> <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenuItems}}\" role=\"menu\"></ul></div>",
-            actionDropDownItem: "<li><a href=\"{{ctx.uri}}\" class=\"{{css.dropDownItem}} {{css.dropDownItemButton}}\">{{ctx.text}}</a></li>",
+            actionDropDownItem: "<li><a data-action=\"{{ctx.action}}\" class=\"{{css.dropDownItem}} {{css.dropDownItemButton}}\">{{ctx.text}}</a></li>",
             actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItem}}\"><input name=\"{{ctx.name}}\" type=\"checkbox\" value=\"1\" class=\"{{css.dropDownItemCheckbox}}\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
             actions: "<div class=\"{{css.actions}}\"></div>",
             body: "<tbody></tbody>",
@@ -1364,7 +1369,7 @@
             loading: "<tr><td colspan=\"{{ctx.columns}}\" class=\"loading\">{{lbl.loading}}</td></tr>",
             noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{lbl.noResults}}</td></tr>",
             pagination: "<ul class=\"{{css.pagination}}\"></ul>",
-            paginationItem: "<li class=\"{{ctx.css}}\"><a href=\"{{ctx.uri}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
+            paginationItem: "<li class=\"{{ctx.css}}\"><a data-page=\"{{ctx.page}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
             rawHeaderCell: "<th class=\"{{ctx.css}}\">{{ctx.content}}</th>", // Used for the multi select box
             row: "<tr{{ctx.attr}}>{{ctx.cells}}</tr>",
             search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon {{css.iconSearch}}\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
@@ -1383,7 +1388,7 @@
     {
         if (this.options.ajax)
         {
-            // todo: implement ajax DELETE
+            // todo: implement ajax PUT
         }
         else
         {
@@ -1690,6 +1695,7 @@
      *
      * @method getColumnSettings
      * @return {Array} Returns a list of the column settings.
+     * @since 1.2.0
      **/
     Grid.prototype.getColumnSettings = function()
     {
@@ -1703,6 +1709,7 @@
      *
      * @method getCurrentPage
      * @return {Number} Returns the current page index.
+     * @since 1.2.0
      **/
     Grid.prototype.getCurrentPage = function()
     {
@@ -1716,6 +1723,7 @@
      *
      * @method getCurrentPage
      * @return {Array} Returns the current rows.
+     * @since 1.2.0
      **/
     Grid.prototype.getCurrentRows = function()
     {
@@ -1729,6 +1737,7 @@
      *
      * @method getRowCount
      * @return {Number} Returns the row count per page.
+     * @since 1.2.0
      **/
     Grid.prototype.getRowCount = function()
     {
@@ -1742,6 +1751,7 @@
      *
      * @method getSearchPhrase
      * @return {String} Returns the actual search phrase.
+     * @since 1.2.0
      **/
     Grid.prototype.getSearchPhrase = function()
     {
@@ -1755,6 +1765,7 @@
      *
      * @method getSelectedRows
      * @return {Array} Returns all selected rows.
+     * @since 1.2.0
      **/
     Grid.prototype.getSelectedRows = function()
     {
@@ -1768,6 +1779,7 @@
      *
      * @method getSortDictionary
      * @return {Object} Returns the sort dictionary.
+     * @since 1.2.0
      **/
     Grid.prototype.getSortDictionary = function()
     {
@@ -1781,6 +1793,7 @@
      *
      * @method getTotalPageCount
      * @return {Number} Returns the total page count.
+     * @since 1.2.0
      **/
     Grid.prototype.getTotalPageCount = function()
     {
@@ -1794,6 +1807,7 @@
      *
      * @method getTotalRowCount
      * @return {Number} Returns the total row count.
+     * @since 1.2.0
      **/
     Grid.prototype.getTotalRowCount = function()
     {

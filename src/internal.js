@@ -116,6 +116,7 @@ function loadColumns()
                 searchable: !(data.searchable === false), // default: true
                 sortable: !(data.sortable === false), // default: true
                 visible: !(data.visible === false), // default: true
+                visibleInSelection: !(data.visibleInSelection === false), // default: true
                 width: ($.isNumeric(data.width)) ? data.width + "px" : 
                     (typeof(data.width) === "string") ? data.width : null
             };
@@ -372,27 +373,30 @@ function renderColumnSelection(actions)
 
         $.each(this.columns, function (i, column)
         {
-            var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
-                { name: column.id, label: column.text, checked: column.visible })))
-                    .on("click" + namespace, selector, function (e)
-                    {
-                        e.stopPropagation();
-
-                        var $this = $(this),
-                            checkbox = $this.find(checkboxSelector);
-                        if (!checkbox.prop("disabled"))
+            if (column.visibleInSelection)
+            {
+                var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
+                    { name: column.id, label: column.text, checked: column.visible })))
+                        .on("click" + namespace, selector, function (e)
                         {
-                            column.visible = checkbox.prop("checked");
-                            var enable = that.columns.where(isVisible).length > 1;
-                            $this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
-                                ._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
-
-                            that.element.find("tbody").empty(); // Fixes an column visualization bug
-                            renderTableHeader.call(that);
-                            loadData.call(that);
-                        }
-                    });
-            dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
+                            e.stopPropagation();
+    
+                            var $this = $(this),
+                                checkbox = $this.find(checkboxSelector);
+                            if (!checkbox.prop("disabled"))
+                            {
+                                column.visible = checkbox.prop("checked");
+                                var enable = that.columns.where(isVisible).length > 1;
+                                $this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
+                                    ._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
+    
+                                that.element.find("tbody").empty(); // Fixes an column visualization bug
+                                renderTableHeader.call(that);
+                                loadData.call(that);
+                            }
+                        });
+                dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
+            }
         });
         actions.append(dropDown);
     }
@@ -481,16 +485,17 @@ function renderPagination()
     }
 }
 
-function renderPaginationItem(list, uri, text, markerCss)
+function renderPaginationItem(list, page, text, markerCss)
 {
     var that = this,
         tpl = this.options.templates,
         css = this.options.css,
-        values = getParams.call(this, { css: markerCss, text: text, uri: "#" + uri }),
+        values = getParams.call(this, { css: markerCss, text: text, page: page }),
         item = $(tpl.paginationItem.resolve(values))
             .on("click" + namespace, getCssSelector(css.paginationButton), function (e)
             {
                 e.stopPropagation();
+                e.preventDefault();
 
                 var $this = $(this),
                     parent = $this.parent();
@@ -502,8 +507,8 @@ function renderPaginationItem(list, uri, text, markerCss)
                         next: that.current + 1,
                         last: that.totalPages
                     };
-                    var command = $this.attr("href").substr(1);
-                    that.current = commandList[command] || +command; // + converts string to int
+                    var command = $this.data("page");
+                    that.current = commandList[command] || command;
                     loadData.call(that);
                 }
                 $this.trigger("blur");
@@ -536,14 +541,14 @@ function renderRowCountSelection(actions)
         $.each(rowCountList, function (index, value)
         {
             var item = $(tpl.actionDropDownItem.resolve(getParams.call(that,
-                { text: getText(value), uri: "#" + value })))
+                { text: getText(value), action: value })))
                     ._bgSelectAria(value === that.rowCount)
                     .on("click" + namespace, menuItemSelector, function (e)
                     {
                         e.preventDefault();
 
                         var $this = $(this),
-                            newRowCount = +$this.attr("href").substr(1);
+                            newRowCount = $this.data("action");
                         if (newRowCount !== that.rowCount)
                         {
                             // todo: sophisticated solution needed for calculating which page is selected
@@ -552,7 +557,7 @@ function renderRowCountSelection(actions)
                             $this.parents(menuItemsSelector).children().each(function ()
                             {
                                 var $item = $(this),
-                                    currentRowCount = +$item.find(menuItemSelector).attr("href").substr(1);
+                                    currentRowCount = $item.find(menuItemSelector).data("action");
                                 $item._bgSelectAria(currentRowCount === newRowCount);
                             });
                             $this.parents(menuSelector).find(menuTextSelector).text(getText(newRowCount));

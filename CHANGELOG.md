@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.3.1
+
+### Enhancements & Features
+- Replaced href attributes in order to prevent hash tags so *angular JS* works proper; see issue [#69](http://github.com/rstaib/jquery-bootgrid/issues/69) for more details
+
+### Breaking Changes
+There are no breaking changes but some HTML templates changed during development. In case you want to use the full new feature set be sure you did not override any affected (actionDropDownItem and paginationItem) templates.
+
+## 1.3.0
+
+### Enhancements & Features
+- Option to hide column from the selection box; see issue [#62](http://github.com/rstaib/jquery-bootgrid/issues/62) for more details
+
 ## 1.2.0
 
 ### Enhancements & Features
