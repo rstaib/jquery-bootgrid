@@ -210,7 +210,7 @@ module.exports = function (grunt)
                 files: [
                     {
                         flatten: true,
-                        expand: true, 
+                        expand: true,
                         src: ['<%= folders.dist %>/*.js', '<%= folders.dist %>/*.css'], dest: '/'
                     }
                 ]

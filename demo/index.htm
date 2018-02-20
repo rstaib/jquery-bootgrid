@@ -1,278 +1,67 @@
 ﻿<!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>jQuery Bootgrid Demo</title>
-        <link href="css/bootstrap.css" rel="stylesheet" />
-        <link href="../dist/jquery.bootgrid.css" rel="stylesheet" />
-        <script src="js/modernizr-2.8.1.js"></script>
-        <style>
-            @-webkit-viewport { width: device-width; }
-            @-moz-viewport { width: device-width; }
-            @-ms-viewport { width: device-width; }
-            @-o-viewport { width: device-width; }
-            @viewport { width: device-width; }
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jQuery Bootgrid Demo</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href="../dist/jquery.bootgrid.css" rel="stylesheet" />
+    <link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet">
+  </head>
+  <body>
 
-            body { padding-top: 70px; }
-            
-            .column .text { color: #f00 !important; }
-            .cell { font-weight: bold; }
-        </style>
-    </head>
-    <body>
-        <header id="header" class="navbar navbar-default navbar-fixed-top">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <span class="navbar-brand" data-i18n="title">jQuery Bootgrid</span>
-                </div>
-                <nav id="menu" class="navbar-collapse collapse" role="navigation">
-                    <ul class="nav navbar-nav navbar-right">
-                        <li><a href="#">Basic Demo</a></li>
-                    </ul>
-                </nav>
-            </div>
-        </header>
-
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-3 visible-md visible-lg">
-                    <div class="affix">
-                        Sub Nav
-                    </div>
-                </div>
-                <div class="col-md-9">
-                    <button id="append" type="button" class="btn btn-default">Append</button>
-                    <button id="clear" type="button" class="btn btn-default">Clear</button>
-                    <button id="removeSelected" type="button" class="btn btn-default">Remove Selected</button>
-                    <button id="destroy" type="button" class="btn btn-default">Destroy</button>
-                    <button id="init" type="button" class="btn btn-default">Init</button>
-                    <button id="clearSearch" type="button" class="btn btn-default">Clear Search</button>
-                    <button id="clearSort" type="button" class="btn btn-default">Clear Sort</button>
-                    <button id="getCurrentPage" type="button" class="btn btn-default">Current Page Index</button>
-                    <button id="getRowCount" type="button" class="btn btn-default">Row Count</button>
-                    <button id="getTotalRowCount" type="button" class="btn btn-default">Total Row Count</button>
-                    <button id="getTotalPageCount" type="button" class="btn btn-default">Total Page Count</button>
-                    <button id="getSearchPhrase" type="button" class="btn btn-default">Search Phrase</button>
-                    <button id="getSortDictionary" type="button" class="btn btn-default">Sort Dictionary</button>
-                    <button id="getSelectedRows" type="button" class="btn btn-default">Selected Rows</button>
-                    <!--div class="table-responsive"-->
-                        <table id="grid" class="table table-condensed table-hover table-striped" data-selection="true" data-multi-select="true" data-row-select="true" data-keep-selection="true">
-                            <thead>
-                                <tr>
-                                    <th data-column-id="id" data-identifier="true" data-type="numeric" data-align="right" data-width="40">ID</th>
-                                    <th data-column-id="sender" data-order="asc" data-align="center" data-header-align="center" data-width="75%">Sender</th>
-                                    <th data-column-id="received" data-css-class="cell" data-header-css-class="column" data-filterable="true">Received</th>
-                                    <th data-column-id="link" data-formatter="link" data-sortable="false" data-width="75px">Link</th>
-                                    <th data-column-id="status" data-type="numeric" data-visible="false">Status</th>
-                                    <th data-column-id="hidden" data-visible="false" data-visible-in-selection="false">Hidden</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>me@rafaelstaib.com</td>
-                                    <td>11.12.2014</td>
-                                    <td>Link</td>
-                                    <td>999</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>me@rafaelstaib.com</td>
-                                    <td>12.12.2014</td>
-                                    <td>Link</td>
-                                    <td>999</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td>me@rafaelstaib.com</td>
-                                    <td>10.12.2014</td>
-                                    <td>Link</td>
-                                    <td>2</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>4</td>
-                                    <td>mo@rafaelstaib.com</td>
-                                    <td>12.08.2014</td>
-                                    <td>Link</td>
-                                    <td>999</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>5</td>
-                                    <td>ma@rafaelstaib.com</td>
-                                    <td>12.06.2014</td>
-                                    <td>Link</td>
-                                    <td>3</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>6</td>
-                                    <td>me@rafaelstaib.com</td>
-                                    <td>12.12.2014</td>
-                                    <td>Link</td>
-                                    <td>999</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>7</td>
-                                    <td>ma@rafaelstaib.com</td>
-                                    <td>12.11.2014</td>
-                                    <td>Link</td>
-                                    <td>999</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>8</td>
-                                    <td>mo@rafaelstaib.com</td>
-                                    <td>15.12.2014</td>
-                                    <td>Link</td>
-                                    <td>999</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>9</td>
-                                    <td>me@rafaelstaib.com</td>
-                                    <td>24.12.2014</td>
-                                    <td>Link</td>
-                                    <td>0</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>10</td>
-                                    <td>ma@rafaelstaib.com</td>
-                                    <td>14.12.2014</td>
-                                    <td>Link</td>
-                                    <td>1</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                                <tr>
-                                    <td>11</td>
-                                    <td>mo@rafaelstaib.com</td>
-                                    <td>12.12.2014</td>
-                                    <td>Link</td>
-                                    <td>999</td>
-                                    <td>Hidden value 1</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    <!--/div-->
-                </div>
-            </div>
+    <div data-bootgrid="custom-filters" data-bootgrid-id='grid'>
+      <div class="row">
+        <div class="col-sm-1">
+          <input type="text" id="id" name="id" class="form-control" placeholder="ID">
         </div>
+        <div class="col-sm-2">
+          <input type="text" id="description" name="description" class="form-control" placeholder="Description">
+        </div>
+      </div>
+    </div>
 
-        <footer id="footer">
-            © Copyright 2014-2015, Rafael Staib
-        </footer>
+    <div data-bootgrid-buttons-id="grid">
+      <a href="link_to_new" class="btn btn-info">New</a>
+    </div>
 
-        <script src="../lib/jquery-1.11.1.min.js"></script>
-        <script src="js/bootstrap.js"></script>
-        <script src="../dist/jquery.bootgrid.js"></script>
-        <script src="../dist/jquery.bootgrid.fa.js"></script>
-        <script>
-            $(function()
-            {
-                function init()
-                {
-                    $("#grid").bootgrid({
-                        formatters: {
-                            "link": function(column, row)
-                            {
-                                return "<a href=\"#\">" + column.id + ": " + row.id + "</a>";
-                            }
-                        },
-                        rowCount: [-1, 10, 50, 75]
-                    });
-                }
-                
-                init();
-                
-                $("#append").on("click", function ()
-                {
-                    $("#grid").bootgrid("append", [{
-                            id: 0,
-                            sender: "hh@derhase.de",
-                            received: "Gestern",
-                            link: ""
-                        },
-                        {
-                            id: 12,
-                            sender: "er@fsdfs.de",
-                            received: "Heute",
-                            link: ""
-                        }]);
-                });
-                
-                $("#clear").on("click", function ()
-                {
-                    $("#grid").bootgrid("clear");
-                });
-                
-                $("#removeSelected").on("click", function ()
-                {
-                    $("#grid").bootgrid("remove");
-                });
-                
-                $("#destroy").on("click", function ()
-                {
-                    $("#grid").bootgrid("destroy");
-                });
-                
-                $("#init").on("click", init);
-                
-                $("#clearSearch").on("click", function ()
-                {
-                    $("#grid").bootgrid("search");
-                });
-                
-                $("#clearSort").on("click", function ()
-                {
-                    $("#grid").bootgrid("sort");
-                });
-                
-                $("#getCurrentPage").on("click", function ()
-                {
-                    alert($("#grid").bootgrid("getCurrentPage"));
-                });
-                
-                $("#getRowCount").on("click", function ()
-                {
-                    alert($("#grid").bootgrid("getRowCount"));
-                });
-                
-                $("#getTotalPageCount").on("click", function ()
-                {
-                    alert($("#grid").bootgrid("getTotalPageCount"));
-                });
-                
-                $("#getTotalRowCount").on("click", function ()
-                {
-                    alert($("#grid").bootgrid("getTotalRowCount"));
-                });
-                
-                $("#getSearchPhrase").on("click", function ()
-                {
-                    alert($("#grid").bootgrid("getSearchPhrase"));
-                });
-                
-                $("#getSortDictionary").on("click", function ()
-                {
-                    alert($("#grid").bootgrid("getSortDictionary"));
-                });
-                
-                $("#getSelectedRows").on("click", function ()
-                {
-                    alert($("#grid").bootgrid("getSelectedRows"));
-                });
-            });
-        </script>
-    </body>
+    <div class="container-fluid">
+      <!--div class="table-responsive"-->
+      <table id="grid" data-url="data.json" data-ajax="true" data-wrapper="" class="table table-condensed table-hover table-striped">
+        <thead>
+          <tr>
+            <th data-column-id="actions" data-width="50" data-action-links="myActionLinks"></th>
+            <th data-column-id="id" data-identifier="true" data-type="numeric">ID</th>
+            <th data-column-id="sender.email" data-html-formatter="descricao">Sender</th>
+            <th data-column-id="received">Received</th>
+          </tr>
+        </thead>
+      </table>
+      <!--/div-->
+    </div>
+
+    <div data-html-formatter-id="descricao">
+      <span class="label label-bootgridExecute['{sender.email}' == 'sender4@test.de' ? 'success' : 'warning']">{sender.email}</span>
+    </div>
+
+    <div data-action-links-id="myActionLinks">
+      <a href="link_to_view/{id}">View {sender.email}</a>
+      <a href="link_to_edit/{id}">Edit {sender.email}</a>
+    </div>
+
+    <footer id="footer">
+      © Copyright 2014-2015, Rafael Staib
+    </footer>
+
+    <script>
+      localStorage.setItem("ajax-authorization", "my-api-authorization");
+    </script>
+
+    <script src="../lib/jquery-3.3.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="../dist/jquery.bootgrid.js"></script>
+    <script src="../dist/jquery.bootgrid.fa.js"></script>
+    <script src="js/index.js"></script>
+
+  </body>
 </html>

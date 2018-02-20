@@ -128,7 +128,7 @@ Grid.defaults = {
          * @for searchSettings
          **/
         delay: 250,
-        
+
         /**
          * The characters to type before the search gets executed.
          *
@@ -171,7 +171,7 @@ Grid.defaults = {
          * @default "POST"
          * @for ajaxSettings
          **/
-        method: "POST"
+        method: "GET"
     },
 
     /**
@@ -261,23 +261,29 @@ Grid.defaults = {
      **/
     css: {
         actions: "actions btn-group", // must be a unique class name or constellation of class names within the header and footer
+        customFilters: "customHeader",
+        clearFilters: "clearFilters",
         center: "text-center",
         columnHeaderAnchor: "column-header-anchor", // must be a unique class name or constellation of class names within the column header cell
         columnHeaderText: "text",
         dropDownItem: "dropdown-item", // must be a unique class name or constellation of class names within the actionDropDown,
         dropDownItemButton: "dropdown-item-button", // must be a unique class name or constellation of class names within the actionDropDown
         dropDownItemCheckbox: "dropdown-item-checkbox", // must be a unique class name or constellation of class names within the actionDropDown
+        dropDownActionLinksItems: "dropdown-menu dropdown-action-links-items",
         dropDownMenu: "dropdown btn-group", // must be a unique class name or constellation of class names within the actionDropDown
-        dropDownMenuItems: "dropdown-menu pull-right", // must be a unique class name or constellation of class names within the actionDropDown
+        dropDownMenuItems: "dropdown-menu", // must be a unique class name or constellation of class names within the actionDropDown
         dropDownMenuText: "dropdown-text", // must be a unique class name or constellation of class names within the actionDropDown
+        dropDownMenuActionLinks: "dropdown",
         footer: "bootgrid-footer container-fluid",
         header: "bootgrid-header container-fluid",
-        icon: "icon glyphicon",
-        iconColumns: "glyphicon-th-list",
-        iconDown: "glyphicon-chevron-down",
-        iconRefresh: "glyphicon-refresh",
-        iconSearch: "glyphicon-search",
-        iconUp: "glyphicon-chevron-up",
+        icon: "icon fa",
+        iconColumns: "fa-bars",
+        iconDown: "fa-caret-down",
+        iconRefresh: "fa-refresh",
+        iconFilter: "fa-filter",
+        iconClearFilter: "fa-times",
+        iconSearch: "fa-search",
+        iconUp: "fa-caret-up",
         infos: "infos", // must be a unique class name or constellation of class names within the header and footer,
         left: "text-left",
         pagination: "pagination", // must be a unique class name or constellation of class names within the header and footer
@@ -335,10 +341,12 @@ Grid.defaults = {
     labels: {
         all: "All",
         infos: "Showing {{ctx.start}} to {{ctx.end}} of {{ctx.total}} entries",
-        loading: "Loading...",
+        loading: "<i class='fa fa-spinner fa-spin'></i> Loading...",
         noResults: "No results found!",
         refresh: "Refresh",
-        search: "Search"
+        search: "Search",
+        filter: "Avanced Filters",
+        clearFilter: "Clear Filters"
     },
 
     /**
@@ -376,7 +384,7 @@ Grid.defaults = {
          * @for statusMapping
          **/
         2: "warning",
-        
+
         /**
          * Specifies a dangerous or potentially negative action.
          *
@@ -395,25 +403,27 @@ Grid.defaults = {
      * @for defaults
      **/
     templates: {
-        actionButton: "<button class=\"btn btn-default\" type=\"button\" title=\"{{ctx.text}}\">{{ctx.content}}</button>",
+        actionButton: "<button class=\"btn btn-default \" id=\"{{ctx.id}}\" type=\"button\" data-toggle=\"tooltip\" title=\"{{ctx.text}}\">{{ctx.content}}</button>",
         actionDropDown: "<div class=\"{{css.dropDownMenu}}\"><button class=\"btn btn-default dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\"><span class=\"{{css.dropDownMenuText}}\">{{ctx.content}}</span> <span class=\"caret\"></span></button><ul class=\"{{css.dropDownMenuItems}}\" role=\"menu\"></ul></div>",
         actionDropDownItem: "<li><a data-action=\"{{ctx.action}}\" class=\"{{css.dropDownItem}} {{css.dropDownItemButton}}\">{{ctx.text}}</a></li>",
         actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItem}}\"><input name=\"{{ctx.name}}\" type=\"checkbox\" value=\"1\" class=\"{{css.dropDownItemCheckbox}}\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
-        actions: "<div class=\"{{css.actions}}\"></div>",
+        actionLinksDropDown: "<div id=\"{{ctx.dropDownId}}\" class=\"{{css.dropDownMenuActionLinks}}\"><button type=\"button\" class=\"btn btn-default btn-sm\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\"><span class=\"{{css.dropDownMenuText}}\">{{ctx.content}}</span> <span class=\"caret\"></span></button><ul class=\"{{css.dropDownActionLinksItems}}\" role=\"menu\"></ul></div>",
+        actionLinksDropDownItem: "<li>{{ctx.content}}</li>",
+        actions: "<div class=\"{{css.actions}} col-xs-12 col-sm-12 col-md-3 col-lg-3\"></div>",
         body: "<tbody></tbody>",
         cell: "<td class=\"{{ctx.css}}\" style=\"{{ctx.style}}\">{{ctx.content}}</td>",
-        footer: "<div id=\"{{ctx.id}}\" class=\"{{css.footer}}\"><div class=\"row\"><div class=\"col-sm-6\"><p class=\"{{css.pagination}}\"></p></div><div class=\"col-sm-6 infoBar\"><p class=\"{{css.infos}}\"></p></div></div></div>",
-        header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\"><div class=\"col-sm-12 actionBar\"><p class=\"{{css.search}}\"></p><p class=\"{{css.actions}}\"></p></div></div></div>",
+        footer: "<div id=\"{{ctx.id}}\" class=\"{{css.footer}}\"><div class=\"row\"><div class=\"col-sm-4\"><p class=\"{{css.pagination}}\"></p></div><div class=\"col-sm-4 row-col-selection btn-group \"></div><div class=\"col-sm-4 infoBar\"><p class=\"{{css.infos}}\"></p></div></div></div>",
+        header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row actionBar\"><p class=\"{{css.search}}\"></p><p class=\"{{css.actions}}\"></p></div><div class=\"{{css.customFilters}} customFilters\"></div>",
         headerCell: "<th data-column-id=\"{{ctx.column.id}}\" class=\"{{ctx.css}}\" style=\"{{ctx.style}}\"><a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.column.text}}</span>{{ctx.icon}}</a></th>",
         icon: "<span class=\"{{css.icon}} {{ctx.iconCss}}\"></span>",
         infos: "<div class=\"{{css.infos}}\">{{lbl.infos}}</div>",
-        loading: "<tr><td colspan=\"{{ctx.columns}}\" class=\"loading\">{{lbl.loading}}</td></tr>",
+        loading: "<tr><td colspan=\"{{ctx.columns}}\" class=\"text-center\">{{lbl.loading}}</td></tr>",
         noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{lbl.noResults}}</td></tr>",
         pagination: "<ul class=\"{{css.pagination}}\"></ul>",
         paginationItem: "<li class=\"{{ctx.css}}\"><a data-page=\"{{ctx.page}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
         rawHeaderCell: "<th class=\"{{ctx.css}}\">{{ctx.content}}</th>", // Used for the multi select box
         row: "<tr{{ctx.attr}}>{{ctx.cells}}</tr>",
-        search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon {{css.iconSearch}}\"></span> <input type=\"text\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
+        search: "{{ctx.btnNew}}<div class=\"{{css.search}} col-xs-12 col-sm-12 col-md-3 col-lg-3\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon {{css.iconSearch}}\"></span> <input type=\"text\" name=\"searchPhrase\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
         select: "<input name=\"select\" type=\"{{ctx.type}}\" class=\"{{css.selectBox}}\" value=\"{{ctx.value}}\" {{ctx.checked}} />"
     }
 };
@@ -560,7 +570,7 @@ Grid.prototype.remove = function(rowIds)
 };
 
 /**
- * Searches in all rows for a specific phrase (but only in visible cells). 
+ * Searches in all rows for a specific phrase (but only in visible cells).
  * The search filter will be reseted, if no argument is provided.
  *
  * @method search
@@ -705,7 +715,7 @@ Grid.prototype.deselect = function(rowIds)
 };
 
 /**
- * Sorts the rows by a given sort descriptor dictionary. 
+ * Sorts the rows by a given sort descriptor dictionary.
  * The sort filter will be reseted, if no argument is provided.
  *
  * @method sort

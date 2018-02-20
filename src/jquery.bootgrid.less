@@ -1,4 +1,8 @@
-﻿.opacity(@opacity)
+﻿div[data-html-formatter-id], div[data-action-links-id], div[data-bootgrid-buttons-id], .customFilters {
+  display: none;
+}
+
+.opacity(@opacity)
 {
     @percent: (@opacity*100);
     opacity: @opacity;
@@ -32,9 +36,8 @@
     .search
     {
         display: inline-block;
-        margin: 0 20px 0 0;
+        margin: 0;
         vertical-align: middle;
-        width: 180px;
 
         .glyphicon { top: 0; }
         .fa { display: table-cell; }
@@ -48,13 +51,12 @@
     .pagination { margin: 0 !important; }
 }
 
-.bootgrid-header .actionBar,
 .bootgrid-footer .infoBar
 {
     text-align: right;
 
     .btn-group > .btn-group
-    { 
+    {
         .dropdown-menu
         {
             text-align: left;
@@ -129,7 +131,7 @@
 
     td
     {
-        .turncate();
+        .noTurncate();
 
         &.loading, &.no-results
         {

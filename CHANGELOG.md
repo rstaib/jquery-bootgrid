@@ -1,5 +1,28 @@
 # Changelog
 
+## 2.0.0
+
+### Enhancements & Features
+- Added localStorage to store states of:
+⋅ search filters
+⋅ pagination
+⋅ column visibility
+⋅ row count
+- Now you can:
+⋅ Add advanced filters
+⋅ Add action links inside bootgrid header row
+⋅ Add action links inside a table td that will be wrapped in a dropdown
+⋅ Format a table td without use common formatter
+⋅ Pass header Authorization to ajax request
+⋅ Load ajax response with a different rows wrapper
+⋅ Call encapsulated json elements in data-column-id
+- Fixed table td links with data-remote and data-confirmation
+- Changed default icon library to *FontAwesome*
+
+### Breaking Changes
+There are no breaking changes but some HTML templates changed during development. In case you want to use the full new feature set be sure you did not override any affected templates.
+See [README](http://github.com/correalucas/jquery-bootgrid) for more details.
+
 ## 1.3.1
 
 ### Enhancements & Features
