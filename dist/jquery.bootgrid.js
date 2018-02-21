@@ -669,7 +669,7 @@ function renderRows(rows){
 }
 
 function updateLinks(rows){
-  var elements = $("#" + this.element.attr('id') + "a[data-remote], #" + this.element.attr('id') + " a[data-confirm]");
+  var elements = $("#" + this.element.attr('id') + " a[data-remote], #" + this.element.attr('id') + " a[data-confirm]");
   $.each(elements, function(index, data) {
     var href = $(this).attr("href"),
       $this = $(this),
@@ -678,7 +678,7 @@ function updateLinks(rows){
     $this.attr("href", "javascript:void(0)");
 
     $(data).click(function(){
-      if ($this.data("confirm").length){
+      if ($this.data("confirm") !== undefined){
         if (confirm($(this).data("confirm"))) {
           $.ajax(href, { method: method });
         }
