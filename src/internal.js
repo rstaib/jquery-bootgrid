@@ -68,7 +68,7 @@ function getUrl(){
 function init(){
   this.element.trigger("initialize" + namespace);
   loadColumns.call(this); // Loads columns from HTML thead tag
-  this.selection = this.options.selection && this.identifier != null;
+  this.selection = this.options.selection && this.identifier !== null;
   this.rowCount = localStorage.getItem('rowCount[' + this.element.attr('id') + ']') || this.rowCount;
   this.current = parseInt(localStorage.getItem('current[' + this.element.attr('id') + ']')) || 1;
   loadRows.call(this); // Loads rows from HTML tbody tag if ajax is false
@@ -103,7 +103,7 @@ function loadColumns(){
       visibilityCache = localStorage.getItem('visibleColumns[' + that.element.attr('id') + '][' + data.columnId + ']'),
       column = {
         id: data.columnId,
-        identifier: that.identifier == null && data.identifier || false,
+        identifier: that.identifier === null && data.identifier || false,
         converter: that.options.converters[data.converter || data.type] || that.options.converters["string"],
         text: $this.text(),
         align: data.align || "left",
@@ -116,12 +116,12 @@ function loadColumns(){
         order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
         searchable: !(data.searchable === false), // default: true
         sortable: !(data.sortable === false), // default: true
-        visible: visibilityCache == null ? !(data.visible === false) : (visibilityCache === 'true'), // default: true
+        visible: visibilityCache === null ? !(data.visible === false) : (visibilityCache === 'true'), // default: true
         visibleInSelection: !(data.visibleInSelection === false), // default: true
         width: ($.isNumeric(data.width)) ? data.width + "px" : (typeof(data.width) === "string") ? data.width : null
       };
     that.columns.push(column);
-    if (column.order != null){
+    if (column.order !== null){
       that.sortDictionary[column.id] = column.order;
     }
 
@@ -190,7 +190,7 @@ function loadData(){
     var request = getRequest.call(this),
     url = getUrl.call(this);
 
-    if (url == null || typeof url !== "string" || url.length === 0){
+    if (url === null || typeof url !== "string" || url.length === 0){
       throw new Error("Url setting must be a none empty string or a function that returns one.");
     }
 
@@ -213,7 +213,7 @@ function loadData(){
         }
 
         response = that.options.responseHandler(response);
-        response.rows = that.options.wrapper !== undefined ? (that.options.wrapper != '' ? (validObject('response.' + that.options.wrapper) ? eval('response.' + that.options.wrapper) : null) : response) : response.rows
+        response.rows = that.options.wrapper !== undefined ? (that.options.wrapper !== '' ? (validObject('response.' + that.options.wrapper) ? eval('response.' + that.options.wrapper) : null) : response) : response.rows
         response.total = response.total !== undefined ? response.total : parseInt(jqXHR.getResponseHeader('Total')) || response.rows.length
         update(response.rows, response.total);
       },
@@ -306,7 +306,7 @@ function renderCustomFilters(){
     customFiltersCache = that.element.attr('id') + '-custom-filters',
     customFiltersState = localStorage.getItem(customFiltersCache) || 'hide',
     selector = getCssSelector(css.customFilters);
-  if(customFiltersState == 'show'){
+  if(customFiltersState === 'show'){
     $(selector).show();
   } else {
     $(selector).hide();
@@ -537,7 +537,7 @@ function renderPaginationItem(list, page, text, markerCss){
         last: that.totalPages
       };
       var command = $this.data("page");
-      that.current = commandList[command] || command > that.totalPages ? that.totalPages : command;
+      that.current = commandList[command] || (command > that.totalPages ? that.totalPages : command);
       localStorage.setItem('current[' + that.element.attr('id') + ']', that.current);
       loadData.call(that);
     }
@@ -603,7 +603,7 @@ function renderRows(rows){
 
     $.each(rows, function (index, row){
       var cells = "",
-      rowAttr = " data-row-id=\"" + ((that.identifier == null) ? index : row[that.identifier]) + "\"",
+      rowAttr = " data-row-id=\"" + ((that.identifier === null) ? index : row[that.identifier]) + "\"",
       rowCss = "";
 
       if (that.selection){
@@ -617,7 +617,7 @@ function renderRows(rows){
         }
       }
 
-      var status = row.status != null && that.options.statusMapping[row.status];
+      var status = row.status !== null && that.options.statusMapping[row.status];
       if (status){
         rowCss += status;
       }
@@ -633,10 +633,10 @@ function renderRows(rows){
             renderHtmlFormatter.call(that, row, column)),
           cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
           cells += tpl.cell.resolve(getParams.call(that, {
-            content: (value == null || value === "") ?  "&nbsp;" : value,
+            content: (value === null || value === "") ?  "&nbsp;" : value,
             css: ((column.align === "right") ? css.right : (column.align === "center") ?
               css.center : css.left) + cssClass,
-            style: (column.width == null) ? "" : "width:" + column.width + ";" }));
+            style: (column.width === null) ? "" : "width:" + column.width + ";" }));
         }
       });
 
@@ -644,6 +644,7 @@ function renderRows(rows){
         rowAttr += " class=\"" + rowCss + "\"";
       }
       html += tpl.row.resolve(getParams.call(that, { attr: rowAttr, cells: cells }));
+      appendRow.call(that, row);
     });
 
     // sets or clears multi selectbox state
@@ -669,10 +670,10 @@ function updateLinks(rows){
     $(data).click(function(){
       if ($this.data("confirm").length){
         if (confirm($(this).data("confirm"))) {
-          $.ajax(href, { method: method })
+          $.ajax(href, { method: method });
         }
       } else {
-        $.ajax(href, { method: method })
+        $.ajax(href, { method: method });
       }
     });
   });
@@ -747,9 +748,9 @@ function registerRowEvents(tbody){
     e.stopPropagation();
 
     var $this = $(this),
-    id = (that.identifier == null) ? $this.data("row-id") :
+    id = (that.identifier === null) ? $this.data("row-id") :
     that.converter.from($this.data("row-id") + ""),
-    row = (that.identifier == null) ? that.currentRows[id] :
+    row = (that.identifier === null) ? that.currentRows[id] :
     that.currentRows.first(function (item) { return item[that.identifier] === id; });
 
     if (that.selection && that.options.rowSelect){
@@ -791,7 +792,7 @@ function renderSearchField(){
 
         newValue[inputName] = $(this).val() || '';
         currentValue[inputName] = localStorage.getItem('custom-filter[' + that.element.attr('id') + '][' + inputName + ']') || '';
-        if (currentValue[inputName] != newValue[inputName] || (e.which === 13 && newValue[inputName] !== ""))
+        if (currentValue[inputName] !== newValue[inputName] || (e.which === 13 && newValue[inputName] !== ""))
         {
           currentValue[inputName] = newValue[inputName] || '';
           localStorage.setItem('custom-filter[' + that.element.attr('id') + '][' + inputName + ']', currentValue[inputName]);
@@ -846,7 +847,7 @@ function renderTableHeader(){
         column: column, icon: icon, sortable: sorting && column.sortable && css.sortable || "",
         css: ((align === "right") ? css.right : (align === "center") ?
           css.center : css.left) + cssClass,
-        style: (column.width == null) ? "" : "width:" + column.width + ";" }));
+        style: (column.width === null) ? "" : "width:" + column.width + ";" }));
     }
   });
 
