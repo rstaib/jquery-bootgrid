@@ -855,3 +855,26 @@ Grid.prototype.getTotalPageCount = function(){
 Grid.prototype.getTotalRowCount = function(){
   return this.total;
 };
+
+/**
+* Appends change.
+*
+* @method change
+* @param rows {Array} An array of rows to change
+* @chainable
+**/
+Grid.prototype.change = function(data){
+  if (this.identifier != null){
+    var updated = false;
+    for(var i = this.rows.length - 1; i >= 0; i--){
+      if (this.rows[i][this.identifier] == data[this.identifier]){
+        this.rows[i] = data;
+        updated = true;
+        this.reload();
+      }
+    }
+    if ( ! updated) {
+      this.append([data]);
+    }
+  }
+};
