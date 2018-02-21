@@ -805,6 +805,9 @@ function renderSearchField(){
         if (currentValue[inputName] !== newValue[inputName] || (e.which === 13 && newValue[inputName] !== ""))
         {
           currentValue[inputName] = newValue[inputName] || '';
+          if(inputName == 'searchPhrase'){
+            that.searchPhrase = currentValue[inputName];
+          }
           localStorage.setItem('custom-filter[' + that.element.attr('id') + '][' + inputName + ']', currentValue[inputName]);
 
           if (e.which === 13 || newValue[inputName].length === 0 || newValue[inputName].length >= that.options.searchSettings.characters)
