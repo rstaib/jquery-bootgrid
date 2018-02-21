@@ -59,7 +59,7 @@ function getRequest(){
   post = ($.isFunction(post)) ? post() : post;
 
   $('input[name=searchPhrase]').add(customFiltersElement).each(function(index, input){
-    params[$(input).attr('name')] = $(input).val();
+    params[$(input).attr('name').replace('[]', '')] = $(input).val();
   });
 
   request = $.extend(true, request, params);
@@ -327,7 +327,7 @@ function renderSearchInformation(){
   var that = this,
   customFiltersElement = $("[data-bootgrid-id='" + that.element.attr('id') + "']").length ? "[data-bootgrid-id='" + that.element.attr('id') + "'] [name]" : "[data-bootgrid='custom-filters'] [name]";
   $('input[name=searchPhrase]').add(customFiltersElement).each(function(index, input){
-    var value = localStorage.getItem('custom-filter[' + that.element.attr('id') + '][' + $(input).attr('name') + ']');
+    var value = localStorage.getItem('custom-filter[' + that.element.attr('id') + '][' + $(input).attr('name').replace('[]', '') + ']');
     $(input).val(value).trigger('change');
   });
 }
@@ -348,7 +348,7 @@ function replaceFilterButtonClass(){
     state = 'default',
     customFiltersElement = $("[data-bootgrid-id='" + that.element.attr('id') + "']").length ? "[data-bootgrid-id='" + that.element.attr('id') + "'] [name]" : "[data-bootgrid='custom-filters'] [name]";
   $('input[name=searchPhrase]').add(customFiltersElement).each(function(index, input){
-    var value = localStorage.getItem('custom-filter[' + that.element.attr('id') + '][' + $(input).attr('name') + ']');
+    var value = localStorage.getItem('custom-filter[' + that.element.attr('id') + '][' + $(input).attr('name').replace('[]', '') + ']');
 
     if(value !== null && value !== '' && state === 'default') {
       state = 'warning';
@@ -798,7 +798,7 @@ function renderSearchField(){
       searchField.on("keyup" + namespace + " change" + namespace, function (e){
         e.stopPropagation();
         var newValue = {},
-          inputName = $(this).attr('name');
+          inputName = $(this).attr('name').replace('[]', '');
 
         newValue[inputName] = $(this).val() || '';
         currentValue[inputName] = localStorage.getItem('custom-filter[' + that.element.attr('id') + '][' + inputName + ']') || '';
