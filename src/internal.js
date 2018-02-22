@@ -659,7 +659,10 @@ function renderRows(rows){
 }
 
 function updateLinks(rows){
-  var elements = $("#" + this.element.attr('id') + " a[data-remote], #" + this.element.attr('id') + " a[data-confirm]");
+  var elements = $("#" + this.element.attr('id') + " a[data-remote], #" + this.element.attr('id') + " a[data-confirm]"),
+    dropdownElement = $("#" + this.element.attr('id')).find('[data-toggle=dropdown]');
+
+  $.isFunction(dropdownElement.dropdown) ? dropdownElement.dropdown() : dropdownElement ;
   $.each(elements, function(index, data) {
     var href = $(this).attr("href"),
       $this = $(this),
@@ -685,7 +688,7 @@ function renderHtmlFormatter(row, column){
   }
 
   var reg = new RegExp(/\{.*?\}/g),
-    regVar = new RegExp(/bootgridExecute\[.*?\]/g),
+    regVar = new RegExp(/bootgridExecute\[(.|\n)*?\]end/g),
     html = $('div[data-html-formatter-id="' + column.htmlFormatter + '"]').prop('innerHTML'),
     matches = html.match(reg);
 
@@ -696,7 +699,7 @@ function renderHtmlFormatter(row, column){
   var varMatches = html.match(regVar);
 
   $.each(varMatches, function(j, variable) {
-    html = html.replace(variable, eval(variable.replace(/bootgridExecute\[|\]/g, '')));
+    html = html.replace(variable, eval(variable.replace(/bootgridExecute\[|\]end/g, '')));
   });
 
   return html;
@@ -711,17 +714,27 @@ function renderActionLinks(row, column){
     css = this.options.css,
     tpl = this.options.templates,
     identifier = row[that.identifier],
-    dropDown = $(tpl.actionLinksDropDown.resolve(getParams.call(that, { content: '', dropDownId: 'dropDown-' + identifier })));
+    dropDown = $(tpl.actionLinksDropDown.resolve(getParams.call(that, { content: '', dropDownId: 'dropDown-' + identifier }))),
+    html = $('[data-action-links-id="' + column.actionLinks + '"]').prop('innerHTML'),
+    regVar = new RegExp(/bootgridExecute\[(.|\n)*?\]end/g),
+    reg = new RegExp(/\{.*?\}/g),
+    matches = html.match(reg);
 
-  $('[data-action-links-id="' + column.actionLinks + '"] a').each(function(i, link) {
-    var reg = new RegExp(/\{.*?\}/g);
-    var matches = link.outerHTML.match(reg);
-    $.each(matches, function(j, variable) {
-      link = $(link).prop('outerHTML').replace(variable, (validObject('row.' + variable.replace(/{|}/g, '')) ? eval('row.' + variable.replace(/{|}/g, '')) : null));
-    });
+  $.each(matches, function(j, variable) {
+    html = html.replace(variable, (validObject('row.' + variable.replace(/{|}/g, '')) ? eval('row.' + variable.replace(/{|}/g, '')) : null));
+  });
+
+  var varMatches = html.match(regVar);
+
+  $.each(varMatches, function(j, variable) {
+    html = html.replace(variable, eval(variable.replace(/bootgridExecute\[|\]end/g, '')));
+  });
+
+  $(html).filter('a,button').each(function(i, link) {
     var item = '<li>' + $(link).prop('outerHTML') + '</li>';
     dropDown.find(getCssSelector(css.dropDownActionLinksItems)).append(item);
   });
+
   return dropDown.prop('outerHTML');
 }
 

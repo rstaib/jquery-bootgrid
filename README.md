@@ -65,7 +65,11 @@ and this column will call a referenced div with the same action links id like th
 ```html
 <div data-action-links-id="myActionLinks">
   <a href="link_to_view/{id}">View {sender.email}</a>
-  <a href="link_to_edit/{id}">Edit {sender.email}</a>
+  bootgridExecute[
+    if('{sender.email}' == 'sender4@test.de') {
+      '<a href="link_to_edit/{id}">Edit {sender.email}</a>'
+    }
+  ]end
 </div>
 ```
 
@@ -73,10 +77,10 @@ Add a html formatter by adding the html-formatter option to your column like thi
 ```html
 <th data-column-id="sender.email" data-html-formatter="myHtmlFormatter">Sender</th>
 ```
-and this column will call a referenced div with the same html formatter. You can also execute javascript wrapped in <code>bootgridExecute[javascript code here]</code> like this:
+and this column will call a referenced div with the same html formatter. You can also execute javascript wrapped in <code>bootgridExecute[javascript code here]end</code> like this:
 ```html
 <div data-html-formatter-id="myHtmlFormatter">
-  <span class="label label-bootgridExecute['{sender.email}' == 'sender4@test.de' ? 'success' : 'warning']">{sender.email}</span>
+  <span class="label label-bootgridExecute['{sender.email}' == 'sender4@test.de' ? 'success' : 'warning']end">{sender.email}</span>
 </div>
 ```
 
