@@ -1,8 +1,37 @@
 /*! 
- * jQuery Bootgrid v1.3.1 - 09/11/2015
- * Copyright (c) 2014-2015 Rafael Staib (http://www.jquery-bootgrid.com)
+ * jQuery Bootgrid v2.0.0 - 02/22/2018
+ * Copyright (c) 2014-2018 Rafael Staib (http://www.jquery-bootgrid.com)
  * Licensed under MIT http://www.opensource.org/licenses/MIT
  */
+div[data-html-formatter-id],
+div[data-action-links-id],
+div[data-bootgrid-buttons-id],
+.customFilters {
+  display: none;
+}
+.actionBar {
+  display: flex;
+  flex-direction: row;
+  padding: 0 15px;
+}
+.actions .dropdown-menu li label {
+  margin: 0;
+  padding: 1px 10px;
+  width: 100%;
+}
+.actions .dropdown-menu li label:hover {
+  background: #f3f3f3;
+}
+.bootgridButtons {
+  flex: 1 1 auto;
+}
+.bootgridSearch {
+  flex: 1 1;
+  margin: 0 1.2em;
+}
+.buttonActions {
+  flex: 0 1 auto;
+}
 .bootgrid-header,
 .bootgrid-footer {
   margin: 15px 0;
@@ -14,9 +43,8 @@
 .bootgrid-header .search,
 .bootgrid-footer .search {
   display: inline-block;
-  margin: 0 20px 0 0;
+  margin: 0;
   vertical-align: middle;
-  width: 180px;
 }
 .bootgrid-header .search .glyphicon,
 .bootgrid-footer .search .glyphicon {
@@ -36,15 +64,12 @@
 .bootgrid-footer .pagination {
   margin: 0 !important;
 }
-.bootgrid-header .actionBar,
 .bootgrid-footer .infoBar {
   text-align: right;
 }
-.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu,
 .bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu {
   text-align: left;
 }
-.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item,
 .bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item {
   cursor: pointer;
   display: block;
@@ -52,22 +77,17 @@
   padding: 3px 20px;
   white-space: nowrap;
 }
-.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item:hover,
 .bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item:hover,
-.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item:focus,
 .bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item:focus {
   color: #262626;
   text-decoration: none;
   background-color: #f5f5f5;
 }
-.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item.dropdown-item-checkbox,
 .bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item.dropdown-item-checkbox,
-.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item .dropdown-item-checkbox,
 .bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item .dropdown-item-checkbox {
   margin: 0 2px 4px 0;
   vertical-align: middle;
 }
-.bootgrid-header .actionBar .btn-group > .btn-group .dropdown-menu .dropdown-item.disabled,
 .bootgrid-footer .infoBar .btn-group > .btn-group .dropdown-menu .dropdown-item.disabled {
   cursor: not-allowed;
 }
@@ -107,11 +127,11 @@
   background: #fafafa;
 }
 .bootgrid-table td {
-  overflow: hidden;
-  -ms-text-overflow: ellipsis;
-  -o-text-overflow: ellipsis;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow: inherit !important;
+  -ms-text-overflow: inherit !important;
+  -o-text-overflow: inherit !important;
+  text-overflow: inherit !important;
+  white-space: inherit !important;
 }
 .bootgrid-table td.loading,
 .bootgrid-table td.no-results {
