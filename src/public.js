@@ -261,6 +261,9 @@ Grid.defaults = {
   **/
   css: {
     actions: "actions btn-group", // must be a unique class name or constellation of class names within the header and footer
+    bootgridButtons: "bootgridButtons",
+    bootgridSearch: "bootgridSearch",
+    buttonActions: "buttonActions",
     customFilters: "customHeader",
     clearFilters: "clearFilters",
     center: "text-center",
@@ -271,7 +274,7 @@ Grid.defaults = {
     dropDownItemCheckbox: "dropdown-item-checkbox", // must be a unique class name or constellation of class names within the actionDropDown
     dropDownActionLinksItems: "dropdown-menu dropdown-action-links-items",
     dropDownMenu: "dropdown btn-group", // must be a unique class name or constellation of class names within the actionDropDown
-    dropDownMenuItems: "dropdown-menu", // must be a unique class name or constellation of class names within the actionDropDown
+    dropDownMenuItems: "dropdown-menu dropdown-menu-right", // must be a unique class name or constellation of class names within the actionDropDown
     dropDownMenuText: "dropdown-text", // must be a unique class name or constellation of class names within the actionDropDown
     dropDownMenuActionLinks: "dropdown",
     footer: "bootgrid-footer container-fluid",
@@ -409,11 +412,11 @@ Grid.defaults = {
     actionDropDownCheckboxItem: "<li><label class=\"{{css.dropDownItem}}\"><input name=\"{{ctx.name}}\" type=\"checkbox\" value=\"1\" class=\"{{css.dropDownItemCheckbox}}\" {{ctx.checked}} /> {{ctx.label}}</label></li>",
     actionLinksDropDown: "<div id=\"{{ctx.dropDownId}}\" class=\"{{css.dropDownMenuActionLinks}}\"><button type=\"button\" class=\"btn btn-default btn-sm\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\"><span class=\"{{css.dropDownMenuText}}\">{{ctx.content}}</span> <span class=\"caret\"></span></button><ul class=\"{{css.dropDownActionLinksItems}}\" role=\"menu\"></ul></div>",
     actionLinksDropDownItem: "<li>{{ctx.content}}</li>",
-    actions: "<div class=\"{{css.actions}} col-xs-12 col-sm-12 col-md-3 col-lg-3\"></div>",
+    actions: "<div class=\"{{css.actions}}\"></div>",
     body: "<tbody></tbody>",
     cell: "<td class=\"{{ctx.css}}\" style=\"{{ctx.style}}\">{{ctx.content}}</td>",
     footer: "<div id=\"{{ctx.id}}\" class=\"{{css.footer}}\"><div class=\"row\"><div class=\"col-sm-6\"><p class=\"{{css.pagination}}\"></p></div><div class=\"col-sm-6 infoBar\"><p class=\"{{css.infos}}\"></p></div></div></div>",
-    header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row actionBar\"><p class=\"{{css.search}}\"></p><p class=\"{{css.actions}}\"></p></div><div class=\"{{css.customFilters}} customFilters\"></div>",
+    header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row actionBar\"><div class=\"{{css.bootgridButtons}}\"></div><div class=\"{{css.bootgridSearch}}\"></div><div class=\"{{css.buttonActions}}\"></div></div></div><div class=\"{{css.customFilters}} customFilters\"></div>",
     headerCell: "<th data-column-id=\"{{ctx.column.id}}\" class=\"{{ctx.css}}\" style=\"{{ctx.style}}\"><a href=\"javascript:void(0);\" class=\"{{css.columnHeaderAnchor}} {{ctx.sortable}}\"><span class=\"{{css.columnHeaderText}}\">{{ctx.column.text}}</span>{{ctx.icon}}</a></th>",
     icon: "<span class=\"{{css.icon}} {{ctx.iconCss}}\"></span>",
     infos: "<div class=\"{{css.infos}}\">{{lbl.infos}}</div>",
@@ -421,10 +424,10 @@ Grid.defaults = {
     noResults: "<tr><td colspan=\"{{ctx.columns}}\" class=\"no-results\">{{lbl.noResults}}</td></tr>",
     pagination: "<ul class=\"{{css.pagination}}\"></ul>",
     paginationItem: "<li class=\"{{ctx.css}}\"><a data-page=\"{{ctx.page}}\" class=\"{{css.paginationButton}}\">{{ctx.text}}</a></li>",
-  rawHeaderCell: "<th class=\"{{ctx.css}}\">{{ctx.content}}</th>", // Used for the multi select box
-  row: "<tr{{ctx.attr}}>{{ctx.cells}}</tr>",
-  search: "{{ctx.btnNew}}<div class=\"{{css.search}} col-xs-12 col-sm-12 col-md-3 col-lg-3\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon {{css.iconSearch}}\"></span> <input type=\"text\" name=\"searchPhrase\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
-  select: "<input name=\"select\" type=\"{{ctx.type}}\" class=\"{{css.selectBox}}\" value=\"{{ctx.value}}\" {{ctx.checked}} />"
+    rawHeaderCell: "<th class=\"{{ctx.css}}\">{{ctx.content}}</th>", // Used for the multi select box
+    row: "<tr{{ctx.attr}}>{{ctx.cells}}</tr>",
+    search: "<div class=\"{{css.search}}\"><div class=\"input-group\"><span class=\"{{css.icon}} input-group-addon {{css.iconSearch}}\"></span> <input type=\"text\" name=\"searchPhrase\" class=\"{{css.searchField}}\" placeholder=\"{{lbl.search}}\" /></div></div>",
+    select: "<input name=\"select\" type=\"{{ctx.type}}\" class=\"{{css.selectBox}}\" value=\"{{ctx.value}}\" {{ctx.checked}} />"
   }
 };
 

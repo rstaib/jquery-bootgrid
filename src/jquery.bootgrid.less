@@ -1,5 +1,44 @@
-﻿div[data-html-formatter-id], div[data-action-links-id], div[data-bootgrid-buttons-id], .customFilters {
+﻿div[data-html-formatter-id], div[data-action-links-id], div[data-bootgrid-buttons-id], .customFilters
+{
   display: none;
+}
+
+.actionBar
+{
+    display: flex;
+    flex-direction: row;
+    padding: 0 15px;
+}
+
+.actions {
+  .dropdown-menu {
+    li {
+      label {
+        margin: 0;
+        padding: 1px 10px;
+        width: 100%;
+      }
+      label:hover {
+        background: #f3f3f3;
+      }
+    }
+  }
+}
+
+.bootgridButtons
+{
+    flex: 1 1 auto;
+}
+
+.bootgridSearch
+{
+    flex: 1 1;
+    margin: 0 1.2em;
+}
+
+.buttonActions
+{
+    flex: 0 1 auto;
 }
 
 .opacity(@opacity)

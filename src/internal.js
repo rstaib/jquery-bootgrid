@@ -350,7 +350,7 @@ function replaceFilterButtonClass(){
 function renderActions(){
   if (this.options.navigation !== 0){
     var css = this.options.css,
-    selector = getCssSelector(css.actions),
+    selector = getCssSelector(css.buttonActions),
     actionItems = findFooterAndHeaderItems.call(this, selector);
 
     if (actionItems.length > 0){
@@ -406,7 +406,7 @@ function renderActions(){
       // Row count selection
       renderRowCountSelection.call(this, actions);
 
-      replacePlaceHolder.call(this, actionItems, actions);
+      actionItems.html(actions);
     }
   }
 }
@@ -768,23 +768,24 @@ function registerRowEvents(tbody){
 function renderSearchField(){
   if (this.options.navigation !== 0){
     var css = this.options.css,
-      selector = getCssSelector(css.search),
-      searchItems = findFooterAndHeaderItems.call(this, selector);
+      selector = getCssSelector(css.bootgridSearch),
+      searchItems = findFooterAndHeaderItems.call(this, selector),
+      bootgridButtonsSelector = getCssSelector(css.bootgridButtons),
+      buttonsItems = findFooterAndHeaderItems.call(this, bootgridButtonsSelector);
 
-    if (searchItems.length > 0){
+    if (searchItems.length > 0 || $("[data-bootgrid='custom-filters']").length > 0){
       var that = this,
         tpl = this.options.templates,
         timer = null, // fast keyup detection
         currentValue = {},
-        btnNewElement = $('div[data-bootgrid-buttons-id=' + that.element.attr('id') + ']'),
-        btnNewContent = btnNewElement.length ? btnNewElement.html() : '',
-        search = $(tpl.search.resolve(getParams.call(this, { btnNew: "<div class='col-xs-12 col-sm-12 col-md-6 col-lg-6'>" + btnNewContent + '</div>' }))),
+        bootgridButtonsElement = $('div[data-bootgrid-buttons-id=' + that.element.attr('id') + ']'),
+        bootgridButtons = bootgridButtonsElement.length ? bootgridButtonsElement.html() : '',
+        search = $(tpl.search.resolve(getParams.call(this))),
         searchFieldSelector = getCssSelector(css.searchField),
         customFiltersElement = $("[data-bootgrid-id='" + that.element.attr('id') + "']").length ? "[data-bootgrid-id='" + that.element.attr('id') + "'] [name]" : "[data-bootgrid='custom-filters'] [name]",
         searchField = (search.is(searchFieldSelector)) ? search : search.find(searchFieldSelector).add(customFiltersElement);
 
       $('div[data-bootgrid-buttons-id=' + that.element.attr('id') + ']').remove();
-
       searchField.on("keyup" + namespace + " change" + namespace, function (e){
         e.stopPropagation();
         var newValue = {},
@@ -810,8 +811,8 @@ function renderSearchField(){
           }
         }
       });
-
-      replacePlaceHolder.call(this, searchItems, search);
+      buttonsItems.html(bootgridButtons);
+      searchItems.html(search);
       renderSearchInformation.call(that);
     }
   }
