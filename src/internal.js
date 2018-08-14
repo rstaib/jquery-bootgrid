@@ -103,7 +103,7 @@ function loadColumns()
         var $this = $(this),
             data = $this.data(),
             column = {
-                id: data.columnid,
+                id: data.columnId,
                 identifier: that.identifier == null && data.identifier || false,
                 converter: that.options.converters[data.converter || data.type] || that.options.converters["string"],
                 text: $this.text(),
