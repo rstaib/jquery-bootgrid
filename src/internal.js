@@ -110,13 +110,13 @@ function loadColumns()
                 align: data.align || "left",
                 headerAlign: data.headerAlign || "left",
                 cssClass: data.cssClass || "",
-                headerCssClass: data.headerCssClass || "",
+                headerCssClass: data.headercssclass || "",
                 formatter: that.options.formatters[data.formatter] || null,
                 order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
                 searchable: !(data.searchable === false), // default: true
                 sortable: !(data.sortable === false), // default: true
                 visible: !(data.visible === false), // default: true
-                visibleInSelection: !(data.visibleInSelection === false), // default: true
+                visibleInSelection: !(data.visibleinselection === false), // default: true
                 width: ($.isNumeric(data.width)) ? data.width + "px" : 
                     (typeof(data.width) === "string") ? data.width : null
             };
