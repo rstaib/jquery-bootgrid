@@ -31,11 +31,7 @@ function findFooterAndHeaderItems(selector)
     return $.merge(footer, header);
 }
 
-function getParams(context)
-{
-    return (context) ? $.extend({}, this.cachedParams, { ctx: context }) :
-        this.cachedParams;
-}
+const getParams = (context)=> (context) ? $.extend({}, this.cachedParams, { ctx: context }) : this.cachedParams;
 
 function getRequest()
 {
@@ -51,14 +47,10 @@ function getRequest()
     return this.options.requestHandler($.extend(true, request, post));
 }
 
-function getCssSelector(css)
-{
-    return "." + $.trim(css).replace(/\s+/gm, ".");
-}
+const getCssSelector = (css)=> "." + $.trim(css).replace(/\s+/gm, ".");
 
-function getUrl()
-{
-    var url = this.options.url;
+const getUrl = ()=>{
+    const url = this.options.url;
     return ($.isFunction(url)) ? url() : url;
 }
 
@@ -85,62 +77,47 @@ function highlightAppendedRows(rows)
         // todo: implement
     }
 }
+const isVisible = (column)=> column.visible;
 
-function isVisible(column)
-{
-    return column.visible;
-}
+function loadColumns() {
+    const that = this;
+    const firstHeadRow = this.element.find("thead > tr").first();
 
-function loadColumns()
-{
-    var that = this,
-        firstHeadRow = this.element.find("thead > tr").first(),
-        sorted = false;
-
-    /*jshint -W018*/
-    firstHeadRow.children().each(function ()
-    {
-        var $this = $(this),
-            data = $this.data(),
-            column = {
-                id: data.columnId,
-                identifier: that.identifier == null && data.identifier || false,
-                converter: that.options.converters[data.converter || data.type] || that.options.converters["string"],
-                text: $this.text(),
-                align: data.align || "left",
-                headerAlign: data.headerAlign || "left",
-                cssClass: data.cssClass || "",
-                headerCssClass: data.headerCssClass || "",
-                formatter: that.options.formatters[data.formatter] || null,
-                order: (!sorted && (data.order === "asc" || data.order === "desc")) ? data.order : null,
-                searchable: !(data.searchable === false), // default: true
-                sortable: !(data.sortable === false), // default: true
-                visible: !(data.visible === false), // default: true
-                visibleInSelection: !(data.visibleInSelection === false), // default: true
-                width: ($.isNumeric(data.width)) ? data.width + "px" : 
-                    (typeof(data.width) === "string") ? data.width : null
-            };
+    firstHeadRow.children().each(function () {
+        const $this = $(this);
+        const data = $this.data();
+        const column = {
+            id: data.columnId,
+            identifier: that.identifier == null && data.identifier || false,
+            converter: that.options.converters[data.converter || data.type] || that.options.converters["string"],
+            text: $this.text(),
+            align: data.align || "left",
+            headerAlign: data.headerAlign || "left",
+            cssClass: data.cssClass || "",
+            headerCssClass: data.headerCssClass || "",
+            formatter: that.options.formatters[data.formatter] || null,
+            order: data.order != null ? data.order : null,
+            searchable: data.searchable !== false, // default: true
+            sortable: data.sortable !== false, // default: true
+            visible: data.visible !== false, // default: true
+            visibleInSelection: data.visibleInSelection !== false, // default: true
+            width: data.width || null
+        };
         that.columns.push(column);
-        if (column.order != null)
-        {
-            that.sortDictionary[column.id] = column.order;
-        }
 
         // Prevents multiple identifiers
-        if (column.identifier)
-        {
+        if (column.identifier) {
             that.identifier = column.id;
             that.converter = column.converter;
         }
 
-        // ensures that only the first order will be applied in case of multi sorting is disabled
-        if (!that.options.multiSort && column.order !== null)
-        {
-            sorted = true;
+        // Update the sortDictionary
+        if (column.order != null) {
+            that.sortDictionary[column.id] = column.order;
         }
     });
-    /*jshint +W018*/
 }
+
 
 /*
 response = {
@@ -152,24 +129,23 @@ response = {
 }
 */
 
-function loadData()
-{
-    var that = this;
+function loadData() {
+    const that = this;
+    const options = this.options;
+    const searchPhrase = this.searchPhrase;
+    const current = this.current;
 
     this.element._bgBusyAria(true).trigger("load" + namespace);
     showLoading.call(this);
 
-    function containsPhrase(row)
-    {
-        var column,
-            searchPattern = new RegExp(that.searchPhrase, (that.options.caseSensitive) ? "g" : "gi");
+    function containsPhrase(row) {
+        const columns = that.columns;
+        const searchPattern = new RegExp(searchPhrase, options.caseSensitive ? "g" : "gi");
 
-        for (var i = 0; i < that.columns.length; i++)
-        {
-            column = that.columns[i];
+        for (let i = 0; i < columns.length; i++) {
+            const column = columns[i];
             if (column.searchable && column.visible &&
-                column.converter.to(row[column.id]).search(searchPattern) > -1)
-            {
+                column.converter.to(row[column.id]).search(searchPattern) > -1) {
                 return true;
             }
         }
@@ -177,13 +153,11 @@ function loadData()
         return false;
     }
 
-    function update(rows, total)
-    {
+    function update(rows, total) {
         that.currentRows = rows;
         setTotals.call(that, total);
 
-        if (!that.options.keepSelection)
-        {
+        if (!options.keepSelection) {
             that.selectedRows = [];
         }
 
@@ -194,87 +168,80 @@ function loadData()
         that.element._bgBusyAria(false).trigger("loaded" + namespace);
     }
 
-    if (this.options.ajax)
-    {
-        var request = getRequest.call(this),
-            url = getUrl.call(this);
+    if (options.ajax) {
+        const request = getRequest.call(this);
+        const url = getUrl.call(this);
 
-        if (url == null || typeof url !== "string" || url.length === 0)
-        {
-            throw new Error("Url setting must be a none empty string or a function that returns one.");
+        if (!url || typeof url !== "string" || url.length === 0) {
+            throw new Error("Url setting must be a non-empty string or a function that returns one.");
         }
 
         // aborts the previous ajax request if not already finished or failed
-        if (this.xqr)
-        {
+        if (this.xqr) {
             this.xqr.abort();
         }
 
-        var settings = {
+        const ajaxSettings = $.extend({}, options.ajaxSettings, {
             url: url,
             data: request,
-            success: function(response)
-            {
+            success: function (response) {
                 that.xqr = null;
 
-                if (typeof (response) === "string")
-                {
+                if (typeof response === "string") {
                     response = $.parseJSON(response);
                 }
 
-                response = that.options.responseHandler(response);
+                response = options.responseHandler(response);
 
                 that.current = response.current;
                 update(response.rows, response.total);
             },
-            error: function (jqXHR, textStatus, errorThrown)
-            {
+            error: function (jqXHR, textStatus, errorThrown) {
                 that.xqr = null;
 
-                if (textStatus !== "abort")
-                {
+                if (textStatus !== "abort") {
                     renderNoResultsRow.call(that); // overrides loading mask
                     that.element._bgBusyAria(false).trigger("loaded" + namespace);
                 }
             }
-        };
-        settings = $.extend(this.options.ajaxSettings, settings);
+        });
 
-        this.xqr = $.ajax(settings);
-    }
-    else
-    {
-        var rows = (this.searchPhrase.length > 0) ? this.rows.where(containsPhrase) : this.rows,
+        this.xqr = $.ajax(ajaxSettings);
+    } else {
+        let rows = this.rows;
+        let total = rows.length;
+
+        if (searchPhrase.length > 0) {
+            rows = rows.where(containsPhrase);
             total = rows.length;
-        if (this.rowCount !== -1)
-        {
-            rows = rows.page(this.current, this.rowCount);
         }
 
-        // todo: improve the following comment
+        if (this.rowCount !== -1) {
+            rows = rows.page(current, this.rowCount);
+        }
+
         // setTimeout decouples the initialization so that adding event handlers happens before
-        window.setTimeout(function () { update(rows, total); }, 10);
+        setTimeout(function () { update(rows, total); }, 10);
     }
 }
 
-function loadRows()
-{
-    if (!this.options.ajax)
-    {
-        var that = this,
-            rows = this.element.find("tbody > tr");
 
-        rows.each(function ()
-        {
-            var $this = $(this),
-                cells = $this.children("td"),
-                row = {};
+function loadRows() {
+    if (!this.options.ajax) {
+        const that = this;
+        const rows = this.element.find("tbody > tr");
+        const rowsData = rows.map(function () {
+            const cells = $(this).children("td");
+            const row = {};
 
-            $.each(that.columns, function (i, column)
-            {
+            that.columns.forEach(function (column, i) {
                 row[column.id] = column.converter.from(cells.eq(i).text());
             });
 
+            return row;
+        }).get();
+
+        rowsData.forEach(function (row) {
             appendRow.call(that, row);
         });
 
@@ -283,67 +250,60 @@ function loadRows()
     }
 }
 
+
 function setTotals(total)
 {
     this.total = total;
-    this.totalPages = (this.rowCount === -1) ? 1 :
-        Math.ceil(this.total / this.rowCount);
+    this.totalPages = (this.rowCount === -1) ? 1 : Math.ceil(this.total / this.rowCount);
 }
 
-function prepareTable()
-{
-    var tpl = this.options.templates,
-        wrapper = (this.element.parent().hasClass(this.options.css.responsiveTable)) ?
-            this.element.parent() : this.element;
+function prepareTable() {
+    const tpl = this.options.templates;
+    const wrapper = this.element.parent().hasClass(this.options.css.responsiveTable)
+        ? this.element.parent() : this.element;
 
     this.element.addClass(this.options.css.table);
 
-    // checks whether there is an tbody element; otherwise creates one
-    if (this.element.children("tbody").length === 0)
-    {
+    // Create tbody element if it doesn't exist
+    if (!this.element.children("tbody").length) {
         this.element.append(tpl.body);
     }
 
-    if (this.options.navigation & 1)
-    {
-        this.header = $(tpl.header.resolve(getParams.call(this, { id: this.element._bgId() + "-header" })));
+    if (this.options.navigation & 1) {
+        const headerId = this.element._bgId() + "-header";
+        this.header = $(tpl.header.resolve(getParams.call(this, { id: headerId })));
         wrapper.before(this.header);
     }
 
-    if (this.options.navigation & 2)
-    {
-        this.footer = $(tpl.footer.resolve(getParams.call(this, { id: this.element._bgId() + "-footer" })));
+    if (this.options.navigation & 2) {
+        const footerId = this.element._bgId() + "-footer";
+        this.footer = $(tpl.footer.resolve(getParams.call(this, { id: footerId })));
         wrapper.after(this.footer);
     }
 }
 
-function renderActions()
-{
-    if (this.options.navigation !== 0)
-    {
-        var css = this.options.css,
-            selector = getCssSelector(css.actions),
-            actionItems = findFooterAndHeaderItems.call(this, selector);
 
-        if (actionItems.length > 0)
-        {
-            var that = this,
-                tpl = this.options.templates,
-                actions = $(tpl.actions.resolve(getParams.call(this)));
+function renderActions() {
+    if (this.options.navigation !== 0) {
+        const { css, templates, labels, ajax } = this.options;
+        const selector = getCssSelector(css.actions);
+        const actionItems = findFooterAndHeaderItems.call(this, selector);
+
+        if (actionItems.length > 0) {
+            const actions = $(templates.actions.resolve(getParams.call(this)));
 
             // Refresh Button
-            if (this.options.ajax)
-            {
-                var refreshIcon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconRefresh })),
-                    refresh = $(tpl.actionButton.resolve(getParams.call(this,
-                    { content: refreshIcon, text: this.options.labels.refresh })))
-                        .on("click" + namespace, function (e)
-                        {
-                            // todo: prevent multiple fast clicks (fast click detection)
-                            e.stopPropagation();
-                            that.current = 1;
-                            loadData.call(that);
-                        });
+            if (ajax) {
+                const refreshIcon = $(templates.icon.resolve(getParams.call(this, { iconCss: css.iconRefresh })));
+                const refresh = $(templates.actionButton.resolve(getParams.call(this,
+                    { content: refreshIcon, text: labels.refresh })))
+                    .on("click" + namespace, function (e) {
+                        // todo: prevent multiple fast clicks (fast click detection)
+                        e.stopPropagation();
+                        that.current = 1;
+                        loadData.call(that);
+                    });
+
                 actions.append(refresh);
             }
 
@@ -358,121 +318,106 @@ function renderActions()
     }
 }
 
-function renderColumnSelection(actions)
-{
-    if (this.options.columnSelection && this.columns.length > 1)
-    {
-        var that = this,
-            css = this.options.css,
-            tpl = this.options.templates,
-            icon = tpl.icon.resolve(getParams.call(this, { iconCss: css.iconColumns })),
-            dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: icon }))),
-            selector = getCssSelector(css.dropDownItem),
-            checkboxSelector = getCssSelector(css.dropDownItemCheckbox),
-            itemsSelector = getCssSelector(css.dropDownMenuItems);
 
-        $.each(this.columns, function (i, column)
-        {
-            if (column.visibleInSelection)
-            {
-                var item = $(tpl.actionDropDownCheckboxItem.resolve(getParams.call(that,
-                    { name: column.id, label: column.text, checked: column.visible })))
-                        .on("click" + namespace, selector, function (e)
-                        {
-                            e.stopPropagation();
-    
-                            var $this = $(this),
-                                checkbox = $this.find(checkboxSelector);
-                            if (!checkbox.prop("disabled"))
-                            {
-                                column.visible = checkbox.prop("checked");
-                                var enable = that.columns.where(isVisible).length > 1;
-                                $this.parents(itemsSelector).find(selector + ":has(" + checkboxSelector + ":checked)")
-                                    ._bgEnableAria(enable).find(checkboxSelector)._bgEnableField(enable);
-    
-                                that.element.find("tbody").empty(); // Fixes an column visualization bug
-                                renderTableHeader.call(that);
-                                loadData.call(that);
-                            }
-                        });
-                dropDown.find(getCssSelector(css.dropDownMenuItems)).append(item);
+function renderColumnSelection(actions) {
+    if (this.options.columnSelection && this.columns.length > 1) {
+        const { css, templates } = this.options;
+        const icon = $(templates.icon.resolve(getParams.call(this, { iconCss: css.iconColumns })));
+        const dropDown = $(templates.actionDropDown.resolve(getParams.call(this, { content: icon })));
+        const checkboxSelector = getCssSelector(css.dropDownItemCheckbox);
+
+        this.columns.forEach(column => {
+            if (column.visibleInSelection) {
+                const item = $(`<li class="${css.dropDownItem}">
+                                <label class="${css.dropDownItemCheckboxLabel}">
+                                    <input type="checkbox" class="${css.dropDownItemCheckbox}" 
+                                           name="${column.id}" ${column.visible ? 'checked' : ''}>
+                                    ${column.text}
+                                </label>
+                            </li>`);
+
+                item.on("click" + namespace, checkboxSelector, function (e) {
+                    e.stopPropagation();
+                    const checkbox = $(this);
+                    if (!checkbox.prop("disabled")) {
+                        column.visible = checkbox.prop("checked");
+                        const enable = that.columns.filter(col => col.visible).length > 1;
+                        checkbox.closest(`.${css.dropDownMenuItems}`)
+                            .find(checkboxSelector + ":checked").prop("disabled", !enable);
+
+                        that.element.find("tbody").empty(); // Fixes a column visualization bug
+                        renderTableHeader.call(that);
+                        loadData.call(that);
+                    }
+                });
+
+                dropDown.find(`.${css.dropDownMenuItems}`).append(item);
             }
         });
+
         actions.append(dropDown);
     }
 }
 
-function renderInfos()
-{
-    if (this.options.navigation !== 0)
-    {
-        var selector = getCssSelector(this.options.css.infos),
-            infoItems = findFooterAndHeaderItems.call(this, selector);
 
-        if (infoItems.length > 0)
-        {
-            var end = (this.current * this.rowCount),
-                infos = $(this.options.templates.infos.resolve(getParams.call(this, {
-                    end: (this.total === 0 || end === -1 || end > this.total) ? this.total : end,
-                    start: (this.total === 0) ? 0 : (end - this.rowCount + 1),
-                    total: this.total
-                })));
+function renderInfos() {
+    if (this.options.navigation !== 0) {
+        const selector = getCssSelector(this.options.css.infos);
+        const infoItems = findFooterAndHeaderItems.call(this, selector);
+
+        if (infoItems.length > 0) {
+            const end = this.total === 0 || this.current * this.rowCount > this.total ? this.total : this.current * this.rowCount;
+            const start = this.total === 0 ? 0 : end - this.rowCount + 1;
+            const infos = $(this.options.templates.infos.resolve(getParams.call(this, {
+                end: end,
+                start: start,
+                total: this.total
+            })));
 
             replacePlaceHolder.call(this, infoItems, infos);
         }
     }
 }
 
-function renderNoResultsRow()
-{
-    var tbody = this.element.children("tbody").first(),
-        tpl = this.options.templates,
-        count = this.columns.where(isVisible).length;
 
-    if (this.selection)
-    {
-        count = count + 1;
-    }
+function renderNoResultsRow() {
+    const tbody = this.element.children("tbody").first();
+    const tpl = this.options.templates;
+    const visibleColumns = this.columns.filter(column => column.visible);
+    const count = this.selection ? visibleColumns.length + 1 : visibleColumns.length;
+
     tbody.html(tpl.noResults.resolve(getParams.call(this, { columns: count })));
 }
 
-function renderPagination()
-{
-    if (this.options.navigation !== 0)
-    {
-        var selector = getCssSelector(this.options.css.pagination),
-            paginationItems = findFooterAndHeaderItems.call(this, selector)._bgShowAria(this.rowCount !== -1);
 
-        if (this.rowCount !== -1 && paginationItems.length > 0)
-        {
-            var tpl = this.options.templates,
-                current = this.current,
-                totalPages = this.totalPages,
-                pagination = $(tpl.pagination.resolve(getParams.call(this))),
-                offsetRight = totalPages - current,
-                offsetLeft = (this.options.padding - current) * -1,
-                startWith = ((offsetRight >= this.options.padding) ?
-                    Math.max(offsetLeft, 1) :
-                    Math.max((offsetLeft - this.options.padding + offsetRight), 1)),
-                maxCount = this.options.padding * 2 + 1,
-                count = (totalPages >= maxCount) ? maxCount : totalPages;
+function renderPagination() {
+    if (this.options.navigation !== 0 && this.rowCount !== -1) {
+        const selector = getCssSelector(this.options.css.pagination);
+        const paginationItems = findFooterAndHeaderItems.call(this, selector)._bgShowAria();
+
+        if (paginationItems.length > 0) {
+            const tpl = this.options.templates;
+            const current = this.current;
+            const totalPages = this.totalPages;
+            const pagination = $(tpl.pagination.resolve(getParams.call(this)));
+            const maxCount = this.options.padding * 2 + 1;
+            const count = Math.min(totalPages, maxCount);
+
+            const startWith = Math.max(current - this.options.padding, 1);
+            const endWith = Math.min(startWith + maxCount - 1, totalPages);
 
             renderPaginationItem.call(this, pagination, "first", "&laquo;", "first")
                 ._bgEnableAria(current > 1);
             renderPaginationItem.call(this, pagination, "prev", "&lt;", "prev")
                 ._bgEnableAria(current > 1);
 
-            for (var i = 0; i < count; i++)
-            {
-                var pos = i + startWith;
+            for (let pos = startWith; pos <= endWith; pos++) {
                 renderPaginationItem.call(this, pagination, pos, pos, "page-" + pos)
-                    ._bgEnableAria()._bgSelectAria(pos === current);
+                    ._bgSelectAria(pos === current);
             }
 
-            if (count === 0)
-            {
-                renderPaginationItem.call(this, pagination, 1, 1, "page-" + 1)
-                    ._bgEnableAria(false)._bgSelectAria();
+            if (count === 0) {
+                renderPaginationItem.call(this, pagination, 1, 1, "page-" + 1);
             }
 
             renderPaginationItem.call(this, pagination, "next", "&gt;", "next")
@@ -485,251 +430,198 @@ function renderPagination()
     }
 }
 
-function renderPaginationItem(list, page, text, markerCss)
-{
-    var that = this,
-        tpl = this.options.templates,
-        css = this.options.css,
-        values = getParams.call(this, { css: markerCss, text: text, page: page }),
-        item = $(tpl.paginationItem.resolve(values))
-            .on("click" + namespace, getCssSelector(css.paginationButton), function (e)
-            {
-                e.stopPropagation();
-                e.preventDefault();
 
-                var $this = $(this),
-                    parent = $this.parent();
-                if (!parent.hasClass("active") && !parent.hasClass("disabled"))
-                {
-                    var commandList = {
-                        first: 1,
-                        prev: that.current - 1,
-                        next: that.current + 1,
-                        last: that.totalPages
-                    };
-                    var command = $this.data("page");
-                    that.current = commandList[command] || command;
-                    loadData.call(that);
-                }
-                $this.trigger("blur");
-            });
+function renderPaginationItem(list, page, text, markerCss) {
+    const { templates, css } = this.options;
+    const values = getParams.call(this, { css: markerCss, text: text, page: page });
+    const item = $(templates.paginationItem.resolve(values));
+    const $paginationButton = item.find(getCssSelector(css.paginationButton));
 
     list.append(item);
+
+    $paginationButton.on("click" + namespace, function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const $this = $(this);
+        const parent = $this.parent();
+        if (!parent.hasClass("active") && !parent.hasClass("disabled")) {
+            const commandList = {
+                first: 1,
+                prev: this.current - 1,
+                next: this.current + 1,
+                last: this.totalPages
+            };
+            const command = $this.data("page");
+            this.current = commandList[command] || command;
+            loadData.call(this);
+        }
+        $this.trigger("blur");
+    }.bind(this));
+
     return item;
 }
 
-function renderRowCountSelection(actions)
-{
-    var that = this,
-        rowCountList = this.options.rowCount;
 
-    function getText(value)
-    {
-        return (value === -1) ? that.options.labels.all : value;
+function renderRowCountSelection(actions) {
+    const { css, templates, rowCount } = this.options;
+
+    function getText(value) {
+        return value === -1 ? this.options.labels.all : value;
     }
 
-    if ($.isArray(rowCountList))
-    {
-        var css = this.options.css,
-            tpl = this.options.templates,
-            dropDown = $(tpl.actionDropDown.resolve(getParams.call(this, { content: getText(this.rowCount) }))),
-            menuSelector = getCssSelector(css.dropDownMenu),
-            menuTextSelector = getCssSelector(css.dropDownMenuText),
-            menuItemsSelector = getCssSelector(css.dropDownMenuItems),
-            menuItemSelector = getCssSelector(css.dropDownItemButton);
+    if ($.isArray(rowCount)) {
+        const dropDown = $(templates.actionDropDown.resolve(getParams.call(this, { content: getText(this.rowCount) })));
+        const menuItems = rowCount.map(value => {
+            return templates.actionDropDownItem
+                .resolve(getParams.call(this, { text: getText(value), action: value }))
+                ._bgSelectAria(value === this.rowCount);
+        }).join('');
 
-        $.each(rowCountList, function (index, value)
-        {
-            var item = $(tpl.actionDropDownItem.resolve(getParams.call(that,
-                { text: getText(value), action: value })))
-                    ._bgSelectAria(value === that.rowCount)
-                    .on("click" + namespace, menuItemSelector, function (e)
-                    {
-                        e.preventDefault();
+        dropDown.find(getCssSelector(css.dropDownMenuItems)).append(menuItems);
 
-                        var $this = $(this),
-                            newRowCount = $this.data("action");
-                        if (newRowCount !== that.rowCount)
-                        {
-                            // todo: sophisticated solution needed for calculating which page is selected
-                            that.current = 1; // that.rowCount === -1 ---> All
-                            that.rowCount = newRowCount;
-                            $this.parents(menuItemsSelector).children().each(function ()
-                            {
-                                var $item = $(this),
-                                    currentRowCount = $item.find(menuItemSelector).data("action");
-                                $item._bgSelectAria(currentRowCount === newRowCount);
-                            });
-                            $this.parents(menuSelector).find(menuTextSelector).text(getText(newRowCount));
-                            loadData.call(that);
-                        }
-                    });
-            dropDown.find(menuItemsSelector).append(item);
-        });
+        dropDown.on("click" + namespace, getCssSelector(css.dropDownItemButton), function (e) {
+            e.preventDefault();
+
+            const newRowCount = $(this).data("action");
+            if (newRowCount !== this.rowCount) {
+                this.current = 1; // this.rowCount === -1 ---> All
+                this.rowCount = newRowCount;
+                const menuItems = dropDown.find(getCssSelector(css.dropDownItemButton));
+                menuItems.each(function () {
+                    const $item = $(this);
+                    const currentRowCount = $item.data("action");
+                    $item._bgSelectAria(currentRowCount === newRowCount);
+                });
+
+                dropDown.find(getCssSelector(css.dropDownMenuText)).text(getText(newRowCount));
+
+                loadData.call(this);
+            }
+        }.bind(this));
+
         actions.append(dropDown);
     }
 }
 
-function renderRows(rows)
-{
-    if (rows.length > 0)
-    {
-        var that = this,
-            css = this.options.css,
-            tpl = this.options.templates,
-            tbody = this.element.children("tbody").first(),
-            allRowsSelected = true,
-            html = "";
+function renderRows(rows) {
+    if (rows.length > 0) {
+        const { css, templates } = this.options;
+        const tbody = this.element.children("tbody").first();
+        let html = "";
 
-        $.each(rows, function (index, row)
-        {
-            var cells = "",
-                rowAttr = " data-row-id=\"" + ((that.identifier == null) ? index : row[that.identifier]) + "\"",
-                rowCss = "";
+        function createCell(column, row) {
+            if (column.visible) {
+                const value = $.isFunction(column.formatter) ? column.formatter.call(this, column, row) : column.converter.to(row[column.id]);
+                const cssClass = column.cssClass.length > 0 ? " " + column.cssClass : "";
+                const content = value == null || value === "" ? "&nbsp;" : value;
+                const cellCss = ((column.align === "right") ? css.right : (column.align === "center") ? css.center : css.left) + cssClass;
+                const cellStyle = column.width == null ? "" : "width:" + column.width + ";";
+                return templates.cell.resolve(getParams.call(this, { content, css: cellCss, style: cellStyle }));
+            }
+            return "";
+        }
 
-            if (that.selection)
-            {
-                var selected = ($.inArray(row[that.identifier], that.selectedRows) !== -1),
-                    selectBox = tpl.select.resolve(getParams.call(that,
-                        { type: "checkbox", value: row[that.identifier], checked: selected }));
-                cells += tpl.cell.resolve(getParams.call(that, { content: selectBox, css: css.selectCell }));
-                allRowsSelected = (allRowsSelected && selected);
-                if (selected)
-                {
+        $.each(rows, function (index, row) {
+            let cells = "";
+            let rowAttr = " data-row-id=\"" + ((this.identifier == null) ? index : row[this.identifier]) + "\"";
+            let rowCss = "";
+
+            if (this.selection) {
+                const selected = $.inArray(row[this.identifier], this.selectedRows) !== -1;
+                const selectBox = templates.select.resolve(getParams.call(this, { type: "checkbox", value: row[this.identifier], checked: selected }));
+                cells += templates.cell.resolve(getParams.call(this, { content: selectBox, css: css.selectCell }));
+                if (selected) {
                     rowCss += css.selected;
                     rowAttr += " aria-selected=\"true\"";
                 }
             }
 
-            var status = row.status != null && that.options.statusMapping[row.status];
-            if (status)
-            {
+            const status = row.status != null && this.options.statusMapping[row.status];
+            if (status) {
                 rowCss += status;
             }
 
-            $.each(that.columns, function (j, column)
-            {
-                if (column.visible)
-                {
-                    var value = ($.isFunction(column.formatter)) ?
-                            column.formatter.call(that, column, row) :
-                                column.converter.to(row[column.id]),
-                        cssClass = (column.cssClass.length > 0) ? " " + column.cssClass : "";
-                    cells += tpl.cell.resolve(getParams.call(that, {
-                        content: (value == null || value === "") ? "&nbsp;" : value,
-                        css: ((column.align === "right") ? css.right : (column.align === "center") ?
-                            css.center : css.left) + cssClass,
-                        style: (column.width == null) ? "" : "width:" + column.width + ";" }));
-                }
-            });
+            cells += this.columns.map(column => createCell.call(this, column, row)).join("");
 
-            if (rowCss.length > 0)
-            {
+            if (rowCss.length > 0) {
                 rowAttr += " class=\"" + rowCss + "\"";
             }
-            html += tpl.row.resolve(getParams.call(that, { attr: rowAttr, cells: cells }));
+            html += templates.row.resolve(getParams.call(this, { attr: rowAttr, cells }));
         });
 
-        // sets or clears multi selectbox state
-        that.element.find("thead " + getCssSelector(that.options.css.selectBox))
-            .prop("checked", allRowsSelected);
+        // sets or clears multi-selectbox state
+        this.element.find("thead " + getCssSelector(css.selectBox))
+            .prop("checked", rows.length > 0 && rows.every(row => $.inArray(row[this.identifier], this.selectedRows) !== -1));
 
         tbody.html(html);
-
         registerRowEvents.call(this, tbody);
-    }
-    else
-    {
+    } else {
         renderNoResultsRow.call(this);
     }
 }
 
-function registerRowEvents(tbody)
-{
-    var that = this,
-        selectBoxSelector = getCssSelector(this.options.css.selectBox);
 
-    if (this.selection)
-    {
+function registerRowEvents(tbody) {
+    const { css, rowSelect } = this.options;
+    const selectBoxSelector = getCssSelector(css.selectBox);
+
+    if (this.selection) {
         tbody.off("click" + namespace, selectBoxSelector)
-            .on("click" + namespace, selectBoxSelector, function(e)
-            {
+            .on("click" + namespace, selectBoxSelector, function (e) {
                 e.stopPropagation();
 
-                var $this = $(this),
-                    id = that.converter.from($this.val());
+                const $this = $(this);
+                const id = that.converter.from($this.val());
+                const isChecked = $this.prop("checked");
 
-                if ($this.prop("checked"))
-                {
-                    that.select([id]);
-                }
-                else
-                {
-                    that.deselect([id]);
-                }
+                that[isChecked ? "select" : "deselect"]([id]);
             });
     }
 
     tbody.off("click" + namespace, "> tr")
-        .on("click" + namespace, "> tr", function(e)
-        {
+        .on("click" + namespace, "> tr", function (e) {
             e.stopPropagation();
 
-            var $this = $(this),
-                id = (that.identifier == null) ? $this.data("row-id") :
-                    that.converter.from($this.data("row-id") + ""),
-                row = (that.identifier == null) ? that.currentRows[id] :
-                    that.currentRows.first(function (item) { return item[that.identifier] === id; });
+            const $this = $(this);
+            const id = (that.identifier == null) ? $this.data("row-id") : that.converter.from(`${$this.data("row-id")}`);
+            const row = (that.identifier == null) ? that.currentRows[id] :
+                that.currentRows.first((item) => item[that.identifier] === id);
 
-            if (that.selection && that.options.rowSelect)
-            {
-                if ($this.hasClass(that.options.css.selected))
-                {
-                    that.deselect([id]);
-                }
-                else
-                {
-                    that.select([id]);
-                }
+            if (that.selection && rowSelect) {
+                $this.toggleClass(css.selected);
+                that[$this.hasClass(css.selected) ? "select" : "deselect"]([id]);
             }
 
             that.element.trigger("click" + namespace, [that.columns, row]);
         });
 }
 
-function renderSearchField()
-{
-    if (this.options.navigation !== 0)
-    {
-        var css = this.options.css,
-            selector = getCssSelector(css.search),
-            searchItems = findFooterAndHeaderItems.call(this, selector);
 
-        if (searchItems.length > 0)
-        {
-            var that = this,
-                tpl = this.options.templates,
-                timer = null, // fast keyup detection
-                currentValue = "",
-                searchFieldSelector = getCssSelector(css.searchField),
-                search = $(tpl.search.resolve(getParams.call(this))),
-                searchField = (search.is(searchFieldSelector)) ? search :
-                    search.find(searchFieldSelector);
+function renderSearchField() {
+    if (this.options.navigation !== 0) {
+        const css = this.options.css;
+        const selector = getCssSelector(css.search);
+        const searchItems = findFooterAndHeaderItems.call(this, selector);
 
-            searchField.on("keyup" + namespace, function (e)
-            {
+        if (searchItems.length > 0) {
+            const tpl = this.options.templates;
+            let timer = null; // fast keyup detection
+            let currentValue = "";
+            const searchFieldSelector = getCssSelector(css.searchField);
+            const search = $(tpl.search.resolve(getParams.call(this)));
+            const searchField = search.is(searchFieldSelector) ? search : search.find(searchFieldSelector);
+
+            searchField.on("keyup" + namespace, function (e) {
                 e.stopPropagation();
-                var newValue = $(this).val();
-                if (currentValue !== newValue || (e.which === 13 && newValue !== ""))
-                {
+                const newValue = $(this).val();
+                if (currentValue !== newValue || (e.which === 13 && newValue !== "")) {
                     currentValue = newValue;
-                    if (e.which === 13 || newValue.length === 0 || newValue.length >= that.options.searchSettings.characters)
-                    {
+                    if (e.which === 13 || newValue.length === 0 || newValue.length >= this.options.searchSettings.characters) {
                         window.clearTimeout(timer);
-                        timer = window.setTimeout(function ()
-                        {
-                            executeSearch.call(that, newValue);
-                        }, that.options.searchSettings.delay);
+                        timer = window.setTimeout(() => {
+                            executeSearch.call(this, newValue);
+                        }, this.options.searchSettings.delay);
                     }
                 }
             });
@@ -739,132 +631,119 @@ function renderSearchField()
     }
 }
 
-function executeSearch(phrase)
-{
-    if (this.searchPhrase !== phrase)
-    {
+
+function executeSearch(phrase){
+    if(this.searchPhrase === phrase) return;
         this.current = 1;
         this.searchPhrase = phrase;
         loadData.call(this);
-    }
 }
 
-function renderTableHeader()
-{
-    var that = this,
-        headerRow = this.element.find("thead > tr"),
-        css = this.options.css,
-        tpl = this.options.templates,
-        html = "",
-        sorting = this.options.sorting;
+function renderTableHeader() {
+    const that = this;
+    const css = this.options.css;
+    const tpl = this.options.templates;
+    const headerRow = this.element.find("thead > tr");
+    const sorting = this.options.sorting;
+    const selectBoxSelector = getCssSelector(css.selectBox);
+    const sortingSelector = getCssSelector(css.sortable);
 
-    if (this.selection)
-    {
-        var selectBox = (this.options.multiSelect) ?
-            tpl.select.resolve(getParams.call(that, { type: "checkbox", value: "all" })) : "";
-        html += tpl.rawHeaderCell.resolve(getParams.call(that, { content: selectBox,
-            css: css.selectCell }));
+    let html = "";
+
+    function createHeaderCell(column) {
+        if (!column.visible) return "";
+
+        const sortOrder = that.sortDictionary[column.id];
+        const iconCss = (sorting && sortOrder && sortOrder === "asc") ? css.iconUp :
+                        (sorting && sortOrder && sortOrder === "desc") ? css.iconDown : "";
+        const icon = tpl.icon.resolve(getParams.call(that, { iconCss }));
+        const align = column.headerAlign;
+        const cssClass = column.headerCssClass.length > 0 ? " " + column.headerCssClass : "";
+
+        return tpl.headerCell.resolve(getParams.call(that, {
+            column: column,
+            icon: icon,
+            sortable: sorting && column.sortable && css.sortable || "",
+            css: ((align === "right") ? css.right : (align === "center") ?
+                css.center : css.left) + cssClass,
+            style: column.width == null ? "" : "width:" + column.width + ";",
+        }));
     }
 
-    $.each(this.columns, function (index, column)
-    {
-        if (column.visible)
-        {
-            var sortOrder = that.sortDictionary[column.id],
-                iconCss = ((sorting && sortOrder && sortOrder === "asc") ? css.iconUp :
-                    (sorting && sortOrder && sortOrder === "desc") ? css.iconDown : ""),
-                icon = tpl.icon.resolve(getParams.call(that, { iconCss: iconCss })),
-                align = column.headerAlign,
-                cssClass = (column.headerCssClass.length > 0) ? " " + column.headerCssClass : "";
-            html += tpl.headerCell.resolve(getParams.call(that, {
-                column: column, icon: icon, sortable: sorting && column.sortable && css.sortable || "",
-                css: ((align === "right") ? css.right : (align === "center") ?
-                    css.center : css.left) + cssClass,
-                style: (column.width == null) ? "" : "width:" + column.width + ";" }));
-        }
-    });
+    if (this.selection) {
+        const selectBox = (this.options.multiSelect) ? tpl.select.resolve(getParams.call(that, {
+            type: "checkbox",
+            value: "all",
+        })) : "";
+
+        html += tpl.rawHeaderCell.resolve(getParams.call(that, {
+            content: selectBox,
+            css: css.selectCell,
+        }));
+    }
+
+    html += this.columns.filter(column => column.visible).map(createHeaderCell).join("");
 
     headerRow.html(html);
 
-    if (sorting)
-    {
-        var sortingSelector = getCssSelector(css.sortable);
+    attachSortingClickHandler();
+
+    if (this.selection && this.options.multiSelect) {
+        attachSelectBoxClickHandler();
+    }
+
+    function attachSortingClickHandler() {
         headerRow.off("click" + namespace, sortingSelector)
-            .on("click" + namespace, sortingSelector, function (e)
-            {
+            .on("click" + namespace, sortingSelector, function (e) {
                 e.preventDefault();
 
-                setTableHeaderSortDirection.call(that, $(this));
-                sortRows.call(that);
-                loadData.call(that);
+                setTableHeaderSortDirection($(this));
+                sortRows();
+                loadData();
             });
     }
 
-    // todo: create a own function for that piece of code
-    if (this.selection && this.options.multiSelect)
-    {
-        var selectBoxSelector = getCssSelector(css.selectBox);
+    function attachSelectBoxClickHandler() {
         headerRow.off("click" + namespace, selectBoxSelector)
-            .on("click" + namespace, selectBoxSelector, function(e)
-            {
+            .on("click" + namespace, selectBoxSelector, function (e) {
                 e.stopPropagation();
 
-                if ($(this).prop("checked"))
-                {
+                if ($(this).prop("checked")) {
                     that.select();
-                }
-                else
-                {
+                } else {
                     that.deselect();
                 }
             });
     }
 }
 
-function setTableHeaderSortDirection(element)
-{
-    var css = this.options.css,
-        iconSelector = getCssSelector(css.icon),
-        columnId = element.data("column-id") || element.parents("th").first().data("column-id"),
-        sortOrder = this.sortDictionary[columnId],
-        icon = element.find(iconSelector);
+function setTableHeaderSortDirection(element) {
+    const { css } = this.options;
+    const iconSelector = getCssSelector(css.icon);
+    const columnId = element.data("column-id") || element.parents("th").first().data("column-id");
+    const sortOrder = this.sortDictionary[columnId];
+    const icon = element.find(iconSelector);
 
-    if (!this.options.multiSort)
-    {
-        element.parents("tr").first().find(iconSelector).removeClass(css.iconDown + " " + css.iconUp);
+    if (!this.options.multiSort) {
+        element.parents("tr").first().find(iconSelector).removeClass(`${css.iconDown} ${css.iconUp}`);
         this.sortDictionary = {};
     }
 
-    if (sortOrder && sortOrder === "asc")
-    {
+    if (sortOrder === "asc") {
         this.sortDictionary[columnId] = "desc";
         icon.removeClass(css.iconUp).addClass(css.iconDown);
-    }
-    else if (sortOrder && sortOrder === "desc")
-    {
-        if (this.options.multiSort)
-        {
-            var newSort = {};
-            for (var key in this.sortDictionary)
-            {
-                if (key !== columnId)
-                {
-                    newSort[key] = this.sortDictionary[key];
-                }
+    } else if (sortOrder === "desc" && this.options.multiSort) {
+        const newSort = {};
+        for (const key in this.sortDictionary) {
+            if (key !== columnId) {
+                newSort[key] = this.sortDictionary[key];
             }
-            this.sortDictionary = newSort;
-            icon.removeClass(css.iconDown);
         }
-        else
-        {
-            this.sortDictionary[columnId] = "asc";
-            icon.removeClass(css.iconDown).addClass(css.iconUp);
-        }
-    }
-    else
-    {
-        this.sortDictionary[columnId] = "asc";
-        icon.addClass(css.iconUp);
+        this.sortDictionary = newSort;
+        icon.removeClass(css.iconDown);
+    } else {
+        this.sortDictionary[columnId] = sortOrder ? "asc" : "asc";
+        icon.toggleClass(css.iconUp, !sortOrder).toggleClass(css.iconDown, sortOrder);
     }
 }
 
@@ -877,72 +756,50 @@ function replacePlaceHolder(placeholder, element)
     });
 }
 
-function showLoading()
-{
-    var that = this;
+function showLoading() {
+    const { element, options } = this;
+    const tpl = options.templates;
+    const thead = element.children("thead").first();
+    const tbody = element.children("tbody").first();
+    const firstCell = tbody.find("tr > td").first();
+    const isVisible = (col) => col.visible !== false;
+    const columnsCount = this.columns.filter(isVisible).length + (this.selection ? 1 : 0);
 
-    window.setTimeout(function()
-    {
-        if (that.element._bgAria("busy") === "true")
-        {
-            var tpl = that.options.templates,
-                thead = that.element.children("thead").first(),
-                tbody = that.element.children("tbody").first(),
-                firstCell = tbody.find("tr > td").first(),
-                padding = (that.element.height() - thead.height()) - (firstCell.height() + 20),
-                count = that.columns.where(isVisible).length;
+    window.setTimeout(function () {
+        if (element._bgAria("busy") === "true") {
+            const padding = element.height() - thead.height() - (firstCell.height() + 20);
 
-            if (that.selection)
-            {
-                count = count + 1;
-            }
-            tbody.html(tpl.loading.resolve(getParams.call(that, { columns: count })));
-            if (that.rowCount !== -1 && padding > 0)
-            {
-                tbody.find("tr > td").css("padding", "20px 0 " + padding + "px");
+            tbody.empty().append(tpl.loading.resolve(getParams.call(this, { columns: columnsCount })));
+            if (padding > 0) {
+                tbody.find("tr > td").css("padding", `20px 0 ${padding}px`);
             }
         }
-    }, 250);
+    }.bind(this), 250);
 }
+function sortRows() {
+    const sortArray = [];
 
-function sortRows()
-{
-    var sortArray = [];
+    function sort(x, y, current = 0) {
+        const item = sortArray[current];
+        const sortOrder = item.order === "asc" ? 1 : -1;
 
-    function sort(x, y, current)
-    {
-        current = current || 0;
-        var next = current + 1,
-            item = sortArray[current];
-
-        function sortOrder(value)
-        {
-            return (item.order === "asc") ? value : value * -1;
-        }
-
-        return (x[item.id] > y[item.id]) ? sortOrder(1) :
-            (x[item.id] < y[item.id]) ? sortOrder(-1) :
-                (sortArray.length > next) ? sort(x, y, next) : 0;
+        if (x[item.id] > y[item.id]) return sortOrder;
+        if (x[item.id] < y[item.id]) return -sortOrder;
+        return sortArray.length > current + 1 ? sort(x, y, current + 1) : 0;
     }
 
-    if (!this.options.ajax)
-    {
-        var that = this;
-
-        for (var key in this.sortDictionary)
-        {
-            if (this.options.multiSort || sortArray.length === 0)
-            {
+    if (!this.options.ajax) {
+        for (const key in this.sortDictionary) {
+            if (this.options.multiSort || sortArray.length === 0) {
                 sortArray.push({
                     id: key,
-                    order: this.sortDictionary[key]
+                    order: this.sortDictionary[key],
                 });
             }
         }
 
-        if (sortArray.length > 0)
-        {
-            this.rows.sort(sort);
+        if (sortArray.length > 0) {
+            this.rows.sort((x, y) => sort(x, y));
         }
     }
 }
